@@ -15,9 +15,12 @@ import {
   X, // imported X for modal
   Settings,
   Edit2,
-  Zap
+  Zap,
+  Check,
+  ChevronDown
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from "./Inventory";
 
 const INITIAL_CUSTOMERS = [
   { id: "C-0842", name: "María González", email: "maria.g@example.com", phone: "+54 11 4321-8842", points: 1450, tier: "Gold", returnRate: "Alta", lastVisit: "Hace 2 días" },
@@ -72,9 +75,19 @@ export function Loyalty() {
   // Promotions Form
   const [newPromoName, setNewPromoName] = React.useState('');
   const [newPromoMultiplier, setNewPromoMultiplier] = React.useState('2');
-  const [newPromoTarget, setNewPromoTarget] = React.useState('');
+  const [selectedTargets, setSelectedTargets] = React.useState<string[]>([]);
+  const [isTargetDropdownOpen, setIsTargetDropdownOpen] = React.useState(false);
+  const [targetSearch, setTargetSearch] = React.useState('');
   const [newPromoStart, setNewPromoStart] = React.useState('');
   const [newPromoEnd, setNewPromoEnd] = React.useState('');
+
+  const toggleTarget = (target: string) => {
+    setSelectedTargets(prev => 
+      prev.includes(target) 
+        ? prev.filter(t => t !== target) 
+        : [...prev, target]
+    );
+  };
 
   const [pointValue, setPointValue] = React.useState(0.005);
   const [isEditingPointValue, setIsEditingPointValue] = React.useState(false);
@@ -122,12 +135,12 @@ export function Loyalty() {
   };
 
   const handleAddPromotion = () => {
-    if (!newPromoName || !newPromoTarget || !newPromoStart || !newPromoEnd) return;
+    if (!newPromoName || selectedTargets.length === 0 || !newPromoStart || !newPromoEnd) return;
     const newPromo = {
       id: 'prom' + Date.now(),
       name: newPromoName,
       multiplier: parseInt(newPromoMultiplier, 10),
-      target: newPromoTarget,
+      target: selectedTargets.join(', '),
       startDate: newPromoStart,
       endDate: newPromoEnd,
       isActive: true
@@ -135,7 +148,7 @@ export function Loyalty() {
     setPromotionsData([...promotionsData, newPromo]);
     setNewPromoName('');
     setNewPromoMultiplier('2');
-    setNewPromoTarget('');
+    setSelectedTargets([]);
     setNewPromoStart('');
     setNewPromoEnd('');
   };
@@ -609,15 +622,72 @@ export function Loyalty() {
                       <option value="5">Quíntuple (5x)</option>
                     </select>
                   </div>
-                  <div className="sm:col-span-2 md:col-span-1">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Producto / Categoría</label>
-                    <input 
-                      type="text" 
-                      value={newPromoTarget} 
-                      onChange={(e) => setNewPromoTarget(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:ring-2 focus:ring-amber-500 outline-none"
-                      placeholder="Todos o Producto específico..."
-                    />
+                  <div className="sm:col-span-2 md:col-span-1 relative">
+                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Productos / Categorías</label>
+                    <button 
+                      type="button"
+                      onClick={() => setIsTargetDropdownOpen(!isTargetDropdownOpen)}
+                      className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:ring-2 focus:ring-amber-500 outline-none text-left"
+                    >
+                      <span className="truncate text-sm">
+                        {selectedTargets.length === 0 
+                          ? "Seleccionar..." 
+                          : `${selectedTargets.length} Seleccionados`}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    </button>
+
+                    {isTargetDropdownOpen && (
+                      <div className="absolute top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[60] overflow-hidden flex flex-col max-h-[300px]">
+                        <div className="p-2 border-b border-slate-100 sticky top-0 bg-white">
+                          <div className="relative">
+                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                            <input 
+                              type="text" 
+                              placeholder="Buscar..." 
+                              value={targetSearch}
+                              onChange={(e) => setTargetSearch(e.target.value)}
+                              className="w-full pl-7 pr-3 py-1.5 bg-slate-50 rounded-lg text-xs outline-none border border-slate-200 focus:border-amber-400"
+                            />
+                          </div>
+                        </div>
+                        <div className="overflow-y-auto p-1">
+                          <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-md mb-1">Categorías</div>
+                          {INITIAL_CATEGORIES.filter(cat => cat.toLowerCase().includes(targetSearch.toLowerCase())).map(cat => (
+                            <button 
+                              key={cat}
+                              onClick={() => toggleTarget(`Cat: ${cat}`)}
+                              className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors group"
+                            >
+                              <span className="text-xs font-medium text-slate-700">{cat}</span>
+                              {selectedTargets.includes(`Cat: ${cat}`) && <Check className="w-3.5 h-3.5 text-amber-500" />}
+                            </button>
+                          ))}
+                          
+                          <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-md my-1">Productos</div>
+                          {INITIAL_PRODUCTS.filter(prod => prod.name.toLowerCase().includes(targetSearch.toLowerCase())).map(prod => (
+                            <button 
+                              key={prod.id}
+                              onClick={() => toggleTarget(prod.name)}
+                              className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors group"
+                            >
+                              <span className="text-xs font-medium text-slate-700">{prod.name}</span>
+                              {selectedTargets.includes(prod.name) && <Check className="w-3.5 h-3.5 text-amber-500" />}
+                            </button>
+                          ))}
+                        </div>
+                        {selectedTargets.length > 0 && (
+                          <div className="p-2 border-t border-slate-100 bg-slate-50">
+                            <button 
+                              onClick={() => setIsTargetDropdownOpen(false)}
+                              className="w-full py-1.5 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors"
+                            >
+                              Aplicar Selección
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Inicio</label>
@@ -641,7 +711,7 @@ export function Loyalty() {
                 <div className="flex justify-end mt-2">
                   <button 
                     onClick={handleAddPromotion}
-                    disabled={!newPromoName || !newPromoTarget || !newPromoStart || !newPromoEnd}
+                    disabled={!newPromoName || selectedTargets.length === 0 || !newPromoStart || !newPromoEnd}
                     className="px-5 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors tracking-wide h-[42px]"
                   >
                     Crear Promoción

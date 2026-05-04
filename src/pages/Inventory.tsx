@@ -23,7 +23,7 @@ import {
 import { cn } from "../lib/utils";
 import { useAlerts } from "../contexts/AlertContext";
 
-const INITIAL_PRODUCTS = [
+export const INITIAL_PRODUCTS = [
   {
     id: '1',
     name: 'Lagavulin 16 Year Old',
@@ -51,7 +51,7 @@ const INITIAL_PRODUCTS = [
   }
 ];
 
-const INITIAL_CATEGORIES = [
+export const INITIAL_CATEGORIES = [
   'Licores / Scotch',
   'Productos Secos / Café',
   'Comida',
