@@ -28,6 +28,7 @@ export const INITIAL_PRODUCTS = [
     id: '1',
     name: 'Lagavulin 16 Year Old',
     sku: 'WHI-LAG-16-750',
+    barcode: '5010017112003',
     category: 'Licores / Scotch',
     stock: 12,
     unit: 'Botellas',
@@ -39,14 +40,15 @@ export const INITIAL_PRODUCTS = [
     id: '2',
     name: 'Espresso Roast Beans',
     sku: 'DRY-CFE-DRK',
+    barcode: '7610100000012',
     category: 'Productos Secos / Café',
     stock: 12, // 10 + 2
     unit: 'Bolsas',
     price: null,
     takeawayPrice: null,
     variants: [
-      { id: '2-v1', name: 'Pequeño (1kg)', sku: 'DRY-CFE-DRK-1KG', stock: 10, price: 25.00, takeawayPrice: 24.00 },
-      { id: '2-v2', name: 'Grande (5kg)', sku: 'DRY-CFE-DRK-5KG', stock: 2, price: 125.00, takeawayPrice: 120.00 }
+      { id: '2-v1', name: 'Pequeño (1kg)', sku: 'DRY-CFE-DRK-1KG', barcode: '7610100000029', stock: 10, price: 25.00, takeawayPrice: 24.00 },
+      { id: '2-v2', name: 'Grande (5kg)', sku: 'DRY-CFE-DRK-5KG', barcode: '7610100000036', stock: 2, price: 125.00, takeawayPrice: 120.00 }
     ]
   }
 ];
@@ -62,6 +64,8 @@ export const INITIAL_CATEGORIES = [
 export function Inventory() {
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [barcodeSearch, setBarcodeSearch] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryInput, setNewCategoryInput] = useState('');
@@ -72,11 +76,21 @@ export function Inventory() {
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const { setLowStockCount } = useAlerts();
 
+  // New Product Modal State
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductCategory, setNewProductCategory] = useState(INITIAL_CATEGORIES[0]);
+  const [newProductSKU, setNewProductSKU] = useState('');
+  const [newProductBarcode, setNewProductBarcode] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState<number | ''>('');
+  const [newProductTakeawayPrice, setNewProductTakeawayPrice] = useState<number | ''>('');
+  const [newProductStock, setNewProductStock] = useState(0);
+  const [newProductUnit, setNewProductUnit] = useState('Unidades');
+
   const [categoryFilter, setCategoryFilter] = useState('Todas las Categorías');
   const [stockStatusFilter, setStockStatusFilter] = useState('Todos los Estados');
 
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', sku: '', price: 0, takeawayPrice: 0 });
+  const [editForm, setEditForm] = useState({ name: '', sku: '', barcode: '', price: 0, takeawayPrice: 0 });
   const [expandedProducts, setExpandedProducts] = useState<Record<string, boolean>>({'2': true});
   const [historyModalItem, setHistoryModalItem] = useState<any>(null);
 
@@ -90,6 +104,7 @@ export function Inventory() {
     setEditForm({ 
       name: product.name || '',
       sku: product.sku || '',
+      barcode: product.barcode || '',
       price: product.price || 0, 
       takeawayPrice: product.takeawayPrice || 0 
     });
@@ -103,7 +118,7 @@ export function Inventory() {
             ? { date: new Date().toISOString(), oldPrice: p.price, newPrice: editForm.price, oldTakeaway: p.takeawayPrice, newTakeaway: editForm.takeawayPrice }
             : null;
           const newHistory = historyEntry ? [historyEntry, ...(p.priceHistory || [])] : (p.priceHistory || []);
-          return { ...p, name: editForm.name, sku: editForm.sku, price: editForm.price, takeawayPrice: editForm.takeawayPrice, priceHistory: newHistory };
+          return { ...p, name: editForm.name, sku: editForm.sku, barcode: editForm.barcode, price: editForm.price, takeawayPrice: editForm.takeawayPrice, priceHistory: newHistory };
         }
         if (p.variants) {
           const vIndex = p.variants.findIndex((v: any) => v.id === editingRowId);
@@ -114,7 +129,7 @@ export function Inventory() {
               : null;
             const newHistory = historyEntry ? [historyEntry, ...(v.priceHistory || [])] : (v.priceHistory || []);
             const newVariants = [...p.variants];
-            newVariants[vIndex] = { ...v, name: editForm.name, sku: editForm.sku, price: editForm.price, takeawayPrice: editForm.takeawayPrice, priceHistory: newHistory };
+            newVariants[vIndex] = { ...v, name: editForm.name, sku: editForm.sku, barcode: editForm.barcode, price: editForm.price, takeawayPrice: editForm.takeawayPrice, priceHistory: newHistory };
             return { ...p, variants: newVariants };
           }
         }
@@ -143,7 +158,18 @@ export function Inventory() {
     const matchStock = stockStatusFilter === 'Todos los Estados' 
                        || (stockStatusFilter === 'Stock Bajo' && isLowStock)
                        || (stockStatusFilter === 'En Stock' && !isLowStock);
-    return matchCategory && matchStock;
+    
+    const searchLower = searchTerm.toLowerCase();
+    const barcodeMatch = (p.barcode || '').includes(searchTerm);
+    const nameMatch = p.name.toLowerCase().includes(searchLower);
+    const skuMatch = p.sku.toLowerCase().includes(searchLower);
+    const variantsMatch = p.variants?.some(v => 
+      v.name.toLowerCase().includes(searchLower) || 
+      v.sku.toLowerCase().includes(searchLower) ||
+      (v.barcode || '').includes(searchTerm)
+    );
+
+    return matchCategory && matchStock && (searchTerm === '' || nameMatch || skuMatch || barcodeMatch || variantsMatch);
   });
 
   const handleAddIngredient = () => {
@@ -249,6 +275,16 @@ export function Inventory() {
       {/* Table Section */}
       <div className="bg-surface-container-lowest rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex flex-wrap gap-4 items-center">
+          <div className="flex-1 min-w-[300px] relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input 
+              type="text" 
+              placeholder="Buscar por nombre, SKU o escaneo de código..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface shadow-sm transition-all"
+            />
+          </div>
           <div className="flex items-center gap-2">
             <span className="font-label-caps text-label-caps text-on-surface-variant">CATEGORÍA:</span>
             <select 
@@ -377,17 +413,34 @@ export function Inventory() {
                                    onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
                                    className="w-full bg-white border border-indigo-300 text-slate-800 px-2 py-1 rounded focus:ring-2 focus:ring-indigo-500 outline-none font-bold text-sm" 
                                  />
-                                 <input 
-                                   type="text" 
-                                   value={editForm.sku} 
-                                   onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))}
-                                   className="w-full bg-white border border-indigo-300 text-slate-500 px-2 py-1 rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none" 
-                                 />
+                                 <div className="flex gap-1">
+                                   <input 
+                                     type="text" 
+                                     value={editForm.sku} 
+                                     onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))}
+                                     placeholder="SKU"
+                                     className="w-1/2 bg-white border border-indigo-300 text-slate-500 px-2 py-1 rounded text-[10px] focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                   />
+                                   <input 
+                                     type="text" 
+                                     value={editForm.barcode} 
+                                     onChange={(e) => setEditForm(prev => ({ ...prev, barcode: e.target.value }))}
+                                     placeholder="Código Barra"
+                                     className="w-1/2 bg-white border border-indigo-300 text-indigo-600 px-2 py-1 rounded text-[10px] focus:ring-2 focus:ring-indigo-500 outline-none font-bold" 
+                                   />
+                                 </div>
                                </div>
                              ) : (
                                <>
                                  <p className={cn("font-body-md font-bold", isLowStock && !isEditing ? "text-error" : "text-on-surface")}>{product.name}</p>
-                                 <p className="text-[11px] text-on-surface-variant tracking-tight">SKU: {product.sku}</p>
+                                 <div className="flex items-center gap-2 mt-0.5">
+                                   <p className="text-[10px] text-on-surface-variant font-medium bg-slate-100 px-1.5 py-0.5 rounded uppercase">SKU: {product.sku}</p>
+                                   {product.barcode && (
+                                     <p className="text-[10px] text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 flex items-center gap-1">
+                                       <Receipt className="w-3 h-3" /> {product.barcode}
+                                     </p>
+                                   )}
+                                 </div>
                                </>
                              )}
                            </div>
@@ -489,17 +542,34 @@ export function Inventory() {
                                           onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
                                           className="w-full bg-white border border-indigo-300 text-slate-800 px-2 py-1 rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-bold" 
                                         />
-                                        <input 
-                                          type="text" 
-                                          value={editForm.sku} 
-                                          onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))}
-                                          className="w-full bg-white border border-indigo-300 text-slate-500 px-2 py-1 rounded text-[10px] focus:ring-2 focus:ring-indigo-500 outline-none" 
-                                        />
+                                        <div className="flex gap-1">
+                                          <input 
+                                            type="text" 
+                                            value={editForm.sku} 
+                                            onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))}
+                                            placeholder="SKU"
+                                            className="w-1/2 bg-white border border-indigo-300 text-slate-500 px-2 py-1 rounded text-[9px] focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                          />
+                                          <input 
+                                            type="text" 
+                                            value={editForm.barcode} 
+                                            onChange={(e) => setEditForm(prev => ({ ...prev, barcode: e.target.value }))}
+                                            placeholder="Barcode"
+                                            className="w-1/2 bg-white border border-indigo-300 text-indigo-600 px-2 py-1 rounded text-[9px] focus:ring-2 focus:ring-indigo-500 outline-none font-bold" 
+                                          />
+                                        </div>
                                       </div>
                                     ) : (
                                       <>
                                         <p className={cn("text-sm font-bold", isVarLowStock && !isVarEditing ? "text-error" : "text-on-surface")}>{variant.name}</p>
-                                        <p className="text-[10px] text-on-surface-variant tracking-tight">SKU: {variant.sku}</p>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                          <p className="text-[9px] text-on-surface-variant font-medium bg-white px-1.5 py-0.5 rounded border border-slate-200 uppercase">SKU: {variant.sku}</p>
+                                          {variant.barcode && (
+                                            <p className="text-[9px] text-indigo-600 font-bold bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-100 flex items-center gap-1">
+                                              <Receipt className="w-2.5 h-2.5" /> {variant.barcode}
+                                            </p>
+                                          )}
+                                        </div>
                                       </>
                                     )}
                                   </div>
@@ -621,7 +691,13 @@ export function Inventory() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre</label>
-                    <input type="text" placeholder="Ej. Hamburguesa Doble" className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" />
+                    <input 
+                      type="text" 
+                      placeholder="Ej. Hamburguesa Doble" 
+                      value={newProductName}
+                      onChange={(e) => setNewProductName(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                    />
                   </div>
                   
                   <div className="grid grid-cols-2 gap-4">
@@ -651,6 +727,7 @@ export function Inventory() {
                                 setCategories([...categories, newCategoryName.trim()]);
                                 setNewCategoryName('');
                                 setIsAddingCategory(false);
+                                setNewProductCategory(newCategoryName.trim());
                               }
                             }}
                           />
@@ -662,6 +739,7 @@ export function Inventory() {
                                 setCategories([...categories, newCategoryName.trim()]);
                                 setNewCategoryName('');
                                 setIsAddingCategory(false);
+                                setNewProductCategory(newCategoryName.trim());
                               }
                             }}
                           >
@@ -669,16 +747,48 @@ export function Inventory() {
                           </button>
                         </div>
                       ) : (
-                        <select className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium appearance-none">
+                        <select 
+                          value={newProductCategory}
+                          onChange={(e) => setNewProductCategory(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium appearance-none"
+                        >
                           {categories.map((cat, idx) => (
                             <option key={idx} value={cat}>{cat}</option>
                           ))}
                         </select>
                       )}
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Código (SKU)</label>
-                      <input type="text" placeholder="BUR-DOB-01" className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" disabled={hasVariants} />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Código (SKU)</label>
+                        <input 
+                          type="text" 
+                          placeholder="BUR-DOB-01" 
+                          value={newProductSKU}
+                          onChange={(e) => setNewProductSKU(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                          disabled={hasVariants} 
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                          Código de Barras
+                          <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded">EAN/UPC</span>
+                        </label>
+                        <div className="relative">
+                          <input 
+                            type="text" 
+                            placeholder="712345678901..." 
+                            value={newProductBarcode}
+                            onChange={(e) => setNewProductBarcode(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                            disabled={hasVariants} 
+                          />
+                          <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-indigo-600" title="Escanear Producto">
+                            <Search className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

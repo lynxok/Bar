@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useBusiness } from "../contexts/BusinessContext";
 import { Store, Upload, Save, Image as ImageIcon, X } from "lucide-react";
 

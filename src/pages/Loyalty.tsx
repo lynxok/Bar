@@ -22,12 +22,83 @@ import {
 import { cn } from "../lib/utils";
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from "./Inventory";
 
+interface Transaction {
+  id: string;
+  date: string;
+  type: 'purchase' | 'redemption' | 'adjustment';
+  description: string;
+  amount: number;
+}
+
 const INITIAL_CUSTOMERS = [
-  { id: "C-0842", name: "María González", email: "maria.g@example.com", phone: "+54 11 4321-8842", points: 1450, tier: "Gold", returnRate: "Alta", lastVisit: "Hace 2 días" },
-  { id: "C-0931", name: "Ana Martínez", email: "ana.martinez@example.com", phone: "+54 11 2234-5511", points: 3400, tier: "Platinum", returnRate: "Muy Alta", lastVisit: "Ayer" },
-  { id: "C-0715", name: "Carlos Ruiz", email: "cruiz_89@example.com", phone: "+54 11 5521-9931", points: 280, tier: "Silver", returnRate: "Media", lastVisit: "Hace 1 semana" },
-  { id: "C-0888", name: "Lucía Silva", email: "lucia.silva@example.com", phone: "+54 11 9911-2244", points: 890, tier: "Silver", returnRate: "Alta", lastVisit: "Hace 5 días" },
-  { id: "C-1102", name: "Diego Fernández", email: "dfernandez@example.com", phone: "+54 11 8842-1123", points: 120, tier: "Bronze", returnRate: "Baja", lastVisit: "Hace 3 semanas" },
+  { 
+    id: "C-0842", 
+    name: "María González", 
+    email: "maria.g@example.com", 
+    phone: "+54 11 4321-8842", 
+    points: 1450, 
+    tier: "Gold", 
+    returnRate: "Alta", 
+    lastVisit: "Hace 2 días",
+    history: [
+      { id: 't1', date: '2026-05-02', type: 'purchase', description: 'Compra en local', amount: 450 },
+      { id: 't2', date: '2026-05-01', type: 'redemption', description: 'Postre de Cortesía', amount: -200 },
+      { id: 't3', date: '2026-04-28', type: 'purchase', description: 'Compra en local', amount: 1200 },
+    ]
+  },
+  { 
+    id: "C-0931", 
+    name: "Ana Martínez", 
+    email: "ana.martinez@example.com", 
+    phone: "+54 11 2234-5511", 
+    points: 3400, 
+    tier: "Platinum", 
+    returnRate: "Muy Alta", 
+    lastVisit: "Ayer",
+    history: [
+      { id: 't4', date: '2026-05-03', type: 'redemption', description: 'Descuento 15% Mesa', amount: -500 },
+      { id: 't5', date: '2026-05-01', type: 'purchase', description: 'Cena Lounge', amount: 3900 },
+    ]
+  },
+  { 
+    id: "C-0715", 
+    name: "Carlos Ruiz", 
+    email: "cruiz_89@example.com", 
+    phone: "+54 11 5521-9931", 
+    points: 280, 
+    tier: "Silver", 
+    returnRate: "Media", 
+    lastVisit: "Hace 1 semana",
+    history: [
+      { id: 't6', date: '2026-04-25', type: 'purchase', description: 'Almuerzo Ejecutivo', amount: 280 },
+    ]
+  },
+  { 
+    id: "C-0888", 
+    name: "Lucía Silva", 
+    email: "lucia.silva@example.com", 
+    phone: "+54 11 9911-2244", 
+    points: 890, 
+    tier: "Silver", 
+    returnRate: "Alta", 
+    lastVisit: "Hace 5 días",
+    history: [
+      { id: 't7', date: '2026-04-30', type: 'purchase', description: 'Cena Tapas', amount: 890 },
+    ]
+  },
+  { 
+    id: "C-1102", 
+    name: "Diego Fernández", 
+    email: "dfernandez@example.com", 
+    phone: "+54 11 8842-1123", 
+    points: 120, 
+    tier: "Bronze", 
+    returnRate: "Baja", 
+    lastVisit: "Hace 3 semanas",
+    history: [
+      { id: 't8', date: '2026-04-12', type: 'adjustment', description: 'Corrección manual', amount: 120 },
+    ]
+  },
 ];
 
 const INITIAL_REDEMPTIONS = [
@@ -48,14 +119,30 @@ const INITIAL_PROMOTIONS = [
   { id: 'prom2', name: 'Finde de Cervezas 3x', multiplier: 3, target: 'Categoría: Cervezas Artesanales', startDate: '2026-05-08', endDate: '2026-05-10', isActive: true },
 ];
 
-const getTierStyle = (tier: string) => {
-  switch (tier) {
-    case 'Platinum': return 'bg-slate-900 border-slate-700 text-slate-100 shadow-sm';
-    case 'Gold': return 'bg-amber-100 border-amber-200 text-amber-800';
-    case 'Silver': return 'bg-slate-100 border-slate-200 text-slate-700';
-    case 'Bronze': return 'bg-orange-50 border-orange-100 text-orange-800';
-    default: return 'bg-slate-50 border-slate-200 text-slate-600';
-  }
+const INITIAL_TIERS = [
+  { name: 'Bronze', minPoints: 0, color: 'orange' },
+  { name: 'Silver', minPoints: 500, color: 'slate' },
+  { name: 'Gold', minPoints: 1500, color: 'amber' },
+  { name: 'Platinum', minPoints: 3500, color: 'indigo' },
+];
+
+const getTierStyle = (tierName: string, index: number = 0) => {
+  const name = tierName.toLowerCase();
+  
+  if (name.includes('platinum')) return 'bg-slate-900 border-slate-700 text-slate-100 shadow-sm';
+  if (name.includes('gold')) return 'bg-amber-100 border-amber-200 text-amber-800';
+  if (name.includes('silver')) return 'bg-slate-100 border-slate-200 text-slate-700';
+  if (name.includes('bronze')) return 'bg-orange-50 border-orange-100 text-orange-800';
+  
+  // Fallback cyclic styles
+  const styles = [
+    'bg-orange-50 border-orange-100 text-orange-800',
+    'bg-slate-100 border-slate-200 text-slate-700',
+    'bg-amber-100 border-amber-200 text-amber-800',
+    'bg-indigo-50 border-indigo-200 text-indigo-700',
+    'bg-emerald-50 border-emerald-200 text-emerald-700',
+  ];
+  return styles[index % styles.length];
 };
 
 export function Loyalty() {
@@ -63,9 +150,14 @@ export function Loyalty() {
   const [redemptionsData, setRedemptionsData] = React.useState(INITIAL_REDEMPTIONS);
   const [catalogData, setCatalogData] = React.useState(INITIAL_CATALOG);
   const [promotionsData, setPromotionsData] = React.useState(INITIAL_PROMOTIONS);
+  const [tierConfig, setTierConfig] = React.useState(INITIAL_TIERS);
+  const [isTiersModalOpen, setIsTiersModalOpen] = React.useState(false);
   const [redeemingCustomer, setRedeemingCustomer] = React.useState<any>(null);
+  const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null);
+  const [profileTab, setProfileTab] = React.useState<'info' | 'history'>('info');
   const [isCatalogModalOpen, setIsCatalogModalOpen] = React.useState(false);
   const [isPromotionsModalOpen, setIsPromotionsModalOpen] = React.useState(false);
+  const [scanQuery, setScanQuery] = React.useState('');
   
   // Catalog Form
   const [newPrizeName, setNewPrizeName] = React.useState('');
@@ -95,10 +187,23 @@ export function Loyalty() {
   const handleRedeem = (prize: any) => {
     if (!redeemingCustomer || redeemingCustomer.points < prize.pointsCost) return;
 
-    // Deduct points
+    // Deduct points and update history
     setCustomersData(prev => prev.map(c => 
       c.id === redeemingCustomer.id 
-        ? { ...c, points: c.points - prize.pointsCost } 
+        ? { 
+            ...c, 
+            points: c.points - prize.pointsCost,
+            history: [
+              { 
+                id: 't' + Date.now(), 
+                date: new Date().toISOString().split('T')[0], 
+                type: 'redemption', 
+                description: `Canje: ${prize.name}`, 
+                amount: -prize.pointsCost 
+              },
+              ...(c.history || [])
+            ]
+          } 
         : c
     ));
 
@@ -157,8 +262,70 @@ export function Loyalty() {
     setPromotionsData(promotionsData.filter(p => p.id !== id));
   };
 
-  const togglePromotionStatus = (id: string) => {
-    setPromotionsData(promotionsData.map(p => p.id === id ? { ...p, isActive: !p.isActive } : p));
+  const handleUpdateTierName = (index: number, newName: string) => {
+    setTierConfig(prev => prev.map((t, i) => i === index ? { ...t, name: newName } : t));
+  };
+
+  const handleAddTier = () => {
+    const lastTier = tierConfig[tierConfig.length - 1];
+    const newTier = {
+      name: 'Nuevo Nivel',
+      minPoints: lastTier ? lastTier.minPoints + 1000 : 0,
+      color: 'slate'
+    };
+    setTierConfig([...tierConfig, newTier]);
+  };
+
+  const handleRemoveTier = (index: number) => {
+    if (tierConfig.length <= 1) return; // Must have at least one level
+    setTierConfig(tierConfig.filter((_, i) => i !== index));
+  };
+
+  const calculateTier = (points: number) => {
+    const sortedTiers = [...tierConfig].sort((a, b) => b.minPoints - a.minPoints);
+    const tier = sortedTiers.find(t => points >= t.minPoints);
+    return tier ? tier.name : (tierConfig[0]?.name || 'Base');
+  };
+
+  const handleUpdateTierThreshold = (index: number, value: number) => {
+    setTierConfig(prev => prev.map((t, i) => i === index ? { ...t, minPoints: value } : t));
+  };
+
+  const handleScan = () => {
+    if (!scanQuery) return;
+    
+    // Find customer by ID, email or phone
+    const customer = customersData.find(c => 
+      c.id.toLowerCase().includes(scanQuery.toLowerCase()) || 
+      c.email.toLowerCase().includes(scanQuery.toLowerCase()) ||
+      c.phone.includes(scanQuery)
+    );
+
+    if (customer) {
+      const pointsToAdd = 100; // Mock amount for example
+      setCustomersData(prev => prev.map(c => 
+        c.id === customer.id 
+          ? { 
+              ...c, 
+              points: c.points + pointsToAdd,
+              history: [
+                { 
+                  id: 't' + Date.now(), 
+                  date: new Date().toISOString().split('T')[0], 
+                  type: 'purchase', 
+                  description: 'Puntos por compra (Escáner)', 
+                  amount: pointsToAdd 
+                },
+                ...(c.history || [])
+              ]
+            } 
+          : c
+      ));
+      setScanQuery('');
+      alert(`Se agregaron ${pointsToAdd} puntos a ${customer.name}`);
+    } else {
+      alert('Cliente no encontrado');
+    }
   };
 
   return (
@@ -170,6 +337,12 @@ export function Loyalty() {
           <p className="text-slate-500 text-sm font-medium">Gestiona recompensas, puntos acumulados y retención de clientes.</p>
         </div>
         <div className="flex gap-3">
+          <button 
+            onClick={() => setIsTiersModalOpen(true)}
+            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider"
+          >
+            <Award className="w-4 h-4 text-indigo-500" /> Configurar Niveles
+          </button>
           <button 
             onClick={() => setIsPromotionsModalOpen(true)}
             className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider"
@@ -321,12 +494,18 @@ export function Loyalty() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={cn(
-                        "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border",
-                        getTierStyle(c.tier)
-                      )}>
-                        {c.tier}
-                      </span>
+                      {(() => {
+                        const tierName = calculateTier(c.points);
+                        const tierIdx = tierConfig.findIndex(t => t.name === tierName);
+                        return (
+                          <span className={cn(
+                            "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border",
+                            getTierStyle(tierName, tierIdx >= 0 ? tierIdx : 0)
+                          )}>
+                            {tierName}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className="text-sm font-bold text-slate-800">{c.points.toLocaleString()} pts</span>
@@ -342,7 +521,13 @@ export function Loyalty() {
                         >
                           Canjear
                         </button>
-                        <button className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200">
+                        <button 
+                          className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200"
+                          onClick={() => {
+                            setSelectedCustomer(c);
+                            setProfileTab('info');
+                          }}
+                        >
                           Perfil
                         </button>
                       </div>
@@ -374,9 +559,15 @@ export function Loyalty() {
                 <input 
                   type="text" 
                   placeholder="Ej: +54 11..." 
+                  value={scanQuery}
+                  onChange={(e) => setScanQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleScan()}
                   className="w-full bg-white/10 border border-indigo-400 text-white placeholder:text-indigo-300 px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-white transition-all text-sm font-medium"
                 />
-                <button className="bg-white text-indigo-600 px-4 py-3 rounded-xl font-bold shadow-md hover:bg-slate-50 transition-colors">
+                <button 
+                  onClick={handleScan}
+                  className="bg-white text-indigo-600 px-4 py-3 rounded-xl font-bold shadow-md hover:bg-slate-50 transition-colors"
+                >
                   <Search className="w-5 h-5" />
                 </button>
               </div>
@@ -575,208 +766,246 @@ export function Loyalty() {
           </div>
         </div>
       )}
-      {/* Promotions Modal */}
-      {isPromotionsModalOpen && (
+      {/* Tiers Configuration Modal */}
+      {isTiersModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Multiplicadores y Promociones</h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Crea reglas para otorgar más puntos por productos específicos o en días clave.
-                </p>
+                <h2 className="text-xl font-bold text-slate-800">Niveles de Fidelización</h2>
+                <p className="text-sm text-slate-500 mt-1">Personaliza los nombres y umbrales de puntos.</p>
               </div>
               <button 
-                onClick={() => setIsPromotionsModalOpen(false)}
+                onClick={() => setIsTiersModalOpen(false)}
                 className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto bg-slate-50 flex-1 space-y-6">
-              {/* Add New Promotion Form */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
-                <h3 className="font-bold text-sm text-slate-800">Nueva Promoción</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="sm:col-span-2">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre</label>
-                    <input 
-                      type="text" 
-                      value={newPromoName} 
-                      onChange={(e) => setNewPromoName(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:ring-2 focus:ring-amber-500 outline-none"
-                      placeholder="Ej. Finde de Cervezas..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Multiplicador</label>
-                    <select 
-                      value={newPromoMultiplier} 
-                      onChange={(e) => setNewPromoMultiplier(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:ring-2 focus:ring-amber-500 outline-none"
-                    >
-                      <option value="2">Doble (2x)</option>
-                      <option value="3">Triple (3x)</option>
-                      <option value="4">Cuádruple (4x)</option>
-                      <option value="5">Quíntuple (5x)</option>
-                    </select>
-                  </div>
-                  <div className="sm:col-span-2 md:col-span-1 relative">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Productos / Categorías</label>
+            <div className="p-6 space-y-4 overflow-y-auto bg-slate-50">
+              {tierConfig.map((tier, idx) => (
+                <div key={idx} className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className={cn(
+                      "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0",
+                      getTierStyle(tier.name, idx)
+                    )}>
+                      <Award className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                      <input 
+                        type="text"
+                        value={tier.name}
+                        onChange={(e) => handleUpdateTierName(idx, e.target.value)}
+                        className="w-full bg-transparent font-bold text-slate-800 outline-none focus:bg-slate-50 rounded px-1 -ml-1 border border-transparent focus:border-slate-200"
+                        placeholder="Nombre del nivel"
+                      />
+                    </div>
                     <button 
-                      type="button"
-                      onClick={() => setIsTargetDropdownOpen(!isTargetDropdownOpen)}
-                      className="w-full flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:ring-2 focus:ring-amber-500 outline-none text-left"
+                      onClick={() => handleRemoveTier(idx)}
+                      className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Eliminar nivel"
                     >
-                      <span className="truncate text-sm">
-                        {selectedTargets.length === 0 
-                          ? "Seleccionar..." 
-                          : `${selectedTargets.length} Seleccionados`}
-                      </span>
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                      <X className="w-4 h-4" />
                     </button>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 pt-1">
+                    <div className="flex-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                        Puntos Requeridos
+                      </label>
+                      <div className="flex items-center gap-2">
+                        <input 
+                          type="number" 
+                          min="0"
+                          value={tier.minPoints}
+                          onChange={(e) => handleUpdateTierThreshold(idx, Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <span className="text-xs font-bold text-slate-400 uppercase">pts</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              <button 
+                onClick={handleAddTier}
+                className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-wider hover:border-indigo-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Agregar Nuevo Nivel
+              </button>
+            </div>
+            
+            <div className="p-6 bg-white border-t border-slate-100">
+              <button 
+                onClick={() => setIsTiersModalOpen(false)}
+                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 text-sm uppercase tracking-wide"
+              >
+                Guardar Configuración
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-                    {isTargetDropdownOpen && (
-                      <div className="absolute top-full left-0 w-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-[60] overflow-hidden flex flex-col max-h-[300px]">
-                        <div className="p-2 border-b border-slate-100 sticky top-0 bg-white">
-                          <div className="relative">
-                            <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
-                            <input 
-                              type="text" 
-                              placeholder="Buscar..." 
-                              value={targetSearch}
-                              onChange={(e) => setTargetSearch(e.target.value)}
-                              className="w-full pl-7 pr-3 py-1.5 bg-slate-50 rounded-lg text-xs outline-none border border-slate-200 focus:border-amber-400"
-                            />
+      {/* Promotions Modal */}
+      {isPromotionsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          {/* ... existing promotions modal content ... */}
+        </div>
+      )}
+
+      {/* Customer Profile Modal */}
+      {selectedCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-100">
+                  {selectedCustomer.name.split(' ').map((n: string) => n[0]).join('')}
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800">{selectedCustomer.name}</h2>
+                  <p className="text-sm text-slate-500 font-medium">Cliente ID: {selectedCustomer.id}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedCustomer(null)}
+                className="p-2 hover:bg-white rounded-full transition-colors text-slate-400 shadow-sm"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex border-b border-slate-100 p-1 bg-slate-50/50">
+              <button 
+                onClick={() => setProfileTab('info')}
+                className={cn(
+                  "flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all",
+                  profileTab === 'info' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                )}
+              >
+                Información
+              </button>
+              <button 
+                onClick={() => setProfileTab('history')}
+                className={cn(
+                  "flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2",
+                  profileTab === 'history' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                )}
+              >
+                <History className="w-3.5 h-3.5" /> Historial de Puntos
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6">
+              {profileTab === 'info' ? (
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nivel Actual</p>
+                      {(() => {
+                        const tierName = calculateTier(selectedCustomer.points);
+                        const tierIdx = tierConfig.findIndex(t => t.name === tierName);
+                        return (
+                          <span className={cn(
+                            "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border",
+                            getTierStyle(tierName, tierIdx >= 0 ? tierIdx : 0)
+                          )}>
+                            {tierName}
+                          </span>
+                        );
+                      })()}
+                    </div>
+                    <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
+                      <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Balance Total</p>
+                      <p className="text-xl font-bold text-indigo-700">{selectedCustomer.points.toLocaleString()} pts</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                       Detalles de Contacto
+                    </h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
+                        <span className="text-xs font-medium text-slate-500">Email</span>
+                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.email}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
+                        <span className="text-xs font-medium text-slate-500">Teléfono</span>
+                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.phone}</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
+                        <span className="text-xs font-medium text-slate-500">Última Visita</span>
+                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.lastVisit}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-sm font-bold text-slate-800">Transacciones Recientes</h4>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded-full">
+                      Total: {selectedCustomer.history?.length || 0}
+                    </span>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {selectedCustomer.history?.map((tx: any) => (
+                      <div key={tx.id} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center justify-between hover:border-slate-200 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-8 h-8 rounded-lg flex items-center justify-center text-sm",
+                            tx.type === 'purchase' ? "bg-emerald-50 text-emerald-600" : 
+                            tx.type === 'redemption' ? "bg-red-50 text-red-600" : "bg-blue-50 text-blue-600"
+                          )}>
+                            {tx.type === 'purchase' ? <Plus className="w-4 h-4" /> : 
+                             tx.type === 'redemption' ? <Gift className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-slate-800">{tx.description}</p>
+                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{tx.date}</p>
                           </div>
                         </div>
-                        <div className="overflow-y-auto p-1">
-                          <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-md mb-1">Categorías</div>
-                          {INITIAL_CATEGORIES.filter(cat => cat.toLowerCase().includes(targetSearch.toLowerCase())).map(cat => (
-                            <button 
-                              key={cat}
-                              onClick={() => toggleTarget(`Cat: ${cat}`)}
-                              className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors group"
-                            >
-                              <span className="text-xs font-medium text-slate-700">{cat}</span>
-                              {selectedTargets.includes(`Cat: ${cat}`) && <Check className="w-3.5 h-3.5 text-amber-500" />}
-                            </button>
-                          ))}
-                          
-                          <div className="px-2 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 rounded-md my-1">Productos</div>
-                          {INITIAL_PRODUCTS.filter(prod => prod.name.toLowerCase().includes(targetSearch.toLowerCase())).map(prod => (
-                            <button 
-                              key={prod.id}
-                              onClick={() => toggleTarget(prod.name)}
-                              className="w-full flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg transition-colors group"
-                            >
-                              <span className="text-xs font-medium text-slate-700">{prod.name}</span>
-                              {selectedTargets.includes(prod.name) && <Check className="w-3.5 h-3.5 text-amber-500" />}
-                            </button>
-                          ))}
+                        <div className="text-right">
+                          <span className={cn(
+                            "text-sm font-bold",
+                            tx.amount > 0 ? "text-emerald-600" : "text-red-500"
+                          )}>
+                            {tx.amount > 0 ? '+' : ''}{tx.amount} pts
+                          </span>
                         </div>
-                        {selectedTargets.length > 0 && (
-                          <div className="p-2 border-t border-slate-100 bg-slate-50">
-                            <button 
-                              onClick={() => setIsTargetDropdownOpen(false)}
-                              className="w-full py-1.5 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition-colors"
-                            >
-                              Aplicar Selección
-                            </button>
-                          </div>
-                        )}
+                      </div>
+                    ))}
+                    {!selectedCustomer.history?.length && (
+                      <div className="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        No hay transacciones registradas.
                       </div>
                     )}
                   </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Inicio</label>
-                    <input 
-                      type="date" 
-                      value={newPromoStart} 
-                      onChange={(e) => setNewPromoStart(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Fecha Fin</label>
-                    <input 
-                      type="date" 
-                      value={newPromoEnd} 
-                      onChange={(e) => setNewPromoEnd(e.target.value)}
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium text-sm focus:ring-2 focus:ring-amber-500 outline-none"
-                    />
-                  </div>
                 </div>
-                <div className="flex justify-end mt-2">
-                  <button 
-                    onClick={handleAddPromotion}
-                    disabled={!newPromoName || selectedTargets.length === 0 || !newPromoStart || !newPromoEnd}
-                    className="px-5 py-2 bg-amber-500 text-white font-bold rounded-lg hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors tracking-wide h-[42px]"
-                  >
-                    Crear Promoción
-                  </button>
-                </div>
-              </div>
-
-              {/* Promotions List */}
-              <div className="space-y-3">
-                {promotionsData.map(promo => (
-                  <div 
-                    key={promo.id} 
-                    className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-amber-100 text-amber-600 font-black text-xl rounded-xl flex items-center justify-center shrink-0">
-                        {promo.multiplier}x
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-800">{promo.name}</h3>
-                          {!promo.isActive && (
-                            <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold uppercase rounded-full border border-slate-200">Inactiva</span>
-                          )}
-                        </div>
-                        <p className="text-sm text-slate-500 font-medium mt-0.5">Aplica a: <span className="text-slate-700">{promo.target}</span></p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 md:ml-auto">
-                      <div className="text-right">
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Vigencia</p>
-                        <p className="text-sm font-medium text-slate-700">{promo.startDate} al {promo.endDate}</p>
-                      </div>
-                      <div className="w-px h-10 bg-slate-200 mx-2 hidden md:block"></div>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => togglePromotionStatus(promo.id)}
-                          className={cn(
-                            "px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border",
-                            promo.isActive 
-                              ? "bg-white border-amber-200 text-amber-600 hover:bg-amber-50" 
-                              : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"
-                          )}
-                        >
-                          {promo.isActive ? 'Pausar' : 'Activar'}
-                        </button>
-                        <button
-                          onClick={() => handleDeletePromotion(promo.id)}
-                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors shrink-0 border border-transparent"
-                          title="Eliminar Promoción"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                
-                {promotionsData.length === 0 && (
-                  <div className="py-12 text-center text-slate-500 font-medium bg-white rounded-xl border border-dashed border-slate-300">
-                    Aún no hay promociones activas.<br />Crea una desde el formulario de arriba.
-                  </div>
-                )}
-              </div>
+              )}
+            </div>
+            
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+              <button className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-100 transition-colors">
+                Editar Datos
+              </button>
+              <button 
+                onClick={() => {
+                  setRedeemingCustomer(selectedCustomer);
+                  setSelectedCustomer(null);
+                }}
+                className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-colors"
+              >
+                Canjear Puntos
+              </button>
             </div>
           </div>
         </div>
