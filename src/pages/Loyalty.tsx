@@ -17,9 +17,22 @@ import {
   Edit2,
   Zap,
   Check,
-  ChevronDown
+  ChevronDown,
+  Image as ImageIcon,
+  Upload
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell
+} from 'recharts';
 import { cn } from "../lib/utils";
+import { useStore } from "../contexts/StoreContext";
 import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from "./Inventory";
 
 interface Transaction {
@@ -146,9 +159,8 @@ const getTierStyle = (tierName: string, index: number = 0) => {
 };
 
 export function Loyalty() {
-  const [customersData, setCustomersData] = React.useState(INITIAL_CUSTOMERS);
+  const { orders, customers: customersData, rewards: catalogData, addCustomer, redeemPoints } = useStore();
   const [redemptionsData, setRedemptionsData] = React.useState(INITIAL_REDEMPTIONS);
-  const [catalogData, setCatalogData] = React.useState(INITIAL_CATALOG);
   const [promotionsData, setPromotionsData] = React.useState(INITIAL_PROMOTIONS);
   const [tierConfig, setTierConfig] = React.useState(INITIAL_TIERS);
   const [isTiersModalOpen, setIsTiersModalOpen] = React.useState(false);
@@ -163,6 +175,19 @@ export function Loyalty() {
   const [newPrizeName, setNewPrizeName] = React.useState('');
   const [newPrizePoints, setNewPrizePoints] = React.useState('');
   const [newPrizeIcon, setNewPrizeIcon] = React.useState('🎁');
+  const [newPrizeImage, setNewPrizeImage] = React.useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewPrizeImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   // Promotions Form
   const [newPromoName, setNewPromoName] = React.useState('');
@@ -183,69 +208,92 @@ export function Loyalty() {
 
   const [pointValue, setPointValue] = React.useState(0.005);
   const [isEditingPointValue, setIsEditingPointValue] = React.useState(false);
+  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = React.useState(false);
+  const [newCustomer, setNewCustomer] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    id: '', // DNI/Member Number
+    tier: 'Bronze',
+    points: 0,
+    history: []
+  });
+
+  const chartData = React.useMemo(() => {
+    const last5Days = Array.from({ length: 5 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (4 - i));
+      return d.toISOString().split('T')[0];
+    });
+
+    return last5Days.map(date => {
+      const dayOrders = orders.filter(o => o.timestamp && o.timestamp.startsWith(date));
+      const totalSales = dayOrders.reduce((acc, o) => acc + (o.total || 0), 0);
+      
+      // Calculate points (e.g., 1 point per $100)
+      let points = Math.floor(totalSales / 100);
+      
+      // Apply active multipliers to the "estimation"
+      const maxMultiplier = promotionsData
+        .filter(p => p.isActive)
+        .reduce((max, p) => Math.max(max, p.multiplier), 1);
+        
+      return {
+        name: new Date(date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'short' }),
+        val: points * maxMultiplier,
+        original: points
+      };
+    });
+  }, [orders, promotionsData]);
   
-  const handleRedeem = (prize: any) => {
+  const handleRedeem = async (prize: any) => {
     if (!redeemingCustomer || redeemingCustomer.points < prize.pointsCost) return;
 
-    // Deduct points and update history
-    setCustomersData(prev => prev.map(c => 
-      c.id === redeemingCustomer.id 
-        ? { 
-            ...c, 
-            points: c.points - prize.pointsCost,
-            history: [
-              { 
-                id: 't' + Date.now(), 
-                date: new Date().toISOString().split('T')[0], 
-                type: 'redemption', 
-                description: `Canje: ${prize.name}`, 
-                amount: -prize.pointsCost 
-              },
-              ...(c.history || [])
-            ]
-          } 
-        : c
-    ));
+    try {
+      await redeemPoints(redeemingCustomer.dni, prize.pointsCost);
+      
+      // Add to local redemptions history for display
+      setRedemptionsData(prev => [
+        {
+          customer: redeemingCustomer.name,
+          item: prize.name,
+          points: -prize.pointsCost,
+          time: "Justo ahora"
+        },
+        ...prev
+      ]);
 
-    // Add to redemptions history
-    setRedemptionsData(prev => [
-      {
-        customer: redeemingCustomer.name,
-        item: prize.name,
-        points: -prize.pointsCost,
-        time: "Justo ahora"
-      },
-      ...prev
-    ]);
-
-    setRedeemingCustomer(null);
+      setRedeemingCustomer(null);
+      alert("Canje realizado con éxito");
+    } catch (err: any) {
+      alert(err.message);
+    }
   };
 
-  const handleAddPrize = () => {
+  const handleAddPrize = async () => {
     if (!newPrizeName || !newPrizePoints) return;
-    const newPrize = {
-      id: 'p' + Date.now(),
+    await db.rewards.add({
       name: newPrizeName,
       pointsCost: parseInt(newPrizePoints, 10),
-      icon: newPrizeIcon
-    };
-    setCatalogData([...catalogData, newPrize]);
+      isActive: true
+    });
     setNewPrizeName('');
     setNewPrizePoints('');
     setNewPrizeIcon('🎁');
+    setNewPrizeImage(null);
   };
 
-  const handleDeletePrize = (id: string) => {
-    setCatalogData(catalogData.filter(p => p.id !== id));
+  const handleDeletePrize = async (id: number) => {
+    await db.rewards.delete(id);
   };
 
   const handleAddPromotion = () => {
-    if (!newPromoName || selectedTargets.length === 0 || !newPromoStart || !newPromoEnd) return;
+    if (!newPromoName || !newPromoStart || !newPromoEnd) return;
     const newPromo = {
       id: 'prom' + Date.now(),
       name: newPromoName,
-      multiplier: parseInt(newPromoMultiplier, 10),
-      target: selectedTargets.join(', '),
+      multiplier: parseFloat(newPromoMultiplier),
+      target: selectedTargets.length > 0 ? selectedTargets.join(', ') : 'Todos los productos',
       startDate: newPromoStart,
       endDate: newPromoEnd,
       isActive: true
@@ -291,36 +339,17 @@ export function Loyalty() {
     setTierConfig(prev => prev.map((t, i) => i === index ? { ...t, minPoints: value } : t));
   };
 
-  const handleScan = () => {
+  const handleScan = async () => {
     if (!scanQuery) return;
     
-    // Find customer by ID, email or phone
     const customer = customersData.find(c => 
-      c.id.toLowerCase().includes(scanQuery.toLowerCase()) || 
-      c.email.toLowerCase().includes(scanQuery.toLowerCase()) ||
-      c.phone.includes(scanQuery)
+      c.dni === scanQuery || 
+      c.id.toString() === scanQuery
     );
 
     if (customer) {
-      const pointsToAdd = 100; // Mock amount for example
-      setCustomersData(prev => prev.map(c => 
-        c.id === customer.id 
-          ? { 
-              ...c, 
-              points: c.points + pointsToAdd,
-              history: [
-                { 
-                  id: 't' + Date.now(), 
-                  date: new Date().toISOString().split('T')[0], 
-                  type: 'purchase', 
-                  description: 'Puntos por compra (Escáner)', 
-                  amount: pointsToAdd 
-                },
-                ...(c.history || [])
-              ]
-            } 
-          : c
-      ));
+      const pointsToAdd = 100;
+      await db.customers.update(customer.id!, { points: (customer.points || 0) + pointsToAdd });
       setScanQuery('');
       alert(`Se agregaron ${pointsToAdd} puntos a ${customer.name}`);
     } else {
@@ -355,7 +384,10 @@ export function Loyalty() {
           >
             <Gift className="w-4 h-4 text-emerald-500" /> Catálogo de Premios
           </button>
-          <button className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl flex items-center gap-2 font-bold text-xs shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors uppercase tracking-wider">
+          <button 
+            onClick={() => setIsNewCustomerModalOpen(true)}
+            className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl flex items-center gap-2 font-bold text-xs shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors uppercase tracking-wider"
+          >
             <Plus className="w-4 h-4" /> Nuevo Cliente
           </button>
         </div>
@@ -557,6 +589,7 @@ export function Loyalty() {
               
               <div className="flex gap-2 relative">
                 <input 
+                  id="global-scanner-focus"
                   type="text" 
                   placeholder="Ej: +54 11..." 
                   value={scanQuery}
@@ -690,44 +723,71 @@ export function Loyalty() {
             
             <div className="p-6 overflow-y-auto bg-slate-50 flex-1 space-y-6">
               {/* Add New Prize Form */}
-              <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-end gap-3 flex-wrap">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Ícono</label>
-                  <input 
-                    type="text" 
-                    value={newPrizeIcon} 
-                    onChange={(e) => setNewPrizeIcon(e.target.value)}
-                    className="w-16 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-center font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder="🎁"
-                  />
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex gap-6 items-start">
+                  {/* Image Upload Area */}
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden shrink-0 group"
+                  >
+                    {newPrizeImage ? (
+                      <img src={newPrizeImage} alt="Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center p-4">
+                        <Upload className="w-6 h-6 text-slate-300 group-hover:text-indigo-400 mx-auto mb-2" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-indigo-500">Subir Imagen</span>
+                      </div>
+                    )}
+                    <input 
+                      type="file" 
+                      ref={fileInputRef} 
+                      onChange={handleImageUpload} 
+                      className="hidden" 
+                      accept="image/*" 
+                    />
+                  </div>
+
+                  <div className="flex-1 grid grid-cols-12 gap-4">
+                    <div className="col-span-8">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nombre del Premio</label>
+                      <input 
+                        type="text" 
+                        value={newPrizeName} 
+                        onChange={(e) => setNewPrizeName(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                        placeholder="Ej. Postre Helado, Cena para 2..."
+                      />
+                    </div>
+                    <div className="col-span-4">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Puntos</label>
+                      <input 
+                        type="number" 
+                        value={newPrizePoints} 
+                        onChange={(e) => setNewPrizePoints(e.target.value)}
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                        placeholder="200"
+                      />
+                    </div>
+                    <div className="col-span-12 flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-3">
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Emoji Alternativo:</label>
+                        <input 
+                          type="text" 
+                          value={newPrizeIcon} 
+                          onChange={(e) => setNewPrizeIcon(e.target.value)}
+                          className="w-12 text-center py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none"
+                        />
+                      </div>
+                      <button 
+                        onClick={handleAddPrize}
+                        disabled={!newPrizeName || !newPrizePoints}
+                        className="px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+                      >
+                        <Plus className="w-4 h-4" /> Guardar en Catálogo
+                      </button>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-[200px]">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre del Premio</label>
-                  <input 
-                    type="text" 
-                    value={newPrizeName} 
-                    onChange={(e) => setNewPrizeName(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder="Ej. Postre Helado..."
-                  />
-                </div>
-                <div className="w-24">
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Puntos</label>
-                  <input 
-                    type="number" 
-                    value={newPrizePoints} 
-                    onChange={(e) => setNewPrizePoints(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg font-medium focus:ring-2 focus:ring-indigo-500 outline-none"
-                    placeholder="200"
-                  />
-                </div>
-                <button 
-                  onClick={handleAddPrize}
-                  disabled={!newPrizeName || !newPrizePoints}
-                  className="px-5 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors tracking-wide h-[42px]"
-                >
-                  Agregar
-                </button>
               </div>
 
               {/* Prize List */}
@@ -735,23 +795,30 @@ export function Loyalty() {
                 {catalogData.map(prize => (
                   <div 
                     key={prize.id} 
-                    className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between"
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-indigo-300 transition-all"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{prize.icon}</span>
-                        <h3 className="font-bold text-slate-800 leading-tight">{prize.name}</h3>
-                      </div>
+                    <div className="h-32 bg-slate-100 relative overflow-hidden">
+                      {prize.image ? (
+                        <img src={prize.image} alt={prize.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl bg-slate-50">
+                          {prize.icon}
+                        </div>
+                      )}
                       <button
                         onClick={() => handleDeletePrize(prize.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors ml-2 shrink-0"
-                        title="Eliminar Premio"
+                        className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-slate-400 hover:text-red-500 rounded-lg transition-colors shadow-sm opacity-0 group-hover:opacity-100"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                    <div className="mt-4 text-indigo-600 font-bold bg-indigo-50 inline-block px-3 py-1 rounded-md self-start">
-                      {prize.pointsCost} <span className="text-xs font-semibold text-indigo-400 uppercase tracking-wider">pts</span>
+                    <div className="p-4">
+                      <h3 className="font-bold text-slate-800 leading-tight mb-2">{prize.name}</h3>
+                      <div className="flex items-center justify-between">
+                        <div className="text-indigo-600 font-bold bg-indigo-50 inline-block px-2.5 py-1 rounded-lg text-sm">
+                          {prize.pointsCost} <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">pts</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -853,8 +920,193 @@ export function Loyalty() {
 
       {/* Promotions Modal */}
       {isPromotionsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          {/* ... existing promotions modal content ... */}
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] border border-white/20">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-200">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-800">Centro de Promociones</h2>
+                  <p className="text-sm text-slate-500 font-medium">Configura multiplicadores de puntos y eventos especiales.</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setIsPromotionsModalOpen(false)}
+                className="p-2 hover:bg-white rounded-full transition-colors text-slate-400 shadow-sm border border-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-8 bg-white">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                {/* Left side: Form & Stats */}
+                <div className="lg:col-span-5 space-y-6">
+                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <Plus className="w-4 h-4 text-indigo-500" /> Nueva Promoción
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nombre de la Campaña</label>
+                        <input 
+                          type="text" 
+                          value={newPromoName}
+                          onChange={(e) => setNewPromoName(e.target.value)}
+                          placeholder="Ej: Happy Hour 2x1"
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Multiplicador</label>
+                          <select 
+                            value={newPromoMultiplier}
+                            onChange={(e) => setNewPromoMultiplier(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                          >
+                            <option value="1.5">1.5x</option>
+                            <option value="2">2.0x</option>
+                            <option value="3">3.0x</option>
+                            <option value="5">5.0x</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Categoría</label>
+                          <select 
+                            onChange={(e) => setSelectedTargets([e.target.value])}
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                          >
+                            <option value="Todas">Todas</option>
+                            <option value="Cafetería">Cafetería</option>
+                            <option value="Cervezas">Cervezas</option>
+                            <option value="Cocina">Cocina</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Inicio</label>
+                          <input 
+                            type="date" 
+                            value={newPromoStart}
+                            onChange={(e) => setNewPromoStart(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none" 
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Fin</label>
+                          <input 
+                            type="date" 
+                            value={newPromoEnd}
+                            onChange={(e) => setNewPromoEnd(e.target.value)}
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none" 
+                          />
+                        </div>
+                      </div>
+                      <button 
+                        onClick={handleAddPromotion}
+                        className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2"
+                      >
+                        Activar Promoción
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Quick Analytics for Promotions */}
+                  <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100">
+                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4">Impacto Estimado</h4>
+                    <div className="h-[150px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData}>
+                          <Bar dataKey="val" fill="#6366f1" radius={[4, 4, 0, 0]}>
+                            {chartData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.val > entry.original ? '#f59e0b' : '#6366f1'} />
+                            ))}
+                          </Bar>
+                          <XAxis 
+                            dataKey="name" 
+                            axisLine={false} 
+                            tickLine={false} 
+                            tick={{fontSize: 10, fontWeight: 'bold', fill: '#94a3b8'}} 
+                          />
+                          <Tooltip 
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                            labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
+                          />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <p className="text-[10px] text-indigo-400 font-medium text-center mt-2 italic">Proyección de puntos emitidos con promos activas.</p>
+                  </div>
+                </div>
+
+                {/* Right side: Active List */}
+                <div className="lg:col-span-7 flex flex-col">
+                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <Check className="w-4 h-4 text-emerald-500" /> Promociones Activas
+                  </h3>
+                  <div className="space-y-4 flex-1">
+                    {promotionsData.map((promo) => (
+                      <div key={promo.id} className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-indigo-200 transition-all group relative overflow-hidden">
+                        <div className="flex items-center justify-between mb-3 relative z-10">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
+                              {promo.multiplier}x
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-800">{promo.name}</h4>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{promo.target}</p>
+                            </div>
+                          </div>
+                          <button 
+                            onClick={() => handleDeletePromotion(promo.id)}
+                            className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] font-bold relative z-10">
+                          <div className="flex items-center gap-4">
+                            <span className="text-slate-400 uppercase tracking-widest">Validez:</span>
+                            <span className="text-slate-600">{promo.startDate} al {promo.endDate}</span>
+                          </div>
+                          <span className="flex items-center gap-1.5 text-emerald-500">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Activa
+                          </span>
+                        </div>
+                        {/* Background subtle multiplier */}
+                        <span className="absolute -right-2 -bottom-4 text-6xl font-black text-slate-50 pointer-events-none group-hover:text-indigo-50 transition-colors">
+                          {promo.multiplier}X
+                        </span>
+                      </div>
+                    ))}
+                    {promotionsData.length === 0 && (
+                      <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
+                          <Zap className="w-8 h-8 text-slate-300" />
+                        </div>
+                        <p className="text-slate-500 font-medium text-sm">No hay promociones activas actualmente.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setIsPromotionsModalOpen(false)}
+                className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all text-sm uppercase tracking-wide"
+              >
+                Cerrar Configuración
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1007,6 +1259,94 @@ export function Loyalty() {
                 Canjear Puntos
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* New Customer Modal */}
+      {isNewCustomerModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
+            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h3 className="font-black text-xl text-slate-900">Registrar Nuevo Socio</h3>
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">Módulo de Fidelización LYNX</p>
+              </div>
+              <button onClick={() => setIsNewCustomerModalOpen(false)} className="p-2 text-slate-400 hover:bg-white hover:text-rose-500 rounded-full transition-all shadow-sm border border-transparent hover:border-slate-100">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              await addCustomer({ ...newCustomer, dni: newCustomer.id });
+              setIsNewCustomerModalOpen(false);
+              setNewCustomer({ name: '', email: '', phone: '', id: '', tier: 'Bronze', points: 0, history: [] });
+            }} className="p-8 space-y-5">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+                <input 
+                  required
+                  type="text" 
+                  value={newCustomer.name}
+                  onChange={e => setNewCustomer({...newCustomer, name: e.target.value})}
+                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  placeholder="Ej: Juan Pérez"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">DNI / N° Socio</label>
+                  <input 
+                    required
+                    type="text" 
+                    value={newCustomer.id}
+                    onChange={e => setNewCustomer({...newCustomer, id: e.target.value})}
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    placeholder="20.456.789"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teléfono</label>
+                  <input 
+                    required
+                    type="tel" 
+                    value={newCustomer.phone}
+                    onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})}
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    placeholder="351 1234567"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
+                <input 
+                  required
+                  type="email" 
+                  value={newCustomer.email}
+                  onChange={e => setNewCustomer({...newCustomer, email: e.target.value})}
+                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  placeholder="juan@ejemplo.com"
+                />
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button 
+                  type="button"
+                  onClick={() => setIsNewCustomerModalOpen(false)}
+                  className="flex-1 h-14 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="flex-[2] h-14 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98]"
+                >
+                  Confirmar Registro
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

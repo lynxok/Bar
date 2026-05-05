@@ -9,6 +9,10 @@ import { CashClose } from './pages/CashClose';
 import { Analytics } from './pages/Analytics';
 import { Loyalty } from './pages/Loyalty';
 import { Settings } from './pages/Settings';
+import { ClientSummary } from './pages/ClientSummary';
+import { Security } from './pages/Security';
+import Kitchen from './pages/Kitchen';
+import Help from './pages/Help';
 
 export default function App() {
   return (
@@ -23,6 +27,10 @@ export default function App() {
         <Route path="analitica" element={<Analytics />} />
         <Route path="fidelizacion" element={<Loyalty />} />
         <Route path="configuracion" element={<Settings />} />
+        <Route path="seguridad" element={<Security />} />
+        <Route path="cocina" element={<Kitchen />} />
+        <Route path="ayuda" element={<Help />} />
+        <Route path="cliente/:tableId" element={<ClientSummary />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>

@@ -22,36 +22,8 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useAlerts } from "../contexts/AlertContext";
-
-export const INITIAL_PRODUCTS = [
-  {
-    id: '1',
-    name: 'Lagavulin 16 Year Old',
-    sku: 'WHI-LAG-16-750',
-    barcode: '5010017112003',
-    category: 'Licores / Scotch',
-    stock: 12,
-    unit: 'Botellas',
-    price: 84.50,
-    takeawayPrice: 80.00,
-    variants: []
-  },
-  {
-    id: '2',
-    name: 'Espresso Roast Beans',
-    sku: 'DRY-CFE-DRK',
-    barcode: '7610100000012',
-    category: 'Productos Secos / Café',
-    stock: 12, // 10 + 2
-    unit: 'Bolsas',
-    price: null,
-    takeawayPrice: null,
-    variants: [
-      { id: '2-v1', name: 'Pequeño (1kg)', sku: 'DRY-CFE-DRK-1KG', barcode: '7610100000029', stock: 10, price: 25.00, takeawayPrice: 24.00 },
-      { id: '2-v2', name: 'Grande (5kg)', sku: 'DRY-CFE-DRK-5KG', barcode: '7610100000036', stock: 2, price: 125.00, takeawayPrice: 120.00 }
-    ]
-  }
-];
+import { useStore } from "../contexts/StoreContext";
+import { LoggerService } from "../lib/LoggerService";
 
 export const INITIAL_CATEGORIES = [
   'Licores / Scotch',
@@ -62,7 +34,7 @@ export const INITIAL_CATEGORIES = [
 ];
 
 export function Inventory() {
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const { products, setProducts } = useStore();
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [searchTerm, setSearchTerm] = useState('');
   const [barcodeSearch, setBarcodeSearch] = useState('');
@@ -110,9 +82,10 @@ export function Inventory() {
     });
   };
 
-  const saveEditing = () => {
+  const saveEditing = async () => {
     if (editingRowId) {
-      setProducts(products.map(p => {
+      const product = products.find(p => p.id === editingRowId);
+      await setProducts(products.map(p => {
         if (p.id === editingRowId) {
           const historyEntry = (p.price !== editForm.price || p.takeawayPrice !== editForm.takeawayPrice) 
             ? { date: new Date().toISOString(), oldPrice: p.price, newPrice: editForm.price, oldTakeaway: p.takeawayPrice, newTakeaway: editForm.takeawayPrice }
@@ -135,6 +108,7 @@ export function Inventory() {
         }
         return p;
       }));
+      await LoggerService.audit('UPDATE', 'INVENTORY', `Producto actualizado: ${editForm.name}`);
       setEditingRowId(null);
     }
   };
@@ -194,6 +168,37 @@ export function Inventory() {
       setCategories(categories.filter(c => c !== categoryFilter));
       setCategoryFilter('Todas las Categorías');
     }
+  };
+
+  const handleCreateProduct = async () => {
+    const id = Date.now().toString();
+    const newProduct = {
+      id,
+      name: newProductName,
+      category: newProductCategory,
+      sku: newProductSKU,
+      barcode: newProductBarcode,
+      price: Number(newProductPrice) || 0,
+      takeawayPrice: Number(newProductTakeawayPrice) || 0,
+      stock: newProductStock,
+      unit: newProductUnit,
+      variants: hasVariants ? newProductVariants : [],
+      priceHistory: []
+    };
+    
+    await setProducts([...products, newProduct]);
+    await LoggerService.audit('CREATE', 'INVENTORY', `Nuevo producto creado: ${newProductName}`);
+    
+    // Reset state
+    setNewProductName('');
+    setNewProductSKU('');
+    setNewProductBarcode('');
+    setNewProductPrice('');
+    setNewProductTakeawayPrice('');
+    setNewProductStock(0);
+    setIngredients([]);
+    setNewProductVariants([]);
+    setIsCreateModalOpen(false);
   };
 
   return (
@@ -278,8 +283,9 @@ export function Inventory() {
           <div className="flex-1 min-w-[300px] relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input 
+              id="global-scanner-focus"
               type="text" 
-              placeholder="Buscar por nombre, SKU o escaneo de código..."
+              placeholder="Buscar por nombre, SKU o escaneo de código... (F2)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-white border border-outline-variant rounded-lg text-body-md focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-on-surface shadow-sm transition-all"
@@ -1001,7 +1007,8 @@ export function Inventory() {
               </button>
               <button 
                 className="px-6 py-2.5 bg-indigo-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors flex items-center gap-2"
-                onClick={() => setIsCreateModalOpen(false)}
+                onClick={handleCreateProduct}
+                disabled={!newProductName}
               >
                 <Save className="w-4 h-4" />
                 Guardar Producto

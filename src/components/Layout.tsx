@@ -19,9 +19,12 @@ import {
   BarChart,
   Award,
   Sun,
-  Moon
+  Moon,
+  ShieldAlert,
+  ChefHat
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { ChatWidget } from "./ChatWidget";
 
 const NAV_ITEMS = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -32,6 +35,8 @@ const NAV_ITEMS = [
   { path: "/cierre", label: "Cierre de Caja", icon: Banknote },
   { path: "/analitica", label: "Analítica", icon: BarChart },
   { path: "/fidelizacion", label: "Fidelización", icon: Award },
+  { path: "/cocina", label: "Cocina", icon: ChefHat },
+  { path: "/seguridad", label: "Auditoría y Seguridad", icon: ShieldAlert },
 ];
 
 export function Layout() {
@@ -58,7 +63,8 @@ export function Layout() {
 
   const MENU_ITEMS = [
     ...NAV_ITEMS,
-    { path: "/configuracion", label: "Configuración", icon: Settings }
+    { path: "/configuracion", label: "Configuración", icon: Settings },
+    { path: "/ayuda", label: "Ayuda", icon: HelpCircle }
   ];
 
   useEffect(() => {
@@ -82,6 +88,23 @@ export function Layout() {
       alert('Las notificaciones fueron denegadas o no están soportadas.');
     }
   };
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Usar F2 para enfocar el escáner globalmente
+      if (e.key === 'F2') {
+        e.preventDefault();
+        const scannerInput = document.getElementById('global-scanner-focus') as HTMLInputElement;
+        if (scannerInput) {
+          scannerInput.focus();
+          scannerInput.select();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <div className="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased overflow-x-hidden flex">
@@ -176,6 +199,7 @@ export function Layout() {
         <div className="p-8">
           <Outlet />
         </div>
+        <ChatWidget />
       </main>
     </div>
   );
