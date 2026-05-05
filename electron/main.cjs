@@ -1,8 +1,12 @@
 const { app, BrowserWindow } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const isDev = require('electron-is-dev');
 
 function createWindow() {
+  // Configuración del actualizador
+  autoUpdater.checkForUpdatesAndNotify();
+  
   const win = new BrowserWindow({
     width: 1280,
     height: 800,
