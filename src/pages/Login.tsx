@@ -62,7 +62,7 @@ export function Login({ onLogin }: LoginProps) {
             <div className="w-16 h-16 bg-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-indigo-500/30">
               <KeyRound className="w-8 h-8 text-indigo-400" />
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Bar Manager Pro</h1>
+            <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">LYNX BarOS</h1>
             <p className="text-sm text-slate-400">Accede al panel de control</p>
           </div>
 
@@ -126,7 +126,7 @@ export function Login({ onLogin }: LoginProps) {
             </a>
           </div>
           <p className="text-center text-[10px] text-slate-600 tracking-widest font-medium">
-            v1.0.0 (Local-First)
+            v1.0.4 (Auto-Update Enabled)
           </p>
         </div>
       </div>
