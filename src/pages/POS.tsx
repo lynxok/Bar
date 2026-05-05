@@ -24,37 +24,6 @@ import { useBusiness } from "../contexts/BusinessContext";
 import { cn } from "../lib/utils";
 import { LoggerService } from "../lib/LoggerService";
 
-const PRODUCTS = [
-  {
-    id: 1,
-    name: "Gin Fizz de Verano",
-    price: 14.50,
-    takeawayPrice: 13.00,
-    image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=400&q=80",
-    popular: true
-  },
-  {
-    id: 2,
-    name: "Margherita DOC",
-    price: 18.00,
-    takeawayPrice: 16.50,
-    image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    id: 3,
-    name: "Pinta IPA Lúpulo",
-    price: 9.00,
-    takeawayPrice: 8.50,
-    image: "https://images.unsplash.com/photo-1575037614876-c385cb80bc8f?auto=format&fit=crop&w=400&q=80"
-  },
-  {
-    id: 4,
-    name: "Bowl Saludable",
-    price: 16.50,
-    takeawayPrice: 15.00,
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80"
-  }
-];
 
 export function POS() {
   const { closeOrder, addComanda, customers, rewards, redeemPoints, comandas, products } = useStore();
@@ -183,7 +152,7 @@ export function POS() {
 
         {/* Grid */}
         <div className="flex-1 overflow-y-auto pr-2 grid auto-rows-max grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
-          {PRODUCTS.map(product => {
+          {products.map(product => {
             const currentPrice = orderType === 'takeaway' ? product.takeawayPrice : product.price;
             return (
               <button 
@@ -191,12 +160,18 @@ export function POS() {
                 onClick={() => addToCart(product)}
                 className="group bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all active:scale-95 text-left flex flex-col min-h-[220px]"
               >
-                <div className="h-32 bg-slate-100 overflow-hidden relative w-full shrink-0">
-                  <img 
-                    src={product.image} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+                <div className="h-32 bg-slate-100 overflow-hidden relative w-full shrink-0 flex items-center justify-center">
+                  {(product as any).image ? (
+                    <img 
+                      src={(product as any).image} 
+                      alt={product.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-slate-800 flex items-center justify-center text-slate-400 group-hover:scale-105 transition-transform duration-300">
+                      <ShoppingBag className="w-8 h-8 opacity-50" />
+                    </div>
+                  )}
                   {product.popular && (
                     <div className="absolute top-2 right-2 bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">
                       POPULAR

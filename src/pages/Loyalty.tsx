@@ -43,95 +43,6 @@ interface Transaction {
   amount: number;
 }
 
-const INITIAL_CUSTOMERS = [
-  { 
-    id: "C-0842", 
-    name: "María González", 
-    email: "maria.g@example.com", 
-    phone: "+54 11 4321-8842", 
-    points: 1450, 
-    tier: "Gold", 
-    returnRate: "Alta", 
-    lastVisit: "Hace 2 días",
-    history: [
-      { id: 't1', date: '2026-05-02', type: 'purchase', description: 'Compra en local', amount: 450 },
-      { id: 't2', date: '2026-05-01', type: 'redemption', description: 'Postre de Cortesía', amount: -200 },
-      { id: 't3', date: '2026-04-28', type: 'purchase', description: 'Compra en local', amount: 1200 },
-    ]
-  },
-  { 
-    id: "C-0931", 
-    name: "Ana Martínez", 
-    email: "ana.martinez@example.com", 
-    phone: "+54 11 2234-5511", 
-    points: 3400, 
-    tier: "Platinum", 
-    returnRate: "Muy Alta", 
-    lastVisit: "Ayer",
-    history: [
-      { id: 't4', date: '2026-05-03', type: 'redemption', description: 'Descuento 15% Mesa', amount: -500 },
-      { id: 't5', date: '2026-05-01', type: 'purchase', description: 'Cena Lounge', amount: 3900 },
-    ]
-  },
-  { 
-    id: "C-0715", 
-    name: "Carlos Ruiz", 
-    email: "cruiz_89@example.com", 
-    phone: "+54 11 5521-9931", 
-    points: 280, 
-    tier: "Silver", 
-    returnRate: "Media", 
-    lastVisit: "Hace 1 semana",
-    history: [
-      { id: 't6', date: '2026-04-25', type: 'purchase', description: 'Almuerzo Ejecutivo', amount: 280 },
-    ]
-  },
-  { 
-    id: "C-0888", 
-    name: "Lucía Silva", 
-    email: "lucia.silva@example.com", 
-    phone: "+54 11 9911-2244", 
-    points: 890, 
-    tier: "Silver", 
-    returnRate: "Alta", 
-    lastVisit: "Hace 5 días",
-    history: [
-      { id: 't7', date: '2026-04-30', type: 'purchase', description: 'Cena Tapas', amount: 890 },
-    ]
-  },
-  { 
-    id: "C-1102", 
-    name: "Diego Fernández", 
-    email: "dfernandez@example.com", 
-    phone: "+54 11 8842-1123", 
-    points: 120, 
-    tier: "Bronze", 
-    returnRate: "Baja", 
-    lastVisit: "Hace 3 semanas",
-    history: [
-      { id: 't8', date: '2026-04-12', type: 'adjustment', description: 'Corrección manual', amount: 120 },
-    ]
-  },
-];
-
-const INITIAL_REDEMPTIONS = [
-  { customer: "Ana Martínez", item: "Descuento 15% Mesa", points: -500, time: "Hace 2 horas" },
-  { customer: "María González", item: "Postre de Cortesía", points: -200, time: "Ayer, 21:30" },
-  { customer: "Juan Pérez", item: "Botella Vino Reserva", points: -1200, time: "12 May, 20:15" },
-];
-
-const INITIAL_CATALOG = [
-  { id: 'p1', name: 'Postre de Cortesía', pointsCost: 200, icon: '🍰' },
-  { id: 'p2', name: 'Descuento 15% Mesa', pointsCost: 500, icon: '🏷️' },
-  { id: 'p3', name: 'Botella Vino Reserva', pointsCost: 1200, icon: '🍷' },
-  { id: 'p4', name: 'Cena para 2 Personas', pointsCost: 2500, icon: '🍽️' },
-];
-
-const INITIAL_PROMOTIONS = [
-  { id: 'prom1', name: 'Doble Puntos en Cafés', multiplier: 2, target: 'Categoría: Café', startDate: '2026-05-01', endDate: '2026-05-31', isActive: true },
-  { id: 'prom2', name: 'Finde de Cervezas 3x', multiplier: 3, target: 'Categoría: Cervezas Artesanales', startDate: '2026-05-08', endDate: '2026-05-10', isActive: true },
-];
-
 const INITIAL_TIERS = [
   { name: 'Bronze', minPoints: 0, color: 'orange' },
   { name: 'Silver', minPoints: 500, color: 'slate' },
@@ -160,8 +71,8 @@ const getTierStyle = (tierName: string, index: number = 0) => {
 
 export function Loyalty() {
   const { orders, customers: customersData, rewards: catalogData, addCustomer, redeemPoints } = useStore();
-  const [redemptionsData, setRedemptionsData] = React.useState(INITIAL_REDEMPTIONS);
-  const [promotionsData, setPromotionsData] = React.useState(INITIAL_PROMOTIONS);
+  const [redemptionsData, setRedemptionsData] = React.useState<any[]>([]);
+  const [promotionsData, setPromotionsData] = React.useState<any[]>([]);
   const [tierConfig, setTierConfig] = React.useState(INITIAL_TIERS);
   const [isTiersModalOpen, setIsTiersModalOpen] = React.useState(false);
   const [redeemingCustomer, setRedeemingCustomer] = React.useState<any>(null);
@@ -398,10 +309,10 @@ export function Loyalty() {
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
           <div>
             <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Clientes Activos</div>
-            <div className="text-3xl font-bold text-slate-900">1,248</div>
+            <div className="text-3xl font-bold text-slate-900">{customersData.length.toLocaleString()}</div>
             <div className="text-emerald-500 text-xs font-medium mt-2 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
-              +84 altas este mes
+              Sincronizado
             </div>
           </div>
           <div className="bg-indigo-50 p-4 rounded-xl text-indigo-600">
@@ -412,10 +323,12 @@ export function Loyalty() {
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
           <div>
             <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Puntos Emitidos</div>
-            <div className="text-3xl font-bold text-slate-900">342.5K</div>
+            <div className="text-3xl font-bold text-slate-900">
+              {customersData.reduce((acc, c) => acc + (c.points || 0), 0).toLocaleString()}
+            </div>
             <div className="text-slate-400 text-xs mt-2 flex items-center font-medium">
               <Award className="h-3 w-3 mr-1" />
-              Equivalente a ${(342500 * pointValue).toLocaleString('es-AR', {minimumFractionDigits: 2})}
+              Equivalente a ${(customersData.reduce((acc, c) => acc + (c.points || 0), 0) * pointValue).toLocaleString('es-AR', {minimumFractionDigits: 2})}
             </div>
           </div>
           <div className="bg-amber-50 p-4 rounded-xl text-amber-500">
@@ -462,11 +375,11 @@ export function Loyalty() {
 
         <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-start justify-between relative overflow-hidden">
           <div className="relative z-10">
-            <div className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Retorno Escaneado</div>
-            <div className="text-3xl font-bold text-white">42.8%</div>
+            <div className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Canjes Realizados</div>
+            <div className="text-3xl font-bold text-white">{redemptionsData.length}</div>
             <div className="text-emerald-400 text-[11px] mt-2 flex items-center font-medium">
               <TrendingUp className="h-3 w-3 mr-1" />
-              Excelente (+5%)
+              Historial local
             </div>
           </div>
           <div className="bg-white/10 p-4 rounded-xl text-white relative z-10 backdrop-blur-sm shrink-0">
@@ -571,7 +484,7 @@ export function Loyalty() {
           </div>
           
           <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm">
-            <span className="text-slate-500 font-medium">Mostrando 1-5 de 1,248 clientes</span>
+            <span className="text-slate-500 font-medium">Mostrando {customersData.length} clientes</span>
             <div className="flex gap-2">
               <button className="px-3 py-1 border border-slate-200 text-slate-400 rounded-md cursor-not-allowed">Anterior</button>
               <button className="px-3 py-1 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium">Siguiente</button>

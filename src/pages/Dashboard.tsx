@@ -14,22 +14,29 @@ import { Link } from "react-router-dom";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { useStore } from "../contexts/StoreContext";
 
-const performanceData = [
-  { name: "LUN", value: 3200 },
-  { name: "MAR", value: 3800 },
-  { name: "MIÉ", value: 2900 },
-  { name: "JUE", value: 5000 },
-  { name: "VIE", value: 4800 },
-  { name: "SÁB", value: 6100 },
-  { name: "DOM", value: 4200 },
-];
 
 export function Dashboard() {
   const { tables, orders, products } = useStore();
 
+  const performanceData = (() => {
+    const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+    const today = new Date();
+    const data = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayTotal = orders
+        .filter(o => o.timestamp?.startsWith(dateStr))
+        .reduce((sum, o) => sum + (o.total || 0), 0);
+      data.push({ name: days[d.getDay()], value: dayTotal });
+    }
+    return data;
+  })();
+
   const totalSalesToday = orders
-    .filter(o => o.timestamp.startsWith(new Date().toISOString().split('T')[0]))
-    .reduce((acc, o) => acc + o.total, 0);
+    .filter(o => o.timestamp?.startsWith(new Date().toISOString().split('T')[0]))
+    .reduce((acc, o) => acc + (o.total || 0), 0);
 
   const activeTablesCount = tables.filter(t => t.status === 'occupied').length;
   const pendingOrdersCount = tables.filter(t => t.orderItems && t.orderItems.length > 0).length;

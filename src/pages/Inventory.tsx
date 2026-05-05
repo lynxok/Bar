@@ -237,10 +237,10 @@ export function Inventory() {
             <div className="p-2 bg-primary-fixed rounded-lg text-on-primary-fixed-variant">
               <Package className="h-5 w-5" />
             </div>
-            <span className="text-emerald-500 font-bold text-xs">+12%</span>
+            <span className="text-slate-400 font-bold text-xs">Total</span>
           </div>
           <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">TOTAL SKU</p>
-          <h3 className="font-h2 text-h2 text-on-surface">1,284</h3>
+          <h3 className="font-h2 text-h2 text-on-surface">{products.length}</h3>
         </div>
 
         <div className="bg-surface-container-lowest p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -248,10 +248,10 @@ export function Inventory() {
             <div className="p-2 bg-error-container rounded-lg text-error">
               <AlertTriangle className="h-5 w-5" />
             </div>
-            <span className="text-error font-bold text-xs">8 Artículos</span>
+            <span className="text-error font-bold text-xs">{products.filter(p => p.stock < lowStockThreshold).length} Artículos</span>
           </div>
           <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">STOCK BAJO</p>
-          <h3 className="font-h2 text-h2 text-on-surface">14</h3>
+          <h3 className="font-h2 text-h2 text-on-surface">{products.filter(p => p.stock < lowStockThreshold).length}</h3>
         </div>
 
         <div className="bg-surface-container-lowest p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -259,10 +259,10 @@ export function Inventory() {
             <div className="p-2 bg-secondary-fixed rounded-lg text-on-secondary-fixed-variant">
               <Receipt className="h-5 w-5" />
             </div>
-            <span className="text-slate-500 font-bold text-xs">Hoy</span>
+            <span className="text-slate-500 font-bold text-xs">A la Venta</span>
           </div>
           <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">VALOR DE STOCK</p>
-          <h3 className="font-h2 text-h2 text-on-surface">$42,850.00</h3>
+          <h3 className="font-h2 text-h2 text-on-surface">${products.reduce((acc, p) => acc + (p.price * p.stock), 0).toLocaleString()}</h3>
         </div>
 
         <div className="bg-surface-container-lowest p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -270,10 +270,10 @@ export function Inventory() {
             <div className="p-2 bg-tertiary-fixed rounded-lg text-on-tertiary-fixed-variant">
               <Truck className="h-5 w-5" />
             </div>
-            <span className="text-blue-600 font-bold text-xs">2 Pendientes</span>
+            <span className="text-slate-500 font-bold text-xs">Proveedores</span>
           </div>
           <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">PEDIDOS ACTIVOS</p>
-          <h3 className="font-h2 text-h2 text-on-surface">5</h3>
+          <h3 className="font-h2 text-h2 text-on-surface">0</h3>
         </div>
       </div>
 
