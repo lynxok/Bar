@@ -19,17 +19,26 @@ export function Dashboard() {
   const { tables, orders, products } = useStore();
 
   const performanceData = (() => {
-    const days = ['DOM', 'LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB'];
+    const daysLabels = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SÁB', 'DOM'];
     const today = new Date();
+    
+    // Calcular el lunes de la semana actual
+    const currentDay = today.getDay(); // 0=Dom, 1=Lun, ...
+    const diffToMonday = currentDay === 0 ? 6 : currentDay - 1;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - diffToMonday);
+    
     const data = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
       const dateStr = d.toISOString().split('T')[0];
+      
       const dayTotal = orders
         .filter(o => o.timestamp?.startsWith(dateStr))
         .reduce((sum, o) => sum + (o.total || 0), 0);
-      data.push({ name: days[d.getDay()], value: dayTotal });
+        
+      data.push({ name: daysLabels[i], value: dayTotal });
     }
     return data;
   })();
@@ -122,7 +131,15 @@ export function Dashboard() {
                       <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} dy={10} />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false} 
+                    tickLine={false} 
+                    tick={{fill: '#94a3b8', fontSize: 12, fontWeight: 500}} 
+                    dy={10} 
+                    interval={0}
+                    padding={{ left: 20, right: 20 }}
+                  />
                   <YAxis hide={true} />
                   <Tooltip 
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
