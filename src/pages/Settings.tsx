@@ -391,6 +391,37 @@ export function Settings() {
         </div>
       </div>
 
+      {/* Danger Zone */}
+      <div className="mt-8 bg-red-50 rounded-2xl shadow-sm border border-red-200 overflow-hidden flex flex-col">
+        <div className="p-6 border-b border-red-200 flex items-center gap-3">
+          <Trash2 className="w-5 h-5 text-red-600" />
+          <h2 className="font-bold text-lg text-red-800">Zona de Peligro: Restablecer Sistema</h2>
+        </div>
+        <div className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div>
+            <h3 className="font-bold text-red-900 mb-1">Borrar Base de Datos Local</h3>
+            <p className="text-sm text-red-700">Esta acción eliminará de forma permanente todas las comandas, mesas, facturas y configuración guardada. La aplicación volverá a su estado inicial de fábrica. <strong>No se puede deshacer.</strong></p>
+          </div>
+          <button 
+            onClick={() => {
+              if (window.confirm("⚠️ ADVERTENCIA DE SEGURIDAD ⚠️\n\n¿Estás absolutamente seguro de que quieres BORRAR TODA LA BASE DE DATOS?\nEsto eliminará todas las ventas, comandas, empleados y configuración local.\n\nEsta acción NO se puede deshacer.")) {
+                import('../db/database').then(({ db }) => {
+                  db.delete().then(() => {
+                    sessionStorage.clear();
+                    window.location.href = "/";
+                  }).catch(err => {
+                    alert('Error al borrar la base de datos: ' + err);
+                  });
+                });
+              }
+            }}
+            className="px-6 py-3 bg-red-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-red-700 transition-all whitespace-nowrap shrink-0"
+          >
+            Restablecer de Fábrica
+          </button>
+        </div>
+      </div>
+
       {/* Add/Edit User Modal */}
       {isUserModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">

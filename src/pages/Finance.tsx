@@ -46,15 +46,8 @@ export function Finance() {
     addPaymentOrder, 
     orders = [] 
   } = useStore();
-  const [invoices, setInvoices] = useState([
-    { id: 'INV-2024-001', date: '2024-03-18', client: 'Tech Event Co.', description: 'Reserva de Salón Privado', amount: 2450.00, status: 'Pendiente' },
-    { id: 'INV-2024-002', date: '2024-03-15', client: 'Comida Corporativa SA', description: 'Desayuno Ejecutivo', amount: 850.00, status: 'Pagado' },
-  ]);
-  const [providers, setProviders] = useState([
-    { id: 'PROV-001', name: 'Distribuidora Central', category: 'Insumos', email: 'ventas@distcentral.com', phone: '11-4567-8900', cuit: '30-12345678-9' },
-    { id: 'PROV-002', name: 'Alquileres Inmobiliarios', category: 'Alquiler', email: 'admin@inmobiliaria.com', phone: '11-9876-5432', cuit: '30-87654321-0' },
-    { id: 'PROV-003', name: 'Mantenimiento Preventivo', category: 'Servicios', email: 'soporte@mantenimiento.com', phone: '11-2233-4455', cuit: '30-11223344-5' },
-  ]);
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [providers, setProviders] = useState<any[]>([]);
 
   const salesRevenue = orders.reduce((acc, o) => acc + o.total, 0);
   const totalExpenses = expenses.reduce((acc, e) => acc + e.amount, 0);

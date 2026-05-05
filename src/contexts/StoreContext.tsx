@@ -119,14 +119,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       if (count === 0) {
         await db.salonTables.bulkAdd(defaultTables);
       }
-      
-      const poCount = await db.paymentOrders.count();
-      if (poCount === 0) {
-        await db.paymentOrders.bulkAdd([
-          { provider: 'Distribuidora Central', amount: 12500, date: new Date().toISOString().split('T')[0], status: 'Pendiente' },
-          { provider: 'Mercado Local', amount: 4500, date: new Date().toISOString().split('T')[0], status: 'Pagado' }
-        ]);
-      }
 
       const rewardCount = await db.rewards.count();
       if (rewardCount === 0) {

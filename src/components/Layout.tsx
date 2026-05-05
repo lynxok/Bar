@@ -151,13 +151,53 @@ export function Layout() {
         </nav>
         
         <div className="p-4 border-t border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white">JD</div>
-            <div>
-              <div className="text-sm font-semibold text-white">Juan Delgado</div>
-              <div className="text-xs text-slate-500">Administrador</div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white uppercase">
+                {(() => {
+                  try {
+                    const u = JSON.parse(sessionStorage.getItem('bar_user') || '{}');
+                    return (u.name || 'U').substring(0, 2);
+                  } catch { return 'U'; }
+                })()}
+              </div>
+              <div className="overflow-hidden">
+                <div className="text-sm font-semibold text-white truncate w-24">
+                  {(() => {
+                    try { return JSON.parse(sessionStorage.getItem('bar_user') || '{}').name || 'Usuario'; } catch { return 'Usuario'; }
+                  })()}
+                </div>
+                <div className="text-xs text-slate-500 truncate">
+                  {(() => {
+                    try { return JSON.parse(sessionStorage.getItem('bar_user') || '{}').role || 'Staff'; } catch { return 'Staff'; }
+                  })()}
+                </div>
+              </div>
             </div>
+            
+            <button 
+              onClick={() => {
+                sessionStorage.removeItem('bar_user');
+                window.location.reload();
+              }}
+              className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
+              title="Cerrar Sesión"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
           </div>
+
+          {/* Agency Footer */}
+          <div className="mt-4 pt-4 border-t border-slate-800/80 flex flex-col items-center gap-3 opacity-80 hover:opacity-100 transition-opacity">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] text-slate-500 font-medium tracking-widest uppercase">Desarrollado por</span>
+              <a href="https://www.lnx.com.ar" target="_blank" rel="noopener noreferrer" className="hover:scale-105 transition-transform">
+                <img src="/lynx-consulting-logo.png" alt="LYNX Consulting" className="h-12 object-contain" />
+              </a>
+            </div>
+            <span className="text-[9px] text-slate-600 font-medium tracking-widest">v1.0.0 (Local-First)</span>
+          </div>
+
         </div>
       </aside>
 
