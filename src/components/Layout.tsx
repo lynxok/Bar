@@ -279,7 +279,7 @@ export function Layout() {
                 <img src="./lynx-consulting-logo.png" alt="LYNX Consulting" className="h-12 object-contain" />
               </a>
             </div>
-            <span className="text-[9px] text-slate-600 font-medium tracking-widest">v1.1.0 (Local-First)</span>
+            <span className="text-[9px] text-slate-600 font-medium tracking-widest">v1.1.1 (Local-First)</span>
           </div>
 
         </div>

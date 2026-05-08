@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useBusiness } from "../contexts/BusinessContext";
 import { useStore } from "../contexts/StoreContext";
 import { cn } from "../lib/utils";
@@ -20,13 +20,60 @@ export function Settings() {
     permissions: ['tables', 'pos'] as string[] 
   });
   
-  const CURRENT_VERSION = "v1.0.0";
-  const GITHUB_OWNER = "lynxok"; // Usuario oficial
-  const GITHUB_REPO = "Bar"; // Repositorio del bar
-
   const [isMigrating, setIsMigrating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'downloading' | 'downloaded'>('idle');
+  const [downloadProgress, setDownloadProgress] = useState(0);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
+
+  const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+  const ipc = isElectron ? (window as any).require('electron').ipcRenderer : null;
+  const CURRENT_VERSION = isElectron && ipc ? `v${ipc.sendSync('get-app-version')}` : "v1.1.0";
+
+  useEffect(() => {
+    if (!ipc) return;
+
+    const onAvailable = (_: any, info: any) => {
+      setLatestVersion(info.version);
+      setUpdateStatus('available');
+      setIsUpdating(false);
+    };
+
+    const onNotAvailable = () => {
+      setUpdateStatus('idle');
+      setIsUpdating(false);
+      alert("No hay actualizaciones disponibles.");
+    };
+
+    const onProgress = (_: any, progressObj: any) => {
+      setUpdateStatus('downloading');
+      setDownloadProgress(Math.round(progressObj.percent));
+    };
+
+    const onDownloaded = () => {
+      setUpdateStatus('downloaded');
+    };
+
+    const onError = (_: any, message: string) => {
+      setIsUpdating(false);
+      setUpdateStatus('idle');
+      alert(`Error en la actualización: ${message}`);
+    };
+
+    ipc.on('update-available', onAvailable);
+    ipc.on('update-not-available', onNotAvailable);
+    ipc.on('download-progress', onProgress);
+    ipc.on('update-downloaded', onDownloaded);
+    ipc.on('update-error', onError);
+
+    return () => {
+      ipc.removeAllListeners('update-available');
+      ipc.removeAllListeners('update-not-available');
+      ipc.removeAllListeners('download-progress');
+      ipc.removeAllListeners('update-downloaded');
+      ipc.removeAllListeners('update-error');
+    };
+  }, [ipc]);
 
   const handleMigrateToCloud = async () => {
     setIsMigrating(true);
@@ -36,31 +83,22 @@ export function Settings() {
     setIsMigrating(false);
   };
 
-  const handleCheckUpdates = async () => {
-    setIsUpdating(true);
-    try {
-      const response = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`);
-      
-      if (!response.ok) {
-        throw new Error('Error al conectar con GitHub');
-      }
-
-      const data = await response.json();
-      const latestTag = data.tag_name; 
-      
-      setLatestVersion(latestTag);
-
-      if (latestTag !== CURRENT_VERSION) {
-        alert(`¡Hay una actualización disponible! (${latestTag})\n\nMejoras:\n${(data.body || 'Correcciones menores').substring(0, 150)}...`);
-      } else {
-        alert(`Tienes la última versión instalada (${CURRENT_VERSION}). No hay actualizaciones pendientes.`);
-      }
-    } catch (error) {
-      console.error(error);
-      alert("No se pudo verificar la actualización. Asegúrate de haber configurado tu usuario y repositorio correcto en el código.");
-    } finally {
-      setIsUpdating(false);
+  const handleCheckUpdates = () => {
+    if (!ipc) {
+      alert("Esta función solo está disponible en la aplicación de escritorio.");
+      return;
     }
+    setIsUpdating(true);
+    setUpdateStatus('checking');
+    ipc.send('check-update');
+  };
+
+  const handleStartDownload = () => {
+    if (ipc) ipc.send('start-download');
+  };
+
+  const handleApplyUpdate = () => {
+    if (ipc) ipc.send('apply-update');
   };
 
   const MODULES = [
@@ -379,14 +417,45 @@ export function Settings() {
               </p>
             </div>
             
-            <button 
-              onClick={handleCheckUpdates}
-              disabled={isUpdating}
-              className="w-full py-3 bg-white border-2 border-emerald-600 text-emerald-700 rounded-xl font-bold text-sm shadow-sm hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              {isUpdating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
-              {isUpdating ? 'Buscando actualizaciones...' : 'Buscar Actualización en GitHub'}
-            </button>
+            {updateStatus === 'idle' || updateStatus === 'checking' ? (
+              <button 
+                onClick={handleCheckUpdates}
+                disabled={isUpdating}
+                className="w-full py-3 bg-white border-2 border-emerald-600 text-emerald-700 rounded-xl font-bold text-sm shadow-sm hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isUpdating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                {isUpdating ? 'Buscando actualizaciones...' : 'Buscar Actualización en GitHub'}
+              </button>
+            ) : updateStatus === 'available' ? (
+              <button 
+                onClick={handleStartDownload}
+                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+              >
+                <DownloadCloud className="w-4 h-4" />
+                Descargar Versión {latestVersion}
+              </button>
+            ) : updateStatus === 'downloading' ? (
+              <div className="w-full space-y-2">
+                <div className="flex items-center justify-between text-[10px] font-black uppercase text-slate-400 tracking-widest">
+                  <span>Descargando...</span>
+                  <span>{downloadProgress}%</span>
+                </div>
+                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-indigo-500 transition-all duration-300" 
+                    style={{ width: `${downloadProgress}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <button 
+                onClick={handleApplyUpdate}
+                className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 animate-pulse"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Reiniciar e Instalar Ahora
+              </button>
+            )}
           </div>
         </div>
       </div>
