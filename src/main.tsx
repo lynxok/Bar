@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import App from './App.tsx';
 import { BusinessProvider } from './contexts/BusinessContext.tsx';
 import { AlertProvider } from './contexts/AlertContext.tsx';
@@ -19,7 +19,7 @@ window.onunhandledrejection = (event) => {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
+    <HashRouter>
       <BusinessProvider>
         <AlertProvider>
           <StoreProvider>
@@ -27,6 +27,6 @@ createRoot(document.getElementById('root')!).render(
           </StoreProvider>
         </AlertProvider>
       </BusinessProvider>
-    </BrowserRouter>
+    </HashRouter>
   </StrictMode>
 );

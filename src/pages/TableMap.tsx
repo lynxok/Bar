@@ -2,7 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { 
   X, Plus, Minus, Save, Trash2, Layout, Users, RotateCw,
   ZoomIn, ZoomOut, Maximize2, Wallet, CreditCard, ArrowRightLeft,
-  User, ArrowRight, ChefHat, Smartphone
+  User, ArrowRight, ChefHat, Smartphone, Star
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useStore, Table } from "../contexts/StoreContext";
@@ -20,12 +20,14 @@ const MENU_ITEMS = [
 const isRotatable = (type: Table['type']) => type !== 'round' && type !== 'stool';
 
 export function TableMap() {
-  const { tables, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda } = useStore();
+  const { tables, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan } = useStore();
   const { taxRate } = useBusiness();
 
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [editingTableId, setEditingTableId] = useState<string | null>(null);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
+  const [newLayoutName, setNewLayoutName] = useState("");
+  const [showSavedPlans, setShowSavedPlans] = useState(false);
 
   // Drag state
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -441,6 +443,86 @@ export function TableMap() {
             )}
           </div>
 
+          {/* Saved Layouts Section */}
+          <div className="px-5 pb-5 space-y-4">
+            <button
+              onClick={() => setShowSavedPlans(!showSavedPlans)}
+              className="w-full py-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 flex items-center justify-center gap-2 transition-all"
+            >
+              {showSavedPlans ? <X className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+              {showSavedPlans ? 'Cerrar Plantillas' : 'Mis Plantillas'}
+            </button>
+
+            {showSavedPlans ? (
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                {floorPlans.length === 0 ? (
+                  <p className="text-[10px] text-slate-400 text-center py-4 italic">No tienes plantillas guardadas</p>
+                ) : (
+                  floorPlans.map(plan => (
+                    <div key={plan.id} className="bg-white border border-slate-100 rounded-xl p-3 flex flex-col gap-2 group hover:border-indigo-200 transition-all shadow-sm">
+                      <div className="flex items-center justify-between">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-xs font-bold text-slate-800 truncate">{plan.name}</p>
+                            {plan.isDefault && <Star className="w-3 h-3 fill-amber-400 text-amber-400" />}
+                          </div>
+                          <p className="text-[9px] text-slate-400 font-medium">{new Date(plan.timestamp).toLocaleDateString()}</p>
+                        </div>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => loadFloorPlan(plan.id)}
+                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                            title="Cargar"
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </button>
+                          <button 
+                            onClick={() => { if(confirm('¿Eliminar esta plantilla?')) deleteFloorPlan(plan.id); }}
+                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                            title="Eliminar"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      {!plan.isDefault && (
+                        <button 
+                          onClick={() => setDefaultFloorPlan(plan.id)}
+                          className="w-full py-1 text-[9px] font-black text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all flex items-center justify-center gap-1 border border-dashed border-transparent hover:border-amber-200"
+                        >
+                          <Star className="w-3 h-3" /> MARCAR COMO PREDETERMINADO
+                        </button>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Nombre del evento..."
+                  value={newLayoutName}
+                  onChange={(e) => setNewLayoutName(e.target.value)}
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold outline-none focus:border-indigo-500"
+                />
+                <button
+                  onClick={() => {
+                    if (!newLayoutName) return alert('Ingresá un nombre para la configuración');
+                    saveFloorPlan(newLayoutName);
+                    setNewLayoutName("");
+                    alert('Configuración guardada!');
+                  }}
+                  className="p-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-all"
+                  title="Guardar diseño actual"
+                >
+                  <Save className="w-5 h-5" />
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="p-6 border-t border-slate-100">
             <button
               onClick={() => { setIsEditingLayout(false); setEditingTableId(null); }}
@@ -470,12 +552,25 @@ export function TableMap() {
           </div>
 
           {!isEditingLayout && (
-            <button
-              onClick={() => setIsEditingLayout(true)}
-              className="flex items-center gap-3 px-8 py-4 bg-slate-900 rounded-2xl text-sm font-black text-white hover:bg-indigo-600 transition-all shadow-xl active:scale-95"
-            >
-              <Layout className="w-5 h-5 text-indigo-400" /> EDITAR PLANO
-            </button>
+            <div className="flex gap-3">
+              {floorPlans.find(p => p.isDefault) && (
+                <button
+                  onClick={() => {
+                    const defaultPlan = floorPlans.find(p => p.isDefault);
+                    if (defaultPlan) loadFloorPlan(defaultPlan.id);
+                  }}
+                  className="flex items-center gap-3 px-6 py-4 bg-amber-50 rounded-2xl text-sm font-black text-amber-600 hover:bg-amber-100 transition-all shadow-sm border border-amber-100 active:scale-95"
+                >
+                  <Star className="w-5 h-5 fill-amber-500" /> RESTAURAR PREDETERMINADO
+                </button>
+              )}
+              <button
+                onClick={() => setIsEditingLayout(true)}
+                className="flex items-center gap-3 px-8 py-4 bg-slate-900 rounded-2xl text-sm font-black text-white hover:bg-indigo-600 transition-all shadow-xl active:scale-95"
+              >
+                <Layout className="w-5 h-5 text-indigo-400" /> EDITAR PLANO
+              </button>
+            </div>
           )}
         </div>
 

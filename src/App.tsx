@@ -20,9 +20,9 @@ export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
-  // Check session storage on load
+  // Check local storage on load
   useEffect(() => {
-    const storedUser = sessionStorage.getItem('bar_user');
+    const storedUser = localStorage.getItem('bar_user');
     if (storedUser) {
       setCurrentUser(JSON.parse(storedUser));
       setIsAuthenticated(true);
@@ -30,13 +30,13 @@ export default function App() {
   }, []);
 
   const handleLogin = (user: any) => {
-    sessionStorage.setItem('bar_user', JSON.stringify(user));
+    localStorage.setItem('bar_user', JSON.stringify(user));
     setCurrentUser(user);
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('bar_user');
+    localStorage.removeItem('bar_user');
     setCurrentUser(null);
     setIsAuthenticated(false);
   };

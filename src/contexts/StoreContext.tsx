@@ -66,6 +66,11 @@ interface StoreContextType {
   shifts: any[];
   users: any[];
   messages: any[];
+  floorPlans: any[];
+  saveFloorPlan: (name: string) => Promise<void>;
+  loadFloorPlan: (id: number) => Promise<void>;
+  deleteFloorPlan: (id: number) => Promise<void>;
+  setDefaultFloorPlan: (id: number) => Promise<void>;
   sendMessage: (msg: any) => Promise<void>;
   markAsRead: (id: number) => Promise<void>;
   addUser: (user: any) => Promise<void>;
@@ -103,6 +108,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const shifts = useLiveQuery(() => db.shifts.toArray()) || [];
   const users = useLiveQuery(() => db.users.toArray()) || [];
   const messages = useLiveQuery(() => db.messages.orderBy('timestamp').toArray()) || [];
+  const floorPlans = useLiveQuery(() => db.floorPlans.orderBy('timestamp').reverse().toArray()) || [];
 
   const defaultTables: Table[] = [
     { id: 'T-01', status: 'available', order: [], lastUpdate: new Date().toISOString(), x: 100, y: 100, type: 'round', width: 80, height: 80, capacity: 4 },
@@ -115,9 +121,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initTables = async () => {
-      const count = await db.salonTables.count();
-      if (count === 0) {
-        await db.salonTables.bulkAdd(defaultTables);
+      const planCount = await db.floorPlans.count();
+      const tableCount = await db.salonTables.count();
+      
+      if (tableCount === 0) {
+        const defaultPlan = await db.floorPlans.where('isDefault').equals(1).first();
+        if (defaultPlan) {
+          await db.salonTables.bulkAdd(defaultPlan.tables);
+        } else {
+          await db.salonTables.bulkAdd(defaultTables);
+        }
       }
 
       const rewardCount = await db.rewards.count();
@@ -290,10 +303,56 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const markAsRead = async (id: number) => {
     await db.messages.update(id, { status: 'read' });
   };
+  
+  const saveFloorPlan = async (name: string) => {
+    const currentTables = await db.salonTables.toArray();
+    // Limpiar estados de ocupación antes de guardar como plantilla
+    const templateTables = currentTables.map(t => ({
+      ...t,
+      status: 'available',
+      order: []
+    }));
+    
+    await db.floorPlans.add({
+      name,
+      tables: templateTables,
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  const loadFloorPlan = async (id: number) => {
+    const plan = await db.floorPlans.get(id);
+    if (!plan) return;
+    
+    // Check if any table is currently occupied before overwriting
+    const currentTables = await db.salonTables.toArray();
+    const isOccupied = currentTables.some(t => t.status !== 'available');
+    
+    if (isOccupied) {
+      if (!confirm('Atención: Hay mesas ocupadas. Si cargas un nuevo diseño, los pedidos actuales podrían perder su ubicación. ¿Deseas continuar?')) {
+        return;
+      }
+    }
+    
+    await db.salonTables.clear();
+    await db.salonTables.bulkAdd(plan.tables);
+  };
+
+  const deleteFloorPlan = async (id: number) => {
+    await db.floorPlans.delete(id);
+  };
+
+  const setDefaultFloorPlan = async (id: number) => {
+    const allPlans = await db.floorPlans.toArray();
+    for (const plan of allPlans) {
+      await db.floorPlans.update(plan.id!, { isDefault: plan.id === id });
+    }
+  };
 
   return (
     <StoreContext.Provider value={{
-      products, tables, expenses, paymentOrders, orders, comandas, rewards, customers, shifts, users, messages,
+      products, tables, expenses, paymentOrders, orders, comandas, rewards, customers, shifts, users, messages, floorPlans,
+      saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan,
       addExpense, addPaymentOrder, closeOrder, updateTableOrder, setProducts,
       moveTable, addTable, removeTable, updateTable, addShift,
       addComanda, updateComandaStatus, addCustomer, updateCustomerPoints, redeemPoints,

@@ -137,6 +137,14 @@ export interface Message {
   status: 'sent' | 'read';
 }
 
+export interface FloorPlan {
+  id?: number;
+  name: string;
+  tables: TableState[];
+  timestamp: string;
+  isDefault?: boolean;
+}
+
 export class BarDatabase extends Dexie {
   products!: Table<Product>;
   orders!: Table<Order>;
@@ -154,10 +162,11 @@ export class BarDatabase extends Dexie {
   shifts!: Table<Shift>;
   users!: Table<User>;
   messages!: Table<Message>;
+  floorPlans!: Table<FloorPlan>;
 
   constructor() {
     super('BarDatabase');
-    this.version(5).stores({
+    this.version(7).stores({
       products: '++id, name, sku, category',
       orders: '++id, tableId, status, timestamp',
       expenses: '++id, provider, date, category',
@@ -171,7 +180,8 @@ export class BarDatabase extends Dexie {
       customers: '++id, dni, name',
       shifts: '++id, endTime',
       users: '++id, name, role',
-      messages: '++id, timestamp, senderRole, status'
+      messages: '++id, timestamp, senderRole, status',
+      floorPlans: '++id, name, timestamp'
     });
   }
 }

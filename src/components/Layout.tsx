@@ -25,6 +25,16 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { ChatWidget } from "./ChatWidget";
+import { NotificationsPanel } from "./NotificationsPanel";
+
+interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  time: string;
+  read: boolean;
+}
 
 const NAV_ITEMS = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -43,6 +53,46 @@ export function Layout() {
   const location = useLocation();
   const { businessName, logo } = useBusiness();
   const { lowStockCount } = useAlerts();
+  
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: '1',
+      title: 'Sistema Listo',
+      message: 'LYNX BarOS se ha iniciado correctamente.',
+      type: 'success',
+      time: 'Recién',
+      read: false
+    },
+    {
+      id: '2',
+      title: 'Consejo del día',
+      message: 'Puedes usar F2 para activar el escáner de códigos de barras en cualquier momento.',
+      type: 'info',
+      time: 'Hace 5 min',
+      read: false
+    }
+  ]);
+
+  // Sincronizar alertas de stock con notificaciones
+  useEffect(() => {
+    if (lowStockCount > 0) {
+      const stockAlertId = `stock-alert-${lowStockCount}`;
+      if (!notifications.find(n => n.id === stockAlertId)) {
+        setNotifications(prev => [
+          {
+            id: stockAlertId,
+            title: 'Alerta de Stock Bajo',
+            message: `Atención: Tienes ${lowStockCount} productos con stock crítico.`,
+            type: 'warning',
+            time: 'Ahora',
+            read: false
+          },
+          ...prev
+        ]);
+      }
+    }
+  }, [lowStockCount]);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
@@ -56,6 +106,18 @@ export function Layout() {
     }
     localStorage.setItem('darkMode', isDarkMode.toString());
   }, [isDarkMode]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (showNotifications && !target.closest('.notification-container')) {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showNotifications]);
 
   const toggleDarkMode = () => {
     setIsDarkMode(prev => !prev);
@@ -84,10 +146,32 @@ export function Layout() {
       NotificationService.sendNotification('Notificaciones Activadas', {
         body: 'Te enviaremos alertas para cierres de caja, stock y nuevos pedidos.'
       });
+      
+      setNotifications(prev => [
+        {
+          id: Date.now().toString(),
+          title: 'Notificaciones de Escritorio',
+          message: 'Has activado las notificaciones de escritorio con éxito.',
+          type: 'success',
+          time: 'Ahora',
+          read: false
+        },
+        ...prev
+      ]);
     } else {
       alert('Las notificaciones fueron denegadas o no están soportadas.');
     }
   };
+
+  const markAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+  };
+
+  const clearAllNotifications = () => {
+    setNotifications([]);
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -156,7 +240,7 @@ export function Layout() {
               <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white uppercase">
                 {(() => {
                   try {
-                    const u = JSON.parse(sessionStorage.getItem('bar_user') || '{}');
+                    const u = JSON.parse(localStorage.getItem('bar_user') || '{}');
                     return (u.name || 'U').substring(0, 2);
                   } catch { return 'U'; }
                 })()}
@@ -164,12 +248,12 @@ export function Layout() {
               <div className="overflow-hidden">
                 <div className="text-sm font-semibold text-white truncate w-24">
                   {(() => {
-                    try { return JSON.parse(sessionStorage.getItem('bar_user') || '{}').name || 'Usuario'; } catch { return 'Usuario'; }
+                    try { return JSON.parse(localStorage.getItem('bar_user') || '{}').name || 'Usuario'; } catch { return 'Usuario'; }
                   })()}
                 </div>
                 <div className="text-xs text-slate-500 truncate">
                   {(() => {
-                    try { return JSON.parse(sessionStorage.getItem('bar_user') || '{}').role || 'Staff'; } catch { return 'Staff'; }
+                    try { return JSON.parse(localStorage.getItem('bar_user') || '{}').role || 'Staff'; } catch { return 'Staff'; }
                   })()}
                 </div>
               </div>
@@ -177,7 +261,7 @@ export function Layout() {
             
             <button 
               onClick={() => {
-                sessionStorage.removeItem('bar_user');
+                localStorage.removeItem('bar_user');
                 window.location.reload();
               }}
               className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors"
@@ -192,10 +276,10 @@ export function Layout() {
             <div className="flex flex-col items-center gap-2">
               <span className="text-[10px] text-slate-500 font-medium tracking-widest uppercase">Desarrollado por</span>
               <a href="https://www.lnx.com.ar" target="_blank" rel="noopener noreferrer" className="hover:scale-105 transition-transform">
-                <img src="/lynx-consulting-logo.png" alt="LYNX Consulting" className="h-12 object-contain" />
+                <img src="./lynx-consulting-logo.png" alt="LYNX Consulting" className="h-12 object-contain" />
               </a>
             </div>
-            <span className="text-[9px] text-slate-600 font-medium tracking-widest">v1.0.0 (Local-First)</span>
+            <span className="text-[9px] text-slate-600 font-medium tracking-widest">v1.1.0 (Local-First)</span>
           </div>
 
         </div>
@@ -222,16 +306,32 @@ export function Layout() {
                 {lowStockCount} {lowStockCount === 1 ? 'Alerta' : 'Alertas'} de Stock
               </div>
             )}
-            <button 
-              onClick={handleRequestNotifications}
-              className="relative p-2 text-slate-400 hover:text-slate-600 transition-colors"
-              title="Activar notificaciones de escritorio"
-            >
-              <Bell className="w-6 h-6" />
-              {lowStockCount > 0 && (
-                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
-              )}
-            </button>
+            <div className="relative notification-container">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={cn(
+                  "relative p-2 rounded-full transition-all duration-300",
+                  showNotifications ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                )}
+                title="Notificaciones"
+              >
+                <Bell className={cn("w-6 h-6", unreadCount > 0 && "animate-[bell-swing_2s_infinite]")} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
+                    <span className="text-[8px] font-bold text-white">{unreadCount}</span>
+                  </span>
+                )}
+              </button>
+
+              <NotificationsPanel 
+                isOpen={showNotifications}
+                onClose={() => setShowNotifications(false)}
+                notifications={notifications}
+                onMarkAsRead={markAsRead}
+                onClearAll={clearAllNotifications}
+                onRequestDesktop={handleRequestNotifications}
+              />
+            </div>
           </div>
         </header>
 

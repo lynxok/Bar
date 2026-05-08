@@ -1,7 +1,7 @@
 const { app, BrowserWindow } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const path = require('path');
-const isDev = require('electron-is-dev');
+
 
 function createWindow() {
   // Configuración del actualizador
@@ -12,18 +12,15 @@ function createWindow() {
     height: 800,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
-    ,
+      contextIsolation: false
+    },
     icon: path.join(__dirname, '../public/icon.png')
   });
 
-  win.loadURL(
-    isDev
-      ? 'http://localhost:3000'
-      : `file://${path.join(__dirname, '../dist/index.html')}`
-  );
-
-  if (isDev) {
+  if (app.isPackaged) {
+    win.loadFile(path.join(__dirname, '../dist/index.html'));
+  } else {
+    win.loadURL('http://localhost:3000');
     win.webContents.openDevTools();
   }
 }
