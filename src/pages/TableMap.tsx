@@ -1,12 +1,14 @@
-import { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { 
   X, Plus, Minus, Save, Trash2, Layout, Users, RotateCw,
   ZoomIn, ZoomOut, Maximize2, Wallet, CreditCard, ArrowRightLeft,
   User, ArrowRight, ChefHat, Smartphone, Star
 } from "lucide-react";
+import QRCode from 'qrcode';
 import { cn } from "../lib/utils";
 import { useStore, Table } from "../contexts/StoreContext";
 import { useBusiness } from "../contexts/BusinessContext";
+import { db } from "../db/database";
 
 const MENU_ITEMS = [
   { id: '1', name: 'Burger Simple', price: 1200, category: 'Comida' },
@@ -24,10 +26,29 @@ export function TableMap() {
   const { taxRate } = useBusiness();
 
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
-  const [editingTableId, setEditingTableId] = useState<string | null>(null);
+  const [selectedTableIds, setSelectedTableIds] = useState<Set<string>>(new Set());
+  const [selectionBox, setSelectionBox] = useState<{ x1: number, y1: number, x2: number, y2: number } | null>(null);
+  const [isMarqueeMode, setIsMarqueeMode] = useState(false);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState("");
   const [showSavedPlans, setShowSavedPlans] = useState(false);
+  const [qrModalTableId, setQrModalTableId] = useState<string | null>(null);
+  const [qrUrl, setQrUrl] = useState<string>('');
+
+  useEffect(() => {
+    if (qrModalTableId) {
+      const url = `${window.location.origin}/#/cliente/${qrModalTableId}`;
+      QRCode.toDataURL(url, { width: 300, margin: 2 })
+        .then(url => setQrUrl(url))
+        .catch(err => console.error(err));
+    } else {
+      setQrUrl('');
+    }
+  }, [qrModalTableId]);
+
+  const dragStartPointer = useRef({ x: 0, y: 0 });
+  const initialPositions = useRef<Record<string, { x: number, y: number }>>({});
+  const editingTable = tables.find(t => selectedTableIds.has(t.id));
 
   // Drag state
   const [draggingId, setDraggingId] = useState<string | null>(null);
@@ -38,6 +59,45 @@ export function TableMap() {
   const [rotatingId, setRotatingId] = useState<string | null>(null);
   const [liveRotation, setLiveRotation] = useState(0);
 
+  // Resizing state
+  const [resizingId, setResizingId] = useState<string | null>(null);
+  const resizeStart = useRef({ x: 0, y: 0, w: 0, h: 0, rotation: 0, tlx0: 0, tly0: 0 });
+
+  // Listener para borrar mesas seleccionadas con la tecla Suprimir (Delete)
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (!isEditingLayout || selectedTableIds.size === 0) return;
+
+      const activeEl = document.activeElement;
+      const isInput = activeEl && (
+        activeEl.tagName === 'INPUT' || 
+        activeEl.tagName === 'SELECT' ||
+        activeEl.tagName === 'TEXTAREA' || 
+        activeEl.getAttribute('contenteditable') === 'true'
+      );
+      if (isInput) return; // Evitar borrar si se está escribiendo en el panel de propiedades
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        if (confirm(`¿Deseas eliminar las ${selectedTableIds.size} mesas seleccionadas?`)) {
+          const idsArray = Array.from(selectedTableIds);
+          try {
+            await db.transaction('rw', db.salonTables, async () => {
+              await db.salonTables.bulkDelete(idsArray);
+            });
+            setSelectedTableIds(new Set());
+          } catch (err) {
+            console.error(err);
+            alert('Error al eliminar mesas en lote.');
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isEditingLayout, selectedTableIds, tables]);
+
   // Viewport state: zoom + pan
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -45,7 +105,180 @@ export function TableMap() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('Efectivo');
   const [loyaltyId, setLoyaltyId] = useState('');
+  const [waiterFilter, setWaiterFilter] = useState<string>("Todos");
+  const [mergeSourceId, setMergeSourceId] = useState<string | null>(null);
   const panStart = useRef({ mx: 0, my: 0, px: 0, py: 0 });
+
+  // Auxiliary Chair Adjustment (Min 44px targets)
+  const adjustChair = (table: Table, side: 'top' | 'bottom' | 'left' | 'right', delta: number) => {
+    const current = table.chairsConfig || { top: 0, bottom: 0, left: 0, right: 0 };
+    const newVal = Math.max(0, (current[side] || 0) + delta);
+    const updatedConfig = { ...current, [side]: newVal };
+    const totalCapacity = updatedConfig.top + updatedConfig.bottom + updatedConfig.left + updatedConfig.right;
+    
+    updateTable(table.id, {
+      chairsConfig: updatedConfig,
+      capacity: totalCapacity
+    }).catch(console.error);
+  };
+
+  // Acople de mesas (Merge)
+  const handleMergeTables = async (targetTableId: string) => {
+    if (!mergeSourceId || mergeSourceId === targetTableId) return;
+    const source = tables.find(t => t.id === mergeSourceId);
+    const target = tables.find(t => t.id === targetTableId);
+    
+    if (!source || !target) return;
+    
+    // Consolidar ítems del pedido
+    const consolidatedOrder = [...target.order];
+    source.order.forEach(item => {
+      const exists = consolidatedOrder.find(i => i.id === item.id);
+      if (exists) {
+        exists.qty += item.qty;
+      } else {
+        consolidatedOrder.push({ ...item });
+      }
+    });
+
+    try {
+      await db.transaction('rw', db.salonTables, async () => {
+        await db.salonTables.update(mergeSourceId, {
+          order: [],
+          status: 'available',
+          lastUpdate: new Date().toISOString()
+        });
+        await db.salonTables.update(targetTableId, {
+          order: consolidatedOrder,
+          status: consolidatedOrder.length > 0 ? 'occupied_no_order' : 'available',
+          lastUpdate: new Date().toISOString()
+        });
+      });
+      alert(`Mesas unidas. Pedidos de ${mergeSourceId} traspasados a ${targetTableId}.`);
+    } catch (err) {
+      console.error(err);
+      alert('Error al fusionar las mesas.');
+    }
+    setMergeSourceId(null);
+  };
+
+  // Fusión masiva de múltiples mesas seleccionadas en el último elemento seleccionado
+  const handleMergeSelectedGroup = async () => {
+    if (selectedTableIds.size < 2) return;
+    const ids = Array.from(selectedTableIds);
+    // El objetivo es la última mesa de la selección
+    const targetId = ids[ids.length - 1];
+    const sourceIds = ids.slice(0, ids.length - 1);
+    
+    const target = tables.find(t => t.id === targetId);
+    if (!target) return;
+
+    if (!confirm(`¿Unir las ${ids.length} mesas seleccionadas en la mesa ${targetId}?`)) return;
+
+    const consolidatedOrder = [...target.order];
+    
+    for (const sId of sourceIds) {
+      const src = tables.find(t => t.id === sId);
+      if (src) {
+        src.order.forEach(item => {
+          const exists = consolidatedOrder.find(i => i.id === item.id);
+          if (exists) {
+            exists.qty += item.qty;
+          } else {
+            consolidatedOrder.push({ ...item });
+          }
+        });
+      }
+    }
+
+    try {
+      await db.transaction('rw', db.salonTables, async () => {
+        for (const sId of sourceIds) {
+          await db.salonTables.update(sId, {
+            order: [],
+            status: 'available',
+            lastUpdate: new Date().toISOString()
+          });
+        }
+        await db.salonTables.update(targetId, {
+          order: consolidatedOrder,
+          status: consolidatedOrder.length > 0 ? 'occupied_no_order' : 'available',
+          lastUpdate: new Date().toISOString()
+        });
+      });
+      alert(`Unión grupal completada en la mesa ${targetId}.`);
+      setSelectedTableIds(new Set());
+    } catch (err) {
+      console.error(err);
+      alert('Error al fusionar el grupo de mesas.');
+    }
+  };
+
+  const handleResizeStart = (e: React.PointerEvent, table: Table) => {
+    e.stopPropagation();
+    e.preventDefault();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    
+    const canvasCoord = toCanvas(e.clientX, e.clientY);
+    setResizingId(table.id);
+    
+    const rad = (table.rotation || 0) * (Math.PI / 180);
+    const tlx0 = table.x + table.width/2 - (table.width/2)*Math.cos(rad) + (table.height/2)*Math.sin(rad);
+    const tly0 = table.y + table.height/2 - (table.width/2)*Math.sin(rad) - (table.height/2)*Math.cos(rad);
+    
+    resizeStart.current = {
+      x: canvasCoord.x,
+      y: canvasCoord.y,
+      w: table.width,
+      h: table.height,
+      rotation: table.rotation ?? 0,
+      tlx0,
+      tly0
+    };
+  };
+
+  const handleResizeMove = (e: React.PointerEvent, table: Table) => {
+    if (resizingId !== table.id) return;
+    e.stopPropagation();
+    
+    const canvasCoord = toCanvas(e.clientX, e.clientY);
+    const rad = resizeStart.current.rotation * (Math.PI / 180);
+    
+    const dx = canvasCoord.x - resizeStart.current.tlx0;
+    const dy = canvasCoord.y - resizeStart.current.tly0;
+    
+    let newWidth = Math.max(44, Math.round(dx * Math.cos(rad) + dy * Math.sin(rad)));
+    let newHeight = Math.max(44, Math.round(-dx * Math.sin(rad) + dy * Math.cos(rad)));
+    
+    if (table.type === 'round' || table.type === 'stool') {
+      const size = Math.max(newWidth, newHeight);
+      newWidth = size;
+      newHeight = size;
+    }
+    
+    const newX = resizeStart.current.tlx0 - (newWidth/2) * (1 - Math.cos(rad)) - (newHeight/2) * Math.sin(rad);
+    const newY = resizeStart.current.tly0 - (newHeight/2) * (1 - Math.cos(rad)) + (newWidth/2) * Math.sin(rad);
+    
+    updateTable(table.id, { 
+      width: newWidth, 
+      height: newHeight, 
+      x: newX, 
+      y: newY 
+    }).catch(console.error);
+  };
+
+  const handleResizeEnd = (e: React.PointerEvent, table: Table) => {
+    if (resizingId === table.id) {
+      (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+      setResizingId(null);
+      updateTable(table.id, { 
+        width: table.width, 
+        height: table.height, 
+        x: table.x, 
+        y: table.y 
+      }).catch(console.error);
+    }
+  };
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -97,8 +330,17 @@ export function TableMap() {
     setZoom(newZoom);
   }, [tables]);
 
+  // Disparar auto-escala automáticamente al montar el componente una vez que se cargan las mesas
+  useEffect(() => {
+    if (tables.length > 0) {
+      const timer = setTimeout(() => {
+        fitAll();
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [tables.length > 0]);
+
   const activeOrderTable = tables.find(t => t.id === selectedTableId);
-  const editingTable = tables.find(t => t.id === editingTableId);
   const orderItems = activeOrderTable?.order || [];
 
   const handleAddItem = (item: any) => {
@@ -121,23 +363,59 @@ export function TableMap() {
   const taxes = subtotal * (taxRate / 100);
   const total = subtotal + taxes;
 
-  // ---------- DRAG ----------
+  // ---------- DRAG & MARQUEE SELECTION ----------
   const onMouseDown = (e: React.MouseEvent, table: Table) => {
-    if (!isEditingLayout || rotatingId) return;
+    if (!isEditingLayout && !isMarqueeMode) return;
+    if (isEditingLayout && rotatingId) return;
     e.stopPropagation();
 
-    setDraggingId(table.id);
-    setEditingTableId(table.id);
+    if (isEditingLayout) {
+      setDraggingId(table.id);
 
-    // Convert to canvas space
-    const c = toCanvas(e.clientX, e.clientY);
-    setDragOffset({ x: c.x - table.x, y: c.y - table.y });
-    setDragPos({ x: table.x, y: table.y });
+      if (!selectedTableIds.has(table.id)) {
+        setSelectedTableIds(new Set([table.id]));
+      }
+
+      const c = toCanvas(e.clientX, e.clientY);
+      setDragOffset({ x: c.x - table.x, y: c.y - table.y });
+      setDragPos({ x: table.x, y: table.y });
+
+      dragStartPointer.current = { x: c.x, y: c.y };
+      const initPos: Record<string, { x: number, y: number }> = {};
+      tables.forEach(t => {
+        if (selectedTableIds.has(t.id) || t.id === table.id) {
+          initPos[t.id] = { x: t.x, y: t.y };
+        }
+      });
+      initialPositions.current = initPos;
+    }
   };
 
-  // Pan on empty canvas (any mode) — middle mouse OR left in view mode
   const onCanvasMouseDown = (e: React.MouseEvent) => {
-    if (e.button === 1 || (!isEditingLayout && e.button === 0)) {
+    if (isMarqueeMode && e.button === 0) {
+      e.preventDefault();
+      e.stopPropagation();
+      const coord = toCanvas(e.clientX, e.clientY);
+      setSelectionBox({ x1: coord.x, y1: coord.y, x2: coord.x, y2: coord.y });
+      setSelectedTableIds(new Set());
+      return;
+    }
+
+    if (e.button === 1 || (e.button === 0)) {
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (rect && tables.length > 0) {
+        const minX = Math.min(...tables.map(t => t.x));
+        const minY = Math.min(...tables.map(t => t.y));
+        const maxX = Math.max(...tables.map(t => t.x + t.width));
+        const maxY = Math.max(...tables.map(t => t.y + t.height));
+        const contentW = (maxX - minX) * zoom;
+        const contentH = (maxY - minY) * zoom;
+        
+        if (contentW <= rect.width && contentH <= rect.height) {
+          return;
+        }
+      }
+
       e.preventDefault();
       setIsPanning(true);
       panStart.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y };
@@ -145,7 +423,6 @@ export function TableMap() {
   };
 
   const onMouseMove = useCallback((e: React.MouseEvent) => {
-    // Pan
     if (isPanning) {
       setPan({
         x: panStart.current.px + e.clientX - panStart.current.mx,
@@ -154,40 +431,106 @@ export function TableMap() {
       return;
     }
 
-    if (!isEditingLayout) return;
+    if (selectionBox && isMarqueeMode) {
+      const coord = toCanvas(e.clientX, e.clientY);
+      const nextBox = { ...selectionBox, x2: coord.x, y2: coord.y };
+      setSelectionBox(nextBox);
 
-    // Move table in canvas space
-    if (draggingId) {
-      const c = toCanvas(e.clientX, e.clientY);
-      setDragPos({ x: c.x - dragOffset.x, y: c.y - dragOffset.y });
+      const mLeft = Math.min(nextBox.x1, nextBox.x2);
+      const mRight = Math.max(nextBox.x1, nextBox.x2);
+      const mTop = Math.min(nextBox.y1, nextBox.y2);
+      const mBottom = Math.max(nextBox.y1, nextBox.y2);
+
+      const hits = new Set<string>();
+      tables.forEach(t => {
+        if (t.type === 'wall' || t.type === 'bar') return;
+        const tLeft = t.x;
+        const tRight = t.x + t.width;
+        const tTop = t.y;
+        const tBottom = t.y + t.height;
+
+        const overlaps = (tLeft < mRight) && (tRight > mLeft) && (tTop < mBottom) && (tBottom > mTop);
+        if (overlaps) {
+          hits.add(t.id);
+        }
+      });
+      setSelectedTableIds(hits);
+      return;
     }
 
-    // Rotate
+    if (!isEditingLayout) return;
+
+    if (draggingId) {
+      const c = toCanvas(e.clientX, e.clientY);
+      const dx = c.x - dragStartPointer.current.x;
+      const dy = c.y - dragStartPointer.current.y;
+
+      if (selectedTableIds.has(draggingId)) {
+        const mainTableInit = initialPositions.current[draggingId];
+        if (mainTableInit) {
+          setDragPos({ x: Math.round(mainTableInit.x + dx), y: Math.round(mainTableInit.y + dy) });
+        }
+        tables.forEach(t => {
+          if (selectedTableIds.has(t.id)) {
+            const init = initialPositions.current[t.id];
+            if (init) {
+              updateTable(t.id, {
+                x: Math.round(init.x + dx),
+                y: Math.round(init.y + dy)
+              }).catch(console.error);
+            }
+          }
+        });
+      } else {
+        setDragPos({ x: c.x - dragOffset.x, y: c.y - dragOffset.y });
+      }
+    }
+
     if (rotatingId) {
       const table = tables.find(t => t.id === rotatingId);
       if (!table) return;
       const cx = (draggingId ? dragPos.x : table.x) + table.width / 2;
       const cy = (draggingId ? dragPos.y : table.y) + table.height / 2;
-      // Convert mouse to canvas space for angle calc
       const c = toCanvas(e.clientX, e.clientY);
       const angle = Math.atan2(c.y - cy, c.x - cx) * (180 / Math.PI) + 90;
       setLiveRotation(angle);
     }
-  }, [isPanning, draggingId, rotatingId, dragOffset, dragPos, tables, isEditingLayout, pan, zoom]);
+  }, [isPanning, draggingId, rotatingId, dragOffset, dragPos, tables, isEditingLayout, pan, zoom, selectionBox, isMarqueeMode, selectedTableIds, updateTable]);
 
-  const onMouseUp = useCallback(() => {
+  const onMouseUp = useCallback(async () => {
     if (isPanning) { setIsPanning(false); return; }
-    if (draggingId && isEditingLayout) {
-      moveTable(draggingId, Math.round(dragPos.x), Math.round(dragPos.y)).catch(console.error);
+    
+    if (selectionBox) {
+      setSelectionBox(null);
+      return;
     }
+
+    if (draggingId && isEditingLayout) {
+      if (selectedTableIds.has(draggingId)) {
+        try {
+          await db.transaction('rw', db.salonTables, async () => {
+            for (const id of Array.from(selectedTableIds)) {
+              const t = tables.find(tbl => tbl.id === id);
+              if (t) {
+                await db.salonTables.update(id, { x: t.x, y: t.y });
+              }
+            }
+          });
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        await moveTable(draggingId, Math.round(dragPos.x), Math.round(dragPos.y));
+      }
+    }
+
     if (rotatingId && isEditingLayout) {
-      updateTable(rotatingId, { rotation: Math.round(liveRotation) }).catch(console.error);
+      await updateTable(rotatingId, { rotation: Math.round(liveRotation) });
     }
     setDraggingId(null);
     setRotatingId(null);
-  }, [isPanning, draggingId, rotatingId, dragPos, liveRotation, isEditingLayout, moveTable, updateTable]);
+  }, [isPanning, draggingId, rotatingId, dragPos, liveRotation, isEditingLayout, selectedTableIds, tables, moveTable, updateTable, selectionBox]);
 
-  // ---------- ROTATE handle mousedown ----------
   const onRotateHandleMouseDown = (e: React.MouseEvent, table: Table) => {
     e.stopPropagation();
     e.preventDefault();
@@ -195,7 +538,6 @@ export function TableMap() {
     setLiveRotation(table.rotation ?? 0);
   };
 
-  // ---------- CREATE ----------
   const handleCreateNew = async (type: Table['type']) => {
     const suffix = Date.now().toString().slice(-4);
     const prefix = type === 'wall' ? 'W' : type === 'bar' ? 'B' : 'M';
@@ -214,21 +556,100 @@ export function TableMap() {
     };
     try {
       await addTable(newTable);
-      setEditingTableId(newTable.id);
+      setSelectedTableIds(new Set([newTable.id]));
     } catch (err) {
       console.error(err);
       alert('Error al crear el elemento.');
     }
   };
 
-  // ---------- RENDER TABLE ELEMENT ----------
+  const STATUS_CLASSES: Record<Table['status'], string> = {
+    available: "bg-emerald-500 border-emerald-700 text-white",
+    occupied_no_order: "bg-sky-500 border-sky-700 text-white",
+    waiting_food: "bg-amber-500 border-amber-700 text-white",
+    consuming: "bg-purple-500 border-purple-700 text-white",
+    checkout: "bg-rose-500 border-rose-700 text-white",
+    dirty: "bg-stone-500 border-stone-700 text-white",
+    occupied: "bg-rose-500 border-rose-700 text-white",
+  };
+
+  const ChairCircle = ({ cx, cy, status }: { cx: number, cy: number, status: string, key?: string | number }) => (
+    <div
+      className={cn(
+        "absolute w-4.5 h-4.5 rounded-full border-2 shadow-md transition-colors",
+        status === 'available' ? "bg-slate-100 border-white" : "bg-white border-slate-300"
+      )}
+      style={{ top: cy - 9, left: cx - 9 }}
+    />
+  );
+
+  const renderChairs = (table: Table) => {
+    if (table.type === 'stool' || table.type === 'wall' || table.type === 'bar') return null;
+
+    if (table.type === 'round' || !table.chairsConfig) {
+      const totalChairs = table.chairsConfig
+        ? (table.chairsConfig.top + table.chairsConfig.bottom + table.chairsConfig.left + table.chairsConfig.right)
+        : table.capacity;
+
+      return (
+        <div className="absolute inset-0 pointer-events-none">
+          {Array.from({ length: totalChairs }).map((_, i) => {
+            const angle = (i / totalChairs) * Math.PI * 2;
+            const r = Math.min(table.width, table.height) * 0.55;
+            const cx = table.width / 2 + Math.cos(angle) * r;
+            const cy = table.height / 2 + Math.sin(angle) * r;
+            return <ChairCircle key={i} cx={cx} cy={cy} status={table.status} />;
+          })}
+        </div>
+      );
+    }
+
+    const { top = 0, bottom = 0, left = 0, right = 0 } = table.chairsConfig;
+    const S = 12;
+    const chairs: React.ReactNode[] = [];
+
+    for (let j = 0; j < top; j++) {
+      const cx = (table.width / (top + 1)) * (j + 1);
+      chairs.push(<ChairCircle key={`t-${j}`} cx={cx} cy={-S} status={table.status} />);
+    }
+    for (let j = 0; j < bottom; j++) {
+      const cx = (table.width / (bottom + 1)) * (j + 1);
+      chairs.push(<ChairCircle key={`b-${j}`} cx={cx} cy={table.height + S} status={table.status} />);
+    }
+    for (let j = 0; j < left; j++) {
+      const cy = (table.height / (left + 1)) * (j + 1);
+      chairs.push(<ChairCircle key={`l-${j}`} cx={-S} cy={cy} status={table.status} />);
+    }
+    for (let j = 0; j < right; j++) {
+      const cy = (table.height / (right + 1)) * (j + 1);
+      chairs.push(<ChairCircle key={`r-${j}`} cx={table.width + S} cy={cy} status={table.status} />);
+    }
+
+    return <div className="absolute inset-0 pointer-events-none">{chairs}</div>;
+  };
+
+  const getTableTimer = (table: Table) => {
+    if (table.status === 'available' || table.status === 'dirty' || !table.lastUpdate) return null;
+    const elapsedMinutes = Math.floor((Date.now() - new Date(table.lastUpdate).getTime()) / 60000);
+    const baseSize = Math.min(table.width, table.height);
+    const fontSize = Math.max(9, Math.round(baseSize * 0.1));
+    return (
+      <div 
+        className="flex items-center gap-1 font-black mt-1 opacity-90 bg-black/10 px-1.5 py-0.5 rounded-full text-white"
+        style={{ fontSize: `${fontSize}px` }}
+      >
+        <span>⏱ {elapsedMinutes}m</span>
+      </div>
+    );
+  };
+
   const renderTable = (table: Table) => {
     const isDragging = draggingId === table.id;
     const isRotating = rotatingId === table.id;
     const x = isDragging ? dragPos.x : table.x;
     const y = isDragging ? dragPos.y : table.y;
     const rotation = isRotating ? liveRotation : (table.rotation ?? 0);
-    const isSelected = editingTableId === table.id && isEditingLayout;
+    const isSelected = selectedTableIds.has(table.id) && (isEditingLayout || isMarqueeMode);
 
     return (
       <div
@@ -250,15 +671,38 @@ export function TableMap() {
         }}
         onMouseDown={(e) => onMouseDown(e, table)}
         onClick={(e) => {
+          e.stopPropagation();
           if (isEditingLayout) {
-            e.stopPropagation(); // prevent canvas deselect from firing
-            setEditingTableId(table.id);
+            if (!isMarqueeMode) {
+              setSelectedTableIds(new Set([table.id]));
+            } else {
+              const next = new Set(selectedTableIds);
+              if (next.has(table.id)) {
+                next.delete(table.id);
+              } else {
+                next.add(table.id);
+              }
+              setSelectedTableIds(next);
+            }
           } else if (table.type !== 'wall') {
-            setSelectedTableId(table.id);
+            if (isMarqueeMode) {
+              const next = new Set(selectedTableIds);
+              if (next.has(table.id)) {
+                next.delete(table.id);
+              } else {
+                next.add(table.id);
+              }
+              setSelectedTableIds(next);
+            } else {
+              if (mergeSourceId) {
+                handleMergeTables(table.id);
+              } else {
+                setSelectedTableId(table.id);
+              }
+            }
           }
         }}
       >
-        {/* Body */}
         {table.type === 'wall' ? (
           <div className="w-full h-full bg-slate-500 border-2 border-slate-600 rounded-sm shadow-lg flex items-center justify-center overflow-hidden">
             <div className="w-full h-full opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg,#000 0,#000 1px,transparent 0,transparent 50%)', backgroundSize: '10px 10px' }} />
@@ -272,40 +716,39 @@ export function TableMap() {
           </div>
         ) : (
           <div className={cn(
-            "w-full h-full flex flex-col items-center justify-center relative border-4 shadow-lg",
+            "w-full h-full flex flex-col items-center justify-center relative border-4 shadow-lg transition-all",
             (table.type === 'round' || table.type === 'stool') ? "rounded-full" : "rounded-2xl",
-            table.status === 'occupied'
-              ? "bg-rose-500 border-rose-700 text-white"
-              : isEditingLayout
-                ? "bg-indigo-50/60 border-dashed border-indigo-300 text-indigo-700"
-                : "bg-white border-slate-100 text-slate-800 hover:border-indigo-300",
+            STATUS_CLASSES[table.status] || "bg-white border-slate-100 text-slate-800"
           )}>
-            <span className="text-[9px] font-black uppercase tracking-tight z-10 opacity-70">{table.id}</span>
-            {table.type !== 'stool' && (
-              <div className="absolute inset-0 pointer-events-none">
-                {Array.from({ length: table.capacity }).map((_, i) => {
-                  const angle = (i / table.capacity) * Math.PI * 2;
-                  const r = Math.min(table.width, table.height) * 0.55;
-                  const cx = table.width / 2 + Math.cos(angle) * r;
-                  const cy = table.height / 2 + Math.sin(angle) * r;
-                  return (
-                    <div
-                      key={i}
-                      className={cn(
-                        "absolute w-4 h-4 rounded-full border-2 shadow-sm",
-                        table.status === 'occupied' ? "bg-rose-400 border-rose-600" : "bg-slate-100 border-white"
-                      )}
-                      style={{ top: cy - 8, left: cx - 8 }}
-                    />
-                  );
-                })}
-              </div>
-            )}
+            {(() => {
+              const baseSize = Math.min(table.width, table.height);
+              const fontSizeId = Math.max(9, Math.round(baseSize * 0.11));
+              const fontSizeWaiter = Math.max(8, Math.round(baseSize * 0.09));
+              return (
+                <>
+                  <span 
+                    className="font-black uppercase tracking-tight z-10 opacity-70"
+                    style={{ fontSize: `${fontSizeId}px` }}
+                  >
+                    {table.id}
+                  </span>
+                  {table.waiterName && (
+                    <span 
+                      className="font-black bg-black/10 px-1 rounded uppercase scale-90 mt-0.5"
+                      style={{ fontSize: `${fontSizeWaiter}px` }}
+                    >
+                      {table.waiterName}
+                    </span>
+                  )}
+                </>
+              );
+            })()}
+            {getTableTimer(table)}
+            {renderChairs(table)}
           </div>
         )}
 
-        {/* Rotate handle — only when selected in edit mode and rotatable */}
-        {isSelected && isRotatable(table.type) && (
+        {isSelected && isEditingLayout && isRotatable(table.type) && (
           <div
             title="Rotar"
             className="absolute -top-8 left-1/2 -translate-x-1/2 w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center cursor-grab shadow-lg shadow-indigo-400/60 z-20 hover:bg-indigo-700 border-2 border-white"
@@ -315,9 +758,20 @@ export function TableMap() {
           </div>
         )}
 
-        {/* Connector line from handle to object */}
-        {isSelected && isRotatable(table.type) && (
+        {isSelected && isEditingLayout && isRotatable(table.type) && (
           <div className="absolute -top-6 left-1/2 -translate-x-px w-0.5 h-4 bg-indigo-400/60 pointer-events-none z-10" />
+        )}
+
+        {isSelected && isEditingLayout && (
+          <div
+            className="absolute right-0 bottom-0 w-8 h-8 flex items-center justify-center cursor-se-resize translate-x-3 translate-y-3 z-30 group/resize animate-in zoom-in-50 duration-200"
+            style={{ touchAction: 'none' }}
+            onPointerDown={(e) => handleResizeStart(e, table)}
+            onPointerMove={(e) => handleResizeMove(e, table)}
+            onPointerUp={(e) => handleResizeEnd(e, table)}
+          >
+            <div className="w-2.5 h-2.5 bg-indigo-600 border border-white rounded-full shadow-md group-hover/resize:scale-125 transition-transform" />
+          </div>
         )}
       </div>
     );
@@ -330,7 +784,6 @@ export function TableMap() {
       onMouseUp={onMouseUp}
       onMouseLeave={onMouseUp}
     >
-      {/* Sidebar Toolbox */}
       {isEditingLayout && (
         <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-2xl z-30">
           <div className="p-6 border-b border-slate-100 bg-indigo-50/30">
@@ -428,8 +881,126 @@ export function TableMap() {
                   </div>
                 )}
 
+                {editingTable.type !== 'wall' && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Mozo Asignado</label>
+                    <input
+                      type="text"
+                      value={editingTable.waiterName || ''}
+                      onChange={(e) => updateTable(editingTable.id, { waiterName: e.target.value })}
+                      placeholder="Nombre del Mozo..."
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:border-indigo-500 font-bold"
+                    />
+                  </div>
+                )}
+
+                {(editingTable.type === 'square' || editingTable.type === 'rectangle') && (
+                  <div className="space-y-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                    <h5 className="text-[10px] font-black uppercase text-indigo-400 tracking-wider">Disposición de Sillas</h5>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => {
+                          const cap = editingTable.capacity || 4;
+                          const half = Math.floor(cap / 2);
+                          updateTable(editingTable.id, {
+                            chairsConfig: { top: half, bottom: cap - half, left: 0, right: 0 },
+                            capacity: cap
+                          });
+                        }}
+                        className="py-2 bg-white/10 hover:bg-white/20 text-[9px] font-bold rounded-lg uppercase"
+                      >
+                        Paralelo H
+                      </button>
+                      <button
+                        onClick={() => {
+                          const cap = editingTable.capacity || 4;
+                          const half = Math.floor(cap / 2);
+                          updateTable(editingTable.id, {
+                            chairsConfig: { top: 0, bottom: 0, left: half, right: cap - half },
+                            capacity: cap
+                          });
+                        }}
+                        className="py-2 bg-white/10 hover:bg-white/20 text-[9px] font-bold rounded-lg uppercase"
+                      >
+                        Paralelo V
+                      </button>
+                      <button
+                        onClick={() => {
+                          updateTable(editingTable.id, { chairsConfig: undefined });
+                        }}
+                        className="py-2 bg-white/10 hover:bg-white/20 text-[9px] font-bold rounded-lg uppercase"
+                      >
+                        Radial
+                      </button>
+                      <button
+                        onClick={() => {
+                          updateTable(editingTable.id, {
+                            chairsConfig: { top: 0, bottom: 0, left: 0, right: 0 },
+                            capacity: 0
+                          });
+                        }}
+                        className="py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[9px] font-bold rounded-lg uppercase"
+                      >
+                        Quitar Todas
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col items-center gap-2 pt-2 border-t border-white/5">
+                      <span className="text-[9px] font-bold text-slate-400 uppercase">Ajuste de Bordes</span>
+                      <div className="relative w-40 h-40 flex items-center justify-center bg-black/20 rounded-full border border-white/5">
+                        
+                        <div className="absolute top-1 flex flex-col items-center">
+                          <span className="text-[8px] font-black text-slate-500">N</span>
+                          <div className="flex gap-1">
+                            <button onClick={() => adjustChair(editingTable, 'top', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
+                            <span className="w-4 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.top || 0}</span>
+                            <button onClick={() => adjustChair(editingTable, 'top', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between w-full px-1">
+                          <div className="flex flex-col items-center">
+                            <span className="text-[8px] font-black text-slate-500">O</span>
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => adjustChair(editingTable, 'left', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
+                              <span className="w-4 text-center text-xs font-black">{editingTable.chairsConfig?.left || 0}</span>
+                              <button onClick={() => adjustChair(editingTable, 'left', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <span className="text-[8px] font-black text-slate-500">E</span>
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => adjustChair(editingTable, 'right', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
+                              <span className="w-4 text-center text-xs font-black">{editingTable.chairsConfig?.right || 0}</span>
+                              <button onClick={() => adjustChair(editingTable, 'right', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="absolute bottom-1 flex flex-col items-center">
+                          <div className="flex gap-1">
+                            <button onClick={() => adjustChair(editingTable, 'bottom', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
+                            <span className="w-4 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.bottom || 0}</span>
+                            <button onClick={() => adjustChair(editingTable, 'bottom', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                          </div>
+                          <span className="text-[8px] font-black text-slate-500 mt-0.5">S</span>
+                        </div>
+
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <button
-                  onClick={() => { if (confirm('¿Eliminar elemento?')) { removeTable(editingTable.id); setEditingTableId(null); } }}
+                  onClick={() => setQrModalTableId(editingTable.id)}
+                  className="w-full py-3 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-all flex items-center justify-center gap-2 mb-2"
+                >
+                  <Smartphone className="w-4 h-4" /> Generar Código QR
+                </button>
+
+                <button
+                  onClick={() => { if (confirm('¿Eliminar elemento?')) { removeTable(editingTable.id); setSelectedTableIds(new Set()); } }}
                   className="w-full py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
                 >
                   <Trash2 className="w-4 h-4" /> Eliminar
@@ -443,7 +1014,6 @@ export function TableMap() {
             )}
           </div>
 
-          {/* Saved Layouts Section */}
           <div className="px-5 pb-5 space-y-4">
             <button
               onClick={() => setShowSavedPlans(!showSavedPlans)}
@@ -454,7 +1024,7 @@ export function TableMap() {
             </button>
 
             {showSavedPlans ? (
-          <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
                 {floorPlans.length === 0 ? (
                   <p className="text-[10px] text-slate-400 text-center py-4 italic">No tienes plantillas guardadas</p>
                 ) : (
@@ -525,7 +1095,7 @@ export function TableMap() {
 
           <div className="p-6 border-t border-slate-100">
             <button
-              onClick={() => { setIsEditingLayout(false); setEditingTableId(null); }}
+              onClick={() => { setIsEditingLayout(false); setSelectedTableIds(new Set()); }}
               className="w-full py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black text-sm shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 active:scale-95"
             >
               <Save className="w-5 h-5" /> GUARDAR DISEÑO
@@ -537,18 +1107,94 @@ export function TableMap() {
       {/* Main Map */}
       <div className="flex-1 p-8 flex flex-col relative overflow-hidden">
         <div className="mb-6 flex justify-between items-center shrink-0">
-          <div>
-            <h2 className="font-black text-4xl text-slate-900 tracking-tight">Diseño del Salón</h2>
-            <div className="flex items-center gap-4 mt-3">
-              <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
-                <Users className="w-4 h-4 text-indigo-500" />
-                {tables.filter(t => t.type !== 'wall').reduce((acc, t) => acc + (t.capacity || 0), 0)} PLAZAS TOTALES
-              </div>
-              <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold bg-emerald-50 px-4 py-2 rounded-full shadow-sm border border-emerald-100">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                {tables.filter(t => t.status === 'available' && t.type !== 'wall').length} MESAS LIBRES
+          <div className="flex items-center gap-6">
+            <div>
+              <h2 className="font-black text-4xl text-slate-900 tracking-tight">Diseño del Salón</h2>
+              <div className="flex items-center gap-4 mt-3">
+                <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
+                  <Users className="w-4 h-4 text-indigo-500" />
+                  {tables.filter(t => t.type !== 'wall').reduce((acc, t) => acc + (t.capacity || 0), 0)} PLAZAS TOTALES
+                </div>
+                <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold bg-emerald-50 px-4 py-2 rounded-full shadow-sm border border-emerald-100">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  {tables.filter(t => t.status === 'available' && t.type !== 'wall').length} MESAS LIBRES
+                </div>
               </div>
             </div>
+
+            {!isEditingLayout && (
+              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-sm ml-4">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Mozo:</span>
+                <select
+                  value={waiterFilter}
+                  onChange={(e) => setWaiterFilter(e.target.value)}
+                  className="text-xs font-bold text-slate-700 outline-none bg-transparent cursor-pointer"
+                >
+                  <option value="Todos">Todos</option>
+                  {Array.from(new Set(tables.map(t => t.waiterName).filter(Boolean))).map(name => (
+                    <option key={name} value={name!}>{name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {!isEditingLayout && !isMarqueeMode && (
+              <button
+                onClick={() => {
+                  if (mergeSourceId) {
+                    setMergeSourceId(null);
+                  } else {
+                    const activeOccupied = tables.filter(t => t.status !== 'available' && t.type !== 'wall');
+                    if (activeOccupied.length === 0) {
+                      alert('No hay mesas ocupadas para iniciar una unión.');
+                      return;
+                    }
+                    const sourceId = prompt(`Ingrese el ID de la mesa de origen (ej. T-01): \nMesas Ocupadas: ${activeOccupied.map(t=>t.id).join(', ')}`);
+                    if (sourceId && tables.some(t => t.id === sourceId)) {
+                      setMergeSourceId(sourceId);
+                    } else if (sourceId) {
+                      alert('Mesa de origen inválida.');
+                    }
+                  }
+                }}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all active:scale-95 shadow-sm border",
+                  mergeSourceId
+                    ? "bg-rose-500 border-rose-500 text-white animate-pulse"
+                    : "bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100"
+                )}
+              >
+                {mergeSourceId ? `Cancelando acople (Desde ${mergeSourceId})` : 'Unir Mesas (Merge)'}
+              </button>
+            )}
+
+            {isEditingLayout && (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setIsMarqueeMode(!isMarqueeMode);
+                    setSelectedTableIds(new Set());
+                  }}
+                  className={cn(
+                    "flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-black transition-all shadow-sm border active:scale-95",
+                    isMarqueeMode 
+                      ? "bg-indigo-600 border-indigo-600 text-white shadow-indigo-100" 
+                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                  )}
+                >
+                  <Layout className="w-5 h-5 text-indigo-400" /> SELECCIÓN MÚLTIPLE: {isMarqueeMode ? 'ON' : 'OFF'}
+                </button>
+              </div>
+            )}
+
+            {!isEditingLayout && isMarqueeMode && selectedTableIds.size >= 2 && (
+              <button
+                onClick={handleMergeSelectedGroup}
+                className="flex items-center gap-2 px-6 py-4 bg-amber-500 border-amber-600 text-white rounded-2xl text-sm font-black hover:bg-amber-600 transition-all shadow-md active:scale-95 animate-pulse"
+              >
+                <ArrowRightLeft className="w-5 h-5" /> UNIR MESAS SELECCIONADAS ({selectedTableIds.size})
+              </button>
+            )}
           </div>
 
           {!isEditingLayout && (
@@ -574,17 +1220,22 @@ export function TableMap() {
           )}
         </div>
 
+        {isMarqueeMode && isEditingLayout && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-6 py-2.5 rounded-full shadow-lg text-xs font-black uppercase tracking-wider z-40 border border-white/20 animate-bounce">
+            Modo Selección Múltiple Activo · Arrastra en zona vacía para agrupar
+          </div>
+        )}
+
         <div
           ref={canvasRef}
           className={cn(
-            "flex-1 w-full bg-white rounded-[3.5rem] border-4 border-slate-200 relative overflow-hidden shadow-inner",
+            "flex-1 w-full bg-white rounded-[3.5rem] border-4 border-slate-950 relative overflow-hidden shadow-inner shadow-slate-900/10",
             isEditingLayout ? "ring-[12px] ring-indigo-50 border-indigo-100" : "",
-            isPanning ? "cursor-grabbing" : !isEditingLayout ? "cursor-grab" : ""
+            isPanning ? "cursor-move" : !isEditingLayout ? "cursor-default" : "cursor-default"
           )}
           style={{ backgroundImage: 'radial-gradient(#cbd5e1 1.5px, transparent 1.5px)', backgroundSize: '40px 40px' }}
-          onWheel={handleWheel}
           onMouseDown={onCanvasMouseDown}
-          onClick={() => isEditingLayout && setEditingTableId(null)}
+          onClick={() => isEditingLayout && setSelectedTableIds(new Set())}
         >
           {/* Transformed content layer */}
           <div
@@ -597,7 +1248,22 @@ export function TableMap() {
               transformOrigin: '0 0',
             }}
           >
-            {tables.map(table => renderTable(table))}
+            {tables
+              .filter(table => isEditingLayout || waiterFilter === 'Todos' || table.waiterName === waiterFilter || table.type === 'wall')
+              .map(table => renderTable(table))}
+
+            {/* Caja del Marquee translúcida */}
+            {selectionBox && (
+              <div
+                className="bg-indigo-600/15 border-2 border-dashed border-indigo-500 pointer-events-none absolute z-50 rounded"
+                style={{
+                  left: Math.min(selectionBox.x1, selectionBox.x2),
+                  top: Math.min(selectionBox.y1, selectionBox.y2),
+                  width: Math.abs(selectionBox.x2 - selectionBox.x1),
+                  height: Math.abs(selectionBox.y2 - selectionBox.y1),
+                }}
+              />
+            )}
           </div>
 
           {/* Zoom controls */}
@@ -629,7 +1295,15 @@ export function TableMap() {
           <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-7xl h-[85vh] flex overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="flex-1 bg-slate-50/50 flex flex-col border-r border-slate-100">
               <div className="p-10 bg-white border-b border-slate-100 flex justify-between items-center">
-                <h3 className="font-black text-3xl text-slate-900">Mesa {selectedTableId}</h3>
+                <div className="flex items-center gap-4">
+                  <h3 className="font-black text-3xl text-slate-900">Mesa {selectedTableId}</h3>
+                  <button
+                    onClick={() => setQrModalTableId(selectedTableId)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-black transition-all"
+                  >
+                    <Smartphone className="w-4 h-4" /> QR Mesa
+                  </button>
+                </div>
                 <button onClick={() => setSelectedTableId(null)} className="p-2 text-slate-400 hover:text-rose-500"><X className="w-8 h-8" /></button>
               </div>
               <div className="flex-1 overflow-y-auto p-10 grid grid-cols-3 gap-6">
@@ -782,6 +1456,78 @@ export function TableMap() {
                 className="w-full h-16 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
               >
                 FINALIZAR Y COBRAR <ArrowRight className="h-6 w-6" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {qrModalTableId && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[200] flex items-center justify-center p-6" onClick={() => setQrModalTableId(null)}>
+          <div className="bg-white rounded-[2.5rem] shadow-2xl p-10 max-w-sm w-full text-center space-y-6" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center">
+              <h4 className="font-black text-xl text-slate-900">Código QR - Mesa {qrModalTableId}</h4>
+              <button onClick={() => setQrModalTableId(null)} className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg"><X className="w-6 h-6" /></button>
+            </div>
+            
+            <div className="bg-slate-50 p-6 rounded-3xl flex justify-center border border-slate-100 shadow-inner">
+              {qrUrl ? (
+                <img src={qrUrl} alt={`QR Mesa ${qrModalTableId}`} className="w-64 h-64 mix-blend-multiply" />
+              ) : (
+                <div className="w-64 h-64 flex items-center justify-center text-slate-400 text-sm">Generando...</div>
+              )}
+            </div>
+            
+            <p className="text-xs text-slate-500 font-medium">
+              Enlace: <span className="font-mono text-[10px] break-all">{`${window.location.origin}/#/cliente/${qrModalTableId}`}</span>
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 pt-2">
+              <button 
+                onClick={() => {
+                  const link = document.createElement('a');
+                  link.href = qrUrl;
+                  link.download = `QR_Mesa_${qrModalTableId}.png`;
+                  link.click();
+                }}
+                className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-sm transition-all"
+              >
+                Descargar
+              </button>
+              <button 
+                onClick={() => {
+                  const printWindow = window.open('', '_blank');
+                  if (printWindow) {
+                    printWindow.document.write(`
+                      <html>
+                        <head>
+                          <title>QR Mesa ${qrModalTableId}</title>
+                          <style>
+                            body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; margin: 0; }
+                            img { width: 300px; height: 300px; }
+                            h1 { margin-top: 20px; font-size: 24px; color: #1e293b; }
+                            p { font-size: 14px; color: #64748b; margin-top: 5px; }
+                          </style>
+                        </head>
+                        <body>
+                          <img src="${qrUrl}" />
+                          <h1>MESA ${qrModalTableId}</h1>
+                          <p>Escanea para ver la carta y pedir</p>
+                          <script>
+                            window.onload = function() {
+                              window.print();
+                              setTimeout(() => window.close(), 500);
+                            }
+                          </script>
+                        </body>
+                      </html>
+                    `);
+                    printWindow.document.close();
+                  }
+                }}
+                className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all"
+              >
+                Imprimir
               </button>
             </div>
           </div>

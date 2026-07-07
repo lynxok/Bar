@@ -24,6 +24,7 @@ export interface Order {
   status: 'open' | 'closed';
   timestamp: string;
   paymentMethod?: string;
+  customerId?: string;
 }
 
 export interface Expense {
@@ -46,7 +47,10 @@ export interface Comanda {
 export interface Reward {
   id?: number;
   name: string;
-  points: number;
+  /** Alias principal — coste en puntos para canjear el premio */
+  pointsCost: number;
+  /** @deprecated usar pointsCost */
+  points?: number;
 }
 
 export interface Customer {
@@ -74,9 +78,16 @@ export interface PaymentOrder {
   status: 'Pendiente' | 'Pagado';
 }
 
+export interface ChairsConfig {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
 export interface TableState {
   id: string;
-  status: 'available' | 'occupied' | 'checkout';
+  status: 'available' | 'occupied_no_order' | 'waiting_food' | 'consuming' | 'checkout' | 'dirty' | 'occupied';
   order: any[];
   lastUpdate: string;
   x: number;
@@ -86,6 +97,9 @@ export interface TableState {
   height: number;
   capacity: number;
   rotation?: number;  // degrees, 0-360
+  chairsConfig?: ChairsConfig;
+  waiterName?: string;
+  label?: string;
 }
 
 export interface SystemLog {
@@ -110,13 +124,15 @@ export interface Shift {
   id?: number;
   cashierName: string;
   startTime: string;
-  endTime: string;
+  endTime?: string; // Optional because shift can be active
   expectedCash: number;
   declaredCash: number;
   difference: number;
   cardTotal: number;
   transferTotal: number;
   comments: string;
+  initialCash: number; // Fondo inicial de caja
+  status: 'active' | 'closed';
 }
 
 export interface User {
@@ -142,7 +158,43 @@ export interface FloorPlan {
   name: string;
   tables: TableState[];
   timestamp: string;
-  isDefault?: boolean;
+  /** 1 = default, 0 = not default (number for Dexie index) */
+  isDefault?: number;
+}
+
+export interface LoyaltyConfig {
+  id: string; // "global"
+  pointValue: number;
+  tierConfig: { name: string; minPoints: number; color: string }[];
+  promotions: {
+    id: string;
+    name: string;
+    multiplier: number;
+    targets: string[];
+    startDate?: string;
+    endDate?: string;
+    active: boolean;
+  }[];
+}
+
+export interface LoyaltyTransaction {
+  id?: number;
+  customerDni: string;
+  customerName: string;
+  type: 'purchase' | 'redemption' | 'adjustment';
+  points: number;
+  description: string;
+  timestamp: string;
+}
+
+export interface ClientOrder {
+  id?: number;
+  tableId: string;
+  customerId: string; // generated client-side comensal session
+  items: any[];
+  total: number;
+  status: 'pending' | 'approved' | 'rejected';
+  timestamp: string;
 }
 
 export class BarDatabase extends Dexie {
@@ -163,10 +215,13 @@ export class BarDatabase extends Dexie {
   users!: Table<User>;
   messages!: Table<Message>;
   floorPlans!: Table<FloorPlan>;
+  loyaltyConfig!: Table<LoyaltyConfig>;
+  loyaltyTransactions!: Table<LoyaltyTransaction>;
+  clientOrders!: Table<ClientOrder>;
 
   constructor() {
     super('BarDatabase');
-    this.version(7).stores({
+    this.version(9).stores({
       products: '++id, name, sku, category',
       orders: '++id, tableId, status, timestamp',
       expenses: '++id, provider, date, category',
@@ -176,14 +231,18 @@ export class BarDatabase extends Dexie {
       systemLogs: '++id, level, timestamp',
       auditLogs: '++id, userId, action, module, timestamp',
       comandas: '++id, tableId, status, timestamp',
-      rewards: '++id, name, points',
+      rewards: '++id, name, pointsCost',
       customers: '++id, dni, name',
-      shifts: '++id, endTime',
+      shifts: '++id, endTime, status',
       users: '++id, name, role',
       messages: '++id, timestamp, senderRole, status',
-      floorPlans: '++id, name, timestamp'
+      floorPlans: '++id, name, timestamp',
+      loyaltyConfig: 'id',
+      loyaltyTransactions: '++id, customerDni, timestamp',
+      clientOrders: '++id, tableId, status, timestamp'
     });
   }
 }
 
 export const db = new BarDatabase();
+

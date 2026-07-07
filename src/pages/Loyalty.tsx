@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useMemo, useState, useRef, useEffect } from "react";
+import { db } from "../db/database";
 import {
   Award,
   Users,
@@ -12,7 +13,7 @@ import {
   TrendingUp,
   History,
   Mail,
-  X, // imported X for modal
+  X,
   Settings,
   Edit2,
   Zap,
@@ -33,32 +34,15 @@ import {
 } from 'recharts';
 import { cn } from "../lib/utils";
 import { useStore } from "../contexts/StoreContext";
-import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from "./Inventory";
-
-interface Transaction {
-  id: string;
-  date: string;
-  type: 'purchase' | 'redemption' | 'adjustment';
-  description: string;
-  amount: number;
-}
-
-const INITIAL_TIERS = [
-  { name: 'Bronze', minPoints: 0, color: 'orange' },
-  { name: 'Silver', minPoints: 500, color: 'slate' },
-  { name: 'Gold', minPoints: 1500, color: 'amber' },
-  { name: 'Platinum', minPoints: 3500, color: 'indigo' },
-];
+import { INITIAL_CATEGORIES } from "./Inventory";
 
 const getTierStyle = (tierName: string, index: number = 0) => {
   const name = tierName.toLowerCase();
-  
   if (name.includes('platinum')) return 'bg-slate-900 border-slate-700 text-slate-100 shadow-sm';
   if (name.includes('gold')) return 'bg-amber-100 border-amber-200 text-amber-800';
   if (name.includes('silver')) return 'bg-slate-100 border-slate-200 text-slate-700';
   if (name.includes('bronze')) return 'bg-orange-50 border-orange-100 text-orange-800';
-  
-  // Fallback cyclic styles
+
   const styles = [
     'bg-orange-50 border-orange-100 text-orange-800',
     'bg-slate-100 border-slate-200 text-slate-700',
@@ -70,24 +54,32 @@ const getTierStyle = (tierName: string, index: number = 0) => {
 };
 
 export function Loyalty() {
-  const { orders, customers: customersData, rewards: catalogData, addCustomer, redeemPoints } = useStore();
-  const [redemptionsData, setRedemptionsData] = React.useState<any[]>([]);
-  const [promotionsData, setPromotionsData] = React.useState<any[]>([]);
-  const [tierConfig, setTierConfig] = React.useState(INITIAL_TIERS);
-  const [isTiersModalOpen, setIsTiersModalOpen] = React.useState(false);
-  const [redeemingCustomer, setRedeemingCustomer] = React.useState<any>(null);
-  const [selectedCustomer, setSelectedCustomer] = React.useState<any>(null);
-  const [profileTab, setProfileTab] = React.useState<'info' | 'history'>('info');
-  const [isCatalogModalOpen, setIsCatalogModalOpen] = React.useState(false);
-  const [isPromotionsModalOpen, setIsPromotionsModalOpen] = React.useState(false);
-  const [scanQuery, setScanQuery] = React.useState('');
+  const {
+    orders,
+    customers: customersData,
+    rewards: catalogData,
+    addCustomer,
+    redeemPoints,
+    updateCustomerPoints,
+    loyaltyConfig,
+    loyaltyTransactions,
+    updateLoyaltyConfig
+  } = useStore();
+
+  const [isTiersModalOpen, setIsTiersModalOpen] = useState(false);
+  const [redeemingCustomer, setRedeemingCustomer] = useState<any>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [profileTab, setProfileTab] = useState<'info' | 'history'>('info');
+  const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
+  const [isPromotionsModalOpen, setIsPromotionsModalOpen] = useState(false);
+  const [scanQuery, setScanQuery] = useState('');
   
   // Catalog Form
-  const [newPrizeName, setNewPrizeName] = React.useState('');
-  const [newPrizePoints, setNewPrizePoints] = React.useState('');
-  const [newPrizeIcon, setNewPrizeIcon] = React.useState('🎁');
-  const [newPrizeImage, setNewPrizeImage] = React.useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [newPrizeName, setNewPrizeName] = useState('');
+  const [newPrizePoints, setNewPrizePoints] = useState('');
+  const [newPrizeIcon, setNewPrizeIcon] = useState('🎁');
+  const [newPrizeImage, setNewPrizeImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -101,36 +93,29 @@ export function Loyalty() {
   };
 
   // Promotions Form
-  const [newPromoName, setNewPromoName] = React.useState('');
-  const [newPromoMultiplier, setNewPromoMultiplier] = React.useState('2');
-  const [selectedTargets, setSelectedTargets] = React.useState<string[]>([]);
-  const [isTargetDropdownOpen, setIsTargetDropdownOpen] = React.useState(false);
-  const [targetSearch, setTargetSearch] = React.useState('');
-  const [newPromoStart, setNewPromoStart] = React.useState('');
-  const [newPromoEnd, setNewPromoEnd] = React.useState('');
+  const [newPromoName, setNewPromoName] = useState('');
+  const [newPromoMultiplier, setNewPromoMultiplier] = useState('2');
+  const [selectedTargets, setSelectedTargets] = useState<string[]>([]);
+  const [newPromoStart, setNewPromoStart] = useState('');
+  const [newPromoEnd, setNewPromoEnd] = useState('');
 
-  const toggleTarget = (target: string) => {
-    setSelectedTargets(prev => 
-      prev.includes(target) 
-        ? prev.filter(t => t !== target) 
-        : [...prev, target]
-    );
-  };
-
-  const [pointValue, setPointValue] = React.useState(0.005);
-  const [isEditingPointValue, setIsEditingPointValue] = React.useState(false);
-  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = React.useState(false);
-  const [newCustomer, setNewCustomer] = React.useState({
+  const [isEditingPointValue, setIsEditingPointValue] = useState(false);
+  const [isNewCustomerModalOpen, setIsNewCustomerModalOpen] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
     name: '',
     email: '',
     phone: '',
     id: '', // DNI/Member Number
     tier: 'Bronze',
     points: 0,
-    history: []
   });
 
-  const chartData = React.useMemo(() => {
+  // Extract variables from Dexie loyaltyConfig state
+  const pointValue = loyaltyConfig?.pointValue ?? 0.005;
+  const tierConfig = loyaltyConfig?.tierConfig ?? [];
+  const promotionsData = loyaltyConfig?.promotions ?? [];
+
+  const chartData = useMemo(() => {
     const last5Days = Array.from({ length: 5 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (4 - i));
@@ -140,13 +125,10 @@ export function Loyalty() {
     return last5Days.map(date => {
       const dayOrders = orders.filter(o => o.timestamp && o.timestamp.startsWith(date));
       const totalSales = dayOrders.reduce((acc, o) => acc + (o.total || 0), 0);
-      
-      // Calculate points (e.g., 1 point per $100)
       let points = Math.floor(totalSales / 100);
       
-      // Apply active multipliers to the "estimation"
       const maxMultiplier = promotionsData
-        .filter(p => p.isActive)
+        .filter(p => p.active)
         .reduce((max, p) => Math.max(max, p.multiplier), 1);
         
       return {
@@ -159,21 +141,8 @@ export function Loyalty() {
   
   const handleRedeem = async (prize: any) => {
     if (!redeemingCustomer || redeemingCustomer.points < prize.pointsCost) return;
-
     try {
-      await redeemPoints(redeemingCustomer.dni, prize.pointsCost);
-      
-      // Add to local redemptions history for display
-      setRedemptionsData(prev => [
-        {
-          customer: redeemingCustomer.name,
-          item: prize.name,
-          points: -prize.pointsCost,
-          time: "Justo ahora"
-        },
-        ...prev
-      ]);
-
+      await redeemPoints(redeemingCustomer.dni, prize.pointsCost, `Canje de Premio: ${prize.name}`);
       setRedeemingCustomer(null);
       alert("Canje realizado con éxito");
     } catch (err: any) {
@@ -185,8 +154,7 @@ export function Loyalty() {
     if (!newPrizeName || !newPrizePoints) return;
     await db.rewards.add({
       name: newPrizeName,
-      pointsCost: parseInt(newPrizePoints, 10),
-      isActive: true
+      pointsCost: parseInt(newPrizePoints, 10)
     });
     setNewPrizeName('');
     setNewPrizePoints('');
@@ -198,18 +166,20 @@ export function Loyalty() {
     await db.rewards.delete(id);
   };
 
-  const handleAddPromotion = () => {
+  const handleAddPromotion = async () => {
     if (!newPromoName || !newPromoStart || !newPromoEnd) return;
     const newPromo = {
       id: 'prom' + Date.now(),
       name: newPromoName,
       multiplier: parseFloat(newPromoMultiplier),
-      target: selectedTargets.length > 0 ? selectedTargets.join(', ') : 'Todos los productos',
+      targets: selectedTargets.length > 0 ? selectedTargets : ['Todas'],
       startDate: newPromoStart,
       endDate: newPromoEnd,
-      isActive: true
+      active: true
     };
-    setPromotionsData([...promotionsData, newPromo]);
+    await updateLoyaltyConfig({
+      promotions: [...promotionsData, newPromo]
+    });
     setNewPromoName('');
     setNewPromoMultiplier('2');
     setSelectedTargets([]);
@@ -217,27 +187,34 @@ export function Loyalty() {
     setNewPromoEnd('');
   };
 
-  const handleDeletePromotion = (id: string) => {
-    setPromotionsData(promotionsData.filter(p => p.id !== id));
+  const handleDeletePromotion = async (id: string) => {
+    await updateLoyaltyConfig({
+      promotions: promotionsData.filter(p => p.id !== id)
+    });
   };
 
-  const handleUpdateTierName = (index: number, newName: string) => {
-    setTierConfig(prev => prev.map((t, i) => i === index ? { ...t, name: newName } : t));
+  const handleUpdateTierName = async (index: number, newName: string) => {
+    const updated = tierConfig.map((t, i) => i === index ? { ...t, name: newName } : t);
+    await updateLoyaltyConfig({ tierConfig: updated });
   };
 
-  const handleAddTier = () => {
+  const handleAddTier = async () => {
     const lastTier = tierConfig[tierConfig.length - 1];
     const newTier = {
       name: 'Nuevo Nivel',
       minPoints: lastTier ? lastTier.minPoints + 1000 : 0,
       color: 'slate'
     };
-    setTierConfig([...tierConfig, newTier]);
+    await updateLoyaltyConfig({
+      tierConfig: [...tierConfig, newTier]
+    });
   };
 
-  const handleRemoveTier = (index: number) => {
-    if (tierConfig.length <= 1) return; // Must have at least one level
-    setTierConfig(tierConfig.filter((_, i) => i !== index));
+  const handleRemoveTier = async (index: number) => {
+    if (tierConfig.length <= 1) return;
+    await updateLoyaltyConfig({
+      tierConfig: tierConfig.filter((_, i) => i !== index)
+    });
   };
 
   const calculateTier = (points: number) => {
@@ -246,27 +223,37 @@ export function Loyalty() {
     return tier ? tier.name : (tierConfig[0]?.name || 'Base');
   };
 
-  const handleUpdateTierThreshold = (index: number, value: number) => {
-    setTierConfig(prev => prev.map((t, i) => i === index ? { ...t, minPoints: value } : t));
+  const handleUpdateTierThreshold = async (index: number, value: number) => {
+    const updated = tierConfig.map((t, i) => i === index ? { ...t, minPoints: value } : t);
+    await updateLoyaltyConfig({ tierConfig: updated });
   };
 
   const handleScan = async () => {
     if (!scanQuery) return;
-    
-    const customer = customersData.find(c => 
-      c.dni === scanQuery || 
-      c.id.toString() === scanQuery
-    );
-
+    const customer = customersData.find(c => c.dni === scanQuery || c.id?.toString() === scanQuery);
     if (customer) {
       const pointsToAdd = 100;
-      await db.customers.update(customer.id!, { points: (customer.points || 0) + pointsToAdd });
+      await updateCustomerPoints(customer.dni, pointsToAdd, "Ajuste / Check-in de Escáner");
       setScanQuery('');
       alert(`Se agregaron ${pointsToAdd} puntos a ${customer.name}`);
     } else {
       alert('Cliente no encontrado');
     }
   };
+
+  const customerTransactions = useMemo(() => {
+    if (!selectedCustomer) return [];
+    return loyaltyTransactions.filter(t => t.customerDni === selectedCustomer.dni);
+  }, [selectedCustomer, loyaltyTransactions]);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredCustomers = useMemo(() => {
+    return customersData.filter(c => 
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.dni.includes(searchQuery) ||
+      (c.phone && c.phone.includes(searchQuery))
+    );
+  }, [customersData, searchQuery]);
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
@@ -348,7 +335,7 @@ export function Loyalty() {
                     step="0.001"
                     min="0"
                     value={pointValue} 
-                    onChange={(e) => setPointValue(Number(e.target.value))}
+                    onChange={(e) => updateLoyaltyConfig({ pointValue: Number(e.target.value) })}
                     className="w-20 px-2 py-1 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-slate-50" 
                   />
                   <button onClick={() => setIsEditingPointValue(false)} className="px-2 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 transition-colors uppercase tracking-wider">Guardar</button>
@@ -376,10 +363,12 @@ export function Loyalty() {
         <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-start justify-between relative overflow-hidden">
           <div className="relative z-10">
             <div className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Canjes Realizados</div>
-            <div className="text-3xl font-bold text-white">{redemptionsData.length}</div>
+            <div className="text-3xl font-bold text-white">
+              {loyaltyTransactions.filter(t => t.type === 'redemption').length}
+            </div>
             <div className="text-emerald-400 text-[11px] mt-2 flex items-center font-medium">
               <TrendingUp className="h-3 w-3 mr-1" />
-              Historial local
+              Sincronizado en DB
             </div>
           </div>
           <div className="bg-white/10 p-4 rounded-xl text-white relative z-10 backdrop-blur-sm shrink-0">
@@ -401,13 +390,12 @@ export function Loyalty() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
                   <input
                     type="text"
-                    placeholder="Buscar por nombre o teléfono..."
+                    placeholder="Buscar por DNI, nombre o teléfono..."
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-400"
                   />
                 </div>
-                <button className="p-2 border border-slate-200 text-slate-500 rounded-lg hover:bg-slate-50 transition-colors">
-                  <Filter className="w-5 h-5" />
-                </button>
              </div>
           </div>
           
@@ -418,17 +406,16 @@ export function Loyalty() {
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Cliente</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Nivel</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Puntos Acumulados</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Última Visita</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Acción</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {customersData.map((c) => (
+                {filteredCustomers.map((c) => (
                   <tr key={c.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">
-                          {c.name.split(' ').map(n => n[0]).join('')}
+                          {c.name.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
                           <p className="text-sm font-bold text-slate-800">{c.name}</p>
@@ -441,7 +428,7 @@ export function Loyalty() {
                     <td className="px-6 py-4">
                       {(() => {
                         const tierName = calculateTier(c.points);
-                        const tierIdx = tierConfig.findIndex(t => t.name === tierName);
+                        const tierIdx = tierConfig.findIndex((t: any) => t.name === tierName);
                         return (
                           <span className={cn(
                             "inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border",
@@ -454,9 +441,6 @@ export function Loyalty() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className="text-sm font-bold text-slate-800">{c.points.toLocaleString()} pts</span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-slate-600 font-medium">{c.lastVisit}</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center gap-2">
@@ -483,28 +467,23 @@ export function Loyalty() {
             </table>
           </div>
           
-          <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm">
-            <span className="text-slate-500 font-medium">Mostrando {customersData.length} clientes</span>
-            <div className="flex gap-2">
-              <button className="px-3 py-1 border border-slate-200 text-slate-400 rounded-md cursor-not-allowed">Anterior</button>
-              <button className="px-3 py-1 border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-md transition-colors font-medium">Siguiente</button>
-            </div>
+          <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm bg-slate-50">
+            <span className="text-slate-500 font-medium">Mostrando {filteredCustomers.length} clientes</span>
           </div>
         </div>
 
         <div className="xl:col-span-1 flex flex-col gap-6">
-          
           {/* Quick Scanner Check-in */}
           <div className="bg-indigo-600 rounded-2xl shadow-lg border border-indigo-500 p-6 relative overflow-hidden">
             <div className="relative z-10">
               <h3 className="font-bold text-white text-lg mb-2">Escáner de Cliente</h3>
-              <p className="text-indigo-200 text-xs mb-6 max-w-[80%]">Ingresa el ID, DNI o Teléfono para sumar puntos a un cliente.</p>
+              <p className="text-indigo-200 text-xs mb-6 max-w-[80%]">Ingresa el ID o DNI para sumar puntos a un cliente.</p>
               
               <div className="flex gap-2 relative">
                 <input 
                   id="global-scanner-focus"
                   type="text" 
-                  placeholder="Ej: +54 11..." 
+                  placeholder="Ej: 20.456.789..." 
                   value={scanQuery}
                   onChange={(e) => setScanQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleScan()}
@@ -518,37 +497,45 @@ export function Loyalty() {
                 </button>
               </div>
             </div>
-            {/* Watermark icon */}
             <Award className="absolute -right-6 -bottom-6 w-40 h-40 text-white opacity-5 pointer-events-none" />
           </div>
 
-          {/* Recent Redemptions */}
+          {/* Recent Transactions list */}
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-1">
-            <h3 className="font-bold text-slate-800 text-lg mb-6">Últimos Canjes</h3>
-            
+            <h3 className="font-bold text-slate-800 text-lg mb-6">Últimos Movimientos</h3>
             <div className="space-y-4">
-              {redemptionsData.map((redemption, i) => (
-                <div key={i} className="flex items-center gap-4 group">
-                  <div className="w-12 h-12 bg-amber-50 border border-amber-100 rounded-xl flex items-center justify-center shrink-0 text-amber-500">
-                    <Gift className="w-6 h-6" />
+              {loyaltyTransactions.slice(0, 5).map((tx) => (
+                <div key={tx.id} className="flex items-center gap-4 group">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
+                    tx.type === 'purchase' ? "bg-emerald-50 border-emerald-100 text-emerald-600" :
+                    tx.type === 'redemption' ? "bg-rose-50 border-rose-100 text-rose-500" : "bg-blue-50 border-blue-100 text-blue-600"
+                  )}>
+                    {tx.type === 'purchase' ? <Plus className="w-5 h-5" /> : 
+                     tx.type === 'redemption' ? <Gift className="w-5 h-5" /> : <Settings className="w-5 h-5" />}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-bold text-slate-800 line-clamp-1">{redemption.customer}</p>
-                    <p className="text-xs text-slate-500 font-medium line-clamp-1">{redemption.item}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-slate-800 truncate">{tx.customerName}</p>
+                    <p className="text-xs text-slate-500 truncate">{tx.description}</p>
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end">
-                    <span className="text-sm font-bold text-red-500">{redemption.points} pts</span>
-                    <span className="text-[10px] text-slate-400 font-medium">{redemption.time}</span>
+                    <span className={cn(
+                      "text-sm font-black",
+                      tx.points > 0 ? "text-emerald-600" : "text-rose-500"
+                    )}>
+                      {tx.points > 0 ? `+${tx.points}` : tx.points} pts
+                    </span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">
+                      {new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </span>
                   </div>
                 </div>
               ))}
+              {loyaltyTransactions.length === 0 && (
+                <p className="text-xs text-slate-400 italic text-center py-6">Sin movimientos recientes.</p>
+              )}
             </div>
-
-            <button className="w-full mt-6 py-2.5 border border-slate-200 text-slate-600 text-xs font-bold uppercase tracking-wider rounded-xl hover:bg-slate-50 transition-colors">
-              Ver Historial Completo
-            </button>
           </div>
-          
         </div>
       </div>
 
@@ -586,7 +573,7 @@ export function Loyalty() {
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-2xl">{prize.icon}</span>
+                        <span className="text-2xl">{prize.icon || '🎁'}</span>
                         <h3 className="font-bold text-slate-800 leading-tight">{prize.name}</h3>
                       </div>
                     </div>
@@ -635,10 +622,8 @@ export function Loyalty() {
             </div>
             
             <div className="p-6 overflow-y-auto bg-slate-50 flex-1 space-y-6">
-              {/* Add New Prize Form */}
               <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <div className="flex gap-6 items-start">
-                  {/* Image Upload Area */}
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden shrink-0 group"
@@ -703,7 +688,6 @@ export function Loyalty() {
                 </div>
               </div>
 
-              {/* Prize List */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {catalogData.map(prize => (
                   <div 
@@ -715,7 +699,7 @@ export function Loyalty() {
                         <img src={prize.image} alt={prize.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-4xl bg-slate-50">
-                          {prize.icon}
+                          {prize.icon || '🎁'}
                         </div>
                       )}
                       <button
@@ -735,17 +719,12 @@ export function Loyalty() {
                     </div>
                   </div>
                 ))}
-                
-                {catalogData.length === 0 && (
-                  <div className="col-span-full py-12 text-center text-slate-500 font-medium bg-white rounded-xl border border-dashed border-slate-300">
-                    Aún no hay premios en el catálogo.<br />Agrega uno desde el formulario de arriba.
-                  </div>
-                )}
               </div>
             </div>
           </div>
         </div>
       )}
+
       {/* Tiers Configuration Modal */}
       {isTiersModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
@@ -785,7 +764,6 @@ export function Loyalty() {
                     <button 
                       onClick={() => handleRemoveTier(idx)}
                       className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      title="Eliminar nivel"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -855,8 +833,6 @@ export function Loyalty() {
 
             <div className="flex-1 overflow-y-auto p-8 bg-white">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                
-                {/* Left side: Form & Stats */}
                 <div className="lg:col-span-5 space-y-6">
                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
                     <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -929,7 +905,6 @@ export function Loyalty() {
                     </div>
                   </div>
 
-                  {/* Quick Analytics for Promotions */}
                   <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100">
                     <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4">Impacto Estimado</h4>
                     <div className="h-[150px] w-full">
@@ -957,7 +932,6 @@ export function Loyalty() {
                   </div>
                 </div>
 
-                {/* Right side: Active List */}
                 <div className="lg:col-span-7 flex flex-col">
                   <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
                     <Check className="w-4 h-4 text-emerald-500" /> Promociones Activas
@@ -972,7 +946,7 @@ export function Loyalty() {
                             </div>
                             <div>
                               <h4 className="font-bold text-slate-800">{promo.name}</h4>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{promo.target}</p>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{promo.targets.join(', ')}</p>
                             </div>
                           </div>
                           <button 
@@ -992,32 +966,14 @@ export function Loyalty() {
                             Activa
                           </span>
                         </div>
-                        {/* Background subtle multiplier */}
                         <span className="absolute -right-2 -bottom-4 text-6xl font-black text-slate-50 pointer-events-none group-hover:text-indigo-50 transition-colors">
                           {promo.multiplier}X
                         </span>
                       </div>
                     ))}
-                    {promotionsData.length === 0 && (
-                      <div className="h-full flex flex-col items-center justify-center text-center p-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                        <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4">
-                          <Zap className="w-8 h-8 text-slate-300" />
-                        </div>
-                        <p className="text-slate-500 font-medium text-sm">No hay promociones activas actualmente.</p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end">
-              <button 
-                onClick={() => setIsPromotionsModalOpen(false)}
-                className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all text-sm uppercase tracking-wide"
-              >
-                Cerrar Configuración
-              </button>
             </div>
           </div>
         </div>
@@ -1034,7 +990,7 @@ export function Loyalty() {
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-800">{selectedCustomer.name}</h2>
-                  <p className="text-sm text-slate-500 font-medium">Cliente ID: {selectedCustomer.id}</p>
+                  <p className="text-sm text-slate-500 font-medium">Cliente DNI: {selectedCustomer.dni}</p>
                 </div>
               </div>
               <button 
@@ -1045,7 +1001,6 @@ export function Loyalty() {
               </button>
             </div>
 
-            {/* Tabs */}
             <div className="flex border-b border-slate-100 p-1 bg-slate-50/50">
               <button 
                 onClick={() => setProfileTab('info')}
@@ -1075,7 +1030,7 @@ export function Loyalty() {
                       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nivel Actual</p>
                       {(() => {
                         const tierName = calculateTier(selectedCustomer.points);
-                        const tierIdx = tierConfig.findIndex(t => t.name === tierName);
+                        const tierIdx = tierConfig.findIndex((t: any) => t.name === tierName);
                         return (
                           <span className={cn(
                             "inline-flex items-center px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider border",
@@ -1093,9 +1048,7 @@ export function Loyalty() {
                   </div>
 
                   <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                       Detalles de Contacto
-                    </h4>
+                    <h4 className="text-sm font-bold text-slate-800">Detalles de Contacto</h4>
                     <div className="space-y-3">
                       <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
                         <span className="text-xs font-medium text-slate-500">Email</span>
@@ -1105,10 +1058,6 @@ export function Loyalty() {
                         <span className="text-xs font-medium text-slate-500">Teléfono</span>
                         <span className="text-sm font-bold text-slate-700">{selectedCustomer.phone}</span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
-                        <span className="text-xs font-medium text-slate-500">Última Visita</span>
-                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.lastVisit}</span>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1117,12 +1066,12 @@ export function Loyalty() {
                   <div className="flex items-center justify-between mb-4">
                     <h4 className="text-sm font-bold text-slate-800">Transacciones Recientes</h4>
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded-full">
-                      Total: {selectedCustomer.history?.length || 0}
+                      Total: {customerTransactions.length}
                     </span>
                   </div>
                   
                   <div className="space-y-3">
-                    {selectedCustomer.history?.map((tx: any) => (
+                    {customerTransactions.map((tx) => (
                       <div key={tx.id} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center justify-between hover:border-slate-200 transition-colors">
                         <div className="flex items-center gap-3">
                           <div className={cn(
@@ -1135,23 +1084,23 @@ export function Loyalty() {
                           </div>
                           <div>
                             <p className="text-sm font-bold text-slate-800">{tx.description}</p>
-                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">{tx.date}</p>
+                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
+                              {new Date(tx.timestamp).toLocaleString()}
+                            </p>
                           </div>
                         </div>
                         <div className="text-right">
                           <span className={cn(
                             "text-sm font-bold",
-                            tx.amount > 0 ? "text-emerald-600" : "text-red-500"
+                            tx.points > 0 ? "text-emerald-600" : "text-red-500"
                           )}>
-                            {tx.amount > 0 ? '+' : ''}{tx.amount} pts
+                            {tx.points > 0 ? `+${tx.points}` : tx.points} pts
                           </span>
                         </div>
                       </div>
                     ))}
-                    {!selectedCustomer.history?.length && (
-                      <div className="py-12 text-center text-slate-400 font-medium bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                        No hay transacciones registradas.
-                      </div>
+                    {customerTransactions.length === 0 && (
+                      <p className="text-xs text-slate-400 italic text-center py-6">Sin movimientos registrados.</p>
                     )}
                   </div>
                 </div>
@@ -1159,9 +1108,6 @@ export function Loyalty() {
             </div>
             
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-              <button className="flex-1 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-slate-100 transition-colors">
-                Editar Datos
-              </button>
               <button 
                 onClick={() => {
                   setRedeemingCustomer(selectedCustomer);
@@ -1175,6 +1121,7 @@ export function Loyalty() {
           </div>
         </div>
       )}
+
       {/* New Customer Modal */}
       {isNewCustomerModalOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
@@ -1191,9 +1138,13 @@ export function Loyalty() {
             
             <form onSubmit={async (e) => {
               e.preventDefault();
-              await addCustomer({ ...newCustomer, dni: newCustomer.id });
-              setIsNewCustomerModalOpen(false);
-              setNewCustomer({ name: '', email: '', phone: '', id: '', tier: 'Bronze', points: 0, history: [] });
+              try {
+                await addCustomer({ ...newCustomer, dni: newCustomer.id });
+                setIsNewCustomerModalOpen(false);
+                setNewCustomer({ name: '', email: '', phone: '', id: '', tier: 'Bronze', points: 0 });
+              } catch (err: any) {
+                alert(err.message);
+              }
             }} className="p-8 space-y-5">
               <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
@@ -1216,7 +1167,7 @@ export function Loyalty() {
                     value={newCustomer.id}
                     onChange={e => setNewCustomer({...newCustomer, id: e.target.value})}
                     className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                    placeholder="20.456.789"
+                    placeholder="20456789"
                   />
                 </div>
                 <div className="space-y-2">
@@ -1227,7 +1178,7 @@ export function Loyalty() {
                     value={newCustomer.phone}
                     onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})}
                     className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
-                    placeholder="351 1234567"
+                    placeholder="3511234567"
                   />
                 </div>
               </div>

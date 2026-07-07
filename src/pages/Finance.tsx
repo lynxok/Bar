@@ -122,7 +122,6 @@ export function Finance() {
     e.preventDefault();
     if (!expenseAmount || !expenseProvider) return;
     addExpense({
-      id: Math.random().toString(36).substr(2, 9),
       provider: expenseProvider,
       description: expenseDescription,
       amount: Number(expenseAmount),

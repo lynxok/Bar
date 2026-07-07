@@ -34,7 +34,7 @@ export const INITIAL_CATEGORIES = [
 ];
 
 export function Inventory() {
-  const { products, setProducts } = useStore();
+  const { products, addProduct, updateProduct } = useStore();
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [searchTerm, setSearchTerm] = useState('');
   const [barcodeSearch, setBarcodeSearch] = useState('');
@@ -85,29 +85,21 @@ export function Inventory() {
   const saveEditing = async () => {
     if (editingRowId) {
       const product = products.find(p => p.id === editingRowId);
-      await setProducts(products.map(p => {
-        if (p.id === editingRowId) {
-          const historyEntry = (p.price !== editForm.price || p.takeawayPrice !== editForm.takeawayPrice) 
-            ? { date: new Date().toISOString(), oldPrice: p.price, newPrice: editForm.price, oldTakeaway: p.takeawayPrice, newTakeaway: editForm.takeawayPrice }
-            : null;
-          const newHistory = historyEntry ? [historyEntry, ...(p.priceHistory || [])] : (p.priceHistory || []);
-          return { ...p, name: editForm.name, sku: editForm.sku, barcode: editForm.barcode, price: editForm.price, takeawayPrice: editForm.takeawayPrice, priceHistory: newHistory };
-        }
-        if (p.variants) {
-          const vIndex = p.variants.findIndex((v: any) => v.id === editingRowId);
-          if (vIndex !== -1) {
-            const v = p.variants[vIndex];
-            const historyEntry = (v.price !== editForm.price || v.takeawayPrice !== editForm.takeawayPrice)
-              ? { date: new Date().toISOString(), oldPrice: v.price, newPrice: editForm.price, oldTakeaway: v.takeawayPrice, newTakeaway: editForm.takeawayPrice }
-              : null;
-            const newHistory = historyEntry ? [historyEntry, ...(v.priceHistory || [])] : (v.priceHistory || []);
-            const newVariants = [...p.variants];
-            newVariants[vIndex] = { ...v, name: editForm.name, sku: editForm.sku, barcode: editForm.barcode, price: editForm.price, takeawayPrice: editForm.takeawayPrice, priceHistory: newHistory };
-            return { ...p, variants: newVariants };
-          }
-        }
-        return p;
-      }));
+      if (product) {
+        const historyEntry = (product.price !== editForm.price || product.takeawayPrice !== editForm.takeawayPrice) 
+          ? { date: new Date().toISOString(), oldPrice: product.price, newPrice: editForm.price, oldTakeaway: product.takeawayPrice, newTakeaway: editForm.takeawayPrice }
+          : null;
+        const newHistory = historyEntry ? [historyEntry, ...(product.priceHistory || [])] : (product.priceHistory || []);
+        
+        await updateProduct(editingRowId, {
+          name: editForm.name,
+          sku: editForm.sku,
+          barcode: editForm.barcode,
+          price: editForm.price,
+          takeawayPrice: editForm.takeawayPrice,
+          priceHistory: newHistory
+        });
+      }
       await LoggerService.audit('UPDATE', 'INVENTORY', `Producto actualizado: ${editForm.name}`);
       setEditingRowId(null);
     }
@@ -171,9 +163,7 @@ export function Inventory() {
   };
 
   const handleCreateProduct = async () => {
-    const id = Date.now().toString();
     const newProduct = {
-      id,
       name: newProductName,
       category: newProductCategory,
       sku: newProductSKU,
@@ -186,7 +176,7 @@ export function Inventory() {
       priceHistory: []
     };
     
-    await setProducts([...products, newProduct]);
+    await addProduct(newProduct);
     await LoggerService.audit('CREATE', 'INVENTORY', `Nuevo producto creado: ${newProductName}`);
     
     // Reset state

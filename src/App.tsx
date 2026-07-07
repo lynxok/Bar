@@ -14,6 +14,7 @@ import { Security } from './pages/Security';
 import Kitchen from './pages/Kitchen';
 import Help from './pages/Help';
 import { Login } from './pages/Login';
+import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
 
 export default function App() {
@@ -41,28 +42,43 @@ export default function App() {
     setIsAuthenticated(false);
   };
 
-  if (!isAuthenticated) {
+  const isClientRoute = window.location.hash.includes('/cliente/') || window.location.pathname.includes('/cliente/');
+
+  if (!isAuthenticated && !isClientRoute) {
     return <Login onLogin={handleLogin} />;
   }
 
+  // Redirect waiters directly to /mozo if they are on another admin page
+  const isWaiter = currentUser?.role?.toLowerCase() === 'mozo';
+
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="mapa" element={<TableMap />} />
-        <Route path="pos" element={<POS />} />
-        <Route path="inventario" element={<Inventory />} />
-        <Route path="finanzas" element={<Finance />} />
-        <Route path="cierre" element={<CashClose />} />
-        <Route path="analitica" element={<Analytics />} />
-        <Route path="fidelizacion" element={<Loyalty />} />
-        <Route path="configuracion" element={<Settings />} />
-        <Route path="seguridad" element={<Security />} />
-        <Route path="cocina" element={<Kitchen />} />
-        <Route path="ayuda" element={<Help />} />
-        <Route path="cliente/:tableId" element={<ClientSummary />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Route>
+      {isWaiter ? (
+        <>
+          <Route path="/mozo" element={<WaiterMobile />} />
+          <Route path="*" element={<Navigate to="/mozo" replace />} />
+        </>
+      ) : (
+        <>
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="mapa" element={<TableMap />} />
+            <Route path="pos" element={<POS />} />
+            <Route path="inventario" element={<Inventory />} />
+            <Route path="finanzas" element={<Finance />} />
+            <Route path="cierre" element={<CashClose />} />
+            <Route path="analitica" element={<Analytics />} />
+            <Route path="fidelizacion" element={<Loyalty />} />
+            <Route path="configuracion" element={<Settings />} />
+            <Route path="seguridad" element={<Security />} />
+            <Route path="cocina" element={<Kitchen />} />
+            <Route path="ayuda" element={<Help />} />
+            <Route path="mozo" element={<WaiterMobile />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </>
+      )}
+      <Route path="cliente/:tableId" element={<ClientSummary />} />
     </Routes>
   );
 }
