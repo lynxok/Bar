@@ -101,11 +101,9 @@ export function BillingDrafts() {
       const savedSettingsRaw = localStorage.getItem('bar_arca_settings');
       const arcaSettings = savedSettingsRaw ? JSON.parse(savedSettingsRaw) : null;
 
-      // If in Electron and has valid settings, send to AFIP
       if (isElectron && arcaSettings && arcaSettings.cuit) {
         const ipc = (window as any).require('electron').ipcRenderer;
         
-        // Sum total amount
         const totalAmount = selectedIds.reduce((sum, id) => {
           const draft = billingDrafts.find(d => d.id === id);
           return sum + (draft ? draft.amount : 0);
@@ -134,7 +132,6 @@ export function BillingDrafts() {
         });
 
         if (res.success) {
-          // Success emitting invoice
           await markDraftsAsBilled(selectedIds, {
             isConsumidorFinal,
             identificador: isConsumidorFinal ? undefined : identificador.trim(),
@@ -150,7 +147,6 @@ export function BillingDrafts() {
           throw new Error(res.error || 'Error desconocido al facturar con AFIP');
         }
       } else {
-        // Fallback / Simulation Mode
         const simulatedInvoiceNumber = Math.floor(Math.random() * 90000) + 10000;
         const simulatedCae = Math.floor(Math.random() * 90000000000000) + 10000000000000;
 
@@ -213,7 +209,7 @@ export function BillingDrafts() {
           }
         });
         if (res.success) {
-          alert("¡PDF regenerado correctamente!");
+          alert("¡PDF generado correctamente!");
           if (draft.billingData) {
             draft.billingData.filePath = res.filePath;
           }
@@ -229,59 +225,65 @@ export function BillingDrafts() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 animate-in fade-in duration-300 text-slate-800 dark:text-slate-100">
+    <div className="space-y-6 max-w-7xl mx-auto p-4 md:p-6 animate-in fade-in duration-300 text-on-surface">
       
+      {/* Title */}
+      <div>
+        <h1 className="text-3xl font-black tracking-tight text-on-surface">Borradores de Facturación</h1>
+        <p className="text-sm font-medium text-on-surface-variant mt-1">Revisa transacciones locales del salón y POS para registrarlas ante ARCA/AFIP.</p>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 dark:from-amber-950/20 dark:to-orange-950/20 p-5 rounded-2xl border border-amber-200/50 dark:border-amber-900/40 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-amber-500 text-white rounded-xl">
+        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-xl">
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">Pendiente de Facturar</span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white">${totalPendingAmount.toLocaleString('es-AR')}</span>
-            <span className="text-xs text-amber-600 dark:text-amber-400 block mt-0.5 font-medium">{pendingCount} transacciones en borrador</span>
+            <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Pendiente de Facturar</span>
+            <span className="text-2xl font-black text-on-surface">${totalPendingAmount.toLocaleString('es-AR')}</span>
+            <span className="text-xs text-amber-600 dark:text-amber-400 block mt-0.5 font-medium">{pendingCount} borradores</span>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-emerald-500/10 to-teal-500/10 dark:from-emerald-950/20 dark:to-teal-950/20 p-5 rounded-2xl border border-emerald-200/50 dark:border-emerald-900/40 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-emerald-500 text-white rounded-xl">
+        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-xl">
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">Facturado Consolidado</span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white">${totalBilledAmount.toLocaleString('es-AR')}</span>
+            <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Facturado Consolidado</span>
+            <span className="text-2xl font-black text-on-surface">${totalBilledAmount.toLocaleString('es-AR')}</span>
             <span className="text-xs text-emerald-600 dark:text-emerald-400 block mt-0.5 font-medium">{billedCount} facturas emitidas</span>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-blue-500/10 to-indigo-500/10 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 rounded-2xl border border-blue-200/50 dark:border-blue-900/40 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-blue-500 text-white rounded-xl">
+        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline shadow-sm flex items-center gap-4">
+          <div className="p-3 bg-indigo-500/10 text-indigo-650 dark:text-indigo-400 rounded-xl">
             <FileText className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">Total Registros</span>
-            <span className="text-2xl font-black text-slate-900 dark:text-white">{billingDrafts.length}</span>
-            <span className="text-xs text-blue-600 dark:text-blue-400 block mt-0.5 font-medium">Borradores + Facturas totales</span>
+            <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Total Registrados</span>
+            <span className="text-2xl font-black text-on-surface">{billingDrafts.length}</span>
+            <span className="text-xs text-indigo-600 dark:text-indigo-400 block mt-0.5 font-medium">Borradores + facturas</span>
           </div>
         </div>
       </div>
 
       {/* Main Container */}
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+      <div className="bg-surface-container-lowest rounded-xl border border-outline shadow-sm overflow-hidden">
         
         {/* Header Options */}
-        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-4 justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+        <div className="p-4 border-b border-outline-variant flex flex-col md:flex-row gap-4 justify-between items-center bg-surface-container-low">
           
           {/* Tabs */}
-          <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl w-full md:w-auto">
+          <div className="flex bg-surface-container p-1 rounded-xl w-full md:w-auto border border-outline-variant">
             <button
               onClick={() => { setActiveTab('pending'); setSelectedIds([]); }}
               className={cn(
                 "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
                 activeTab === 'pending'
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm animate-fade-in"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700"
+                  ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                  : "text-on-surface-variant hover:text-on-surface"
               )}
             >
               <Clock className="w-4 h-4" /> Pendientes ({pendingCount})
@@ -291,8 +293,8 @@ export function BillingDrafts() {
               className={cn(
                 "flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2",
                 activeTab === 'billed'
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm animate-fade-in"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700"
+                  ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                  : "text-on-surface-variant hover:text-on-surface"
               )}
             >
               <CheckCircle2 className="w-4 h-4" /> Facturadas ({billedCount})
@@ -302,13 +304,13 @@ export function BillingDrafts() {
           {/* Action Row */}
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
             <div className="relative flex-1 sm:w-64">
-              <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-on-surface-variant" />
               <input
                 type="text"
-                placeholder="Buscar cliente, medio pago..."
+                placeholder="Buscar cliente, concepto..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="h-9 pl-9 pr-4 w-full text-xs rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-900 dark:text-white placeholder-slate-400 focus:ring-2 focus:ring-emerald-600 outline-none transition-all"
+                className="h-10 pl-9 pr-4 w-full text-xs rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-on-surface placeholder-slate-400 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
               />
             </div>
 
@@ -317,10 +319,10 @@ export function BillingDrafts() {
                 disabled={selectedIds.length === 0}
                 onClick={handleOpenBilling}
                 className={cn(
-                  "h-9 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all",
+                  "h-10 px-4 rounded-lg text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all border",
                   selectedIds.length > 0
-                    ? "bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
-                    : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-200/50 dark:border-slate-800"
+                    ? "bg-primary text-on-primary hover:opacity-90 cursor-pointer border-transparent"
+                    : "bg-surface-container-low text-on-surface-variant cursor-not-allowed border-outline-variant"
                 )}
               >
                 <FileText className="w-4 h-4" /> Facturar Selección ({selectedIds.length})
@@ -331,32 +333,32 @@ export function BillingDrafts() {
 
         {/* Table View */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 dark:bg-slate-800/40 text-xs uppercase text-slate-500 border-b border-slate-100 dark:border-slate-800 font-bold">
-              <tr>
+          <table className="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr className="bg-surface-container-low border-b border-outline-variant">
                 {activeTab === 'pending' && (
                   <th className="px-6 py-4 w-12 text-center">
                     <input
                       type="checkbox"
                       checked={filteredDrafts.length > 0 && selectedIds.length === filteredDrafts.length}
                       onChange={handleSelectAll}
-                      className="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500"
+                      className="w-4 h-4 rounded text-primary border-outline focus:ring-primary"
                     />
                   </th>
                 )}
-                <th className="px-6 py-4">Fecha</th>
-                <th className="px-6 py-4">Cliente</th>
-                <th className="px-6 py-4">Detalle / Concepto</th>
-                <th className="px-6 py-4">Medio de Cobro</th>
-                {activeTab === 'billed' && <th className="px-6 py-4">Datos Fiscales</th>}
-                <th className="px-6 py-4 text-right">Importe</th>
-                <th className="px-6 py-4">Acciones</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Fecha</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Cliente</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Detalle / Concepto</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Medio de Cobro</th>
+                {activeTab === 'billed' && <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">Datos Fiscales</th>}
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">Importe</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-center">Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800 font-medium">
+            <tbody className="divide-y divide-outline-variant font-medium">
               {filteredDrafts.length === 0 ? (
                 <tr>
-                  <td colSpan={activeTab === 'pending' ? 8 : 7} className="px-6 py-10 text-center text-slate-400">
+                  <td colSpan={activeTab === 'pending' ? 8 : 7} className="px-6 py-12 text-center text-on-surface-variant">
                     No se encontraron registros en esta sección.
                   </td>
                 </tr>
@@ -364,8 +366,8 @@ export function BillingDrafts() {
                 <tr 
                   key={draft.id} 
                   className={cn(
-                    "hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors",
-                    selectedIds.includes(draft.id || "") && "bg-emerald-500/5 dark:bg-emerald-950/10"
+                    "hover:bg-surface-container-low/50 transition-colors",
+                    selectedIds.includes(draft.id || "") && "bg-primary/5"
                   )}
                 >
                   {activeTab === 'pending' && (
@@ -374,28 +376,28 @@ export function BillingDrafts() {
                         type="checkbox"
                         checked={selectedIds.includes(draft.id || "")}
                         onChange={() => handleSelectOne(draft.id || "")}
-                        className="w-4 h-4 rounded text-emerald-600 border-slate-300 focus:ring-emerald-500"
+                        className="w-4 h-4 rounded text-primary border-outline focus:ring-primary"
                       />
                     </td>
                   )}
-                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400 font-mono text-xs">
+                  <td className="px-6 py-4 text-on-surface-variant font-mono text-xs">
                     {new Date(draft.date).toLocaleString('es-AR')}
                   </td>
-                  <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">
+                  <td className="px-6 py-4 font-bold text-on-surface">
                     {draft.clientName}
                   </td>
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-300 text-xs max-w-xs truncate">
+                  <td className="px-6 py-4 text-on-surface-variant text-xs max-w-xs truncate">
                     {draft.concept}
                   </td>
-                  <td className="px-6 py-4 text-slate-500 dark:text-slate-400 text-xs">
-                    <span className="px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 font-bold uppercase tracking-wider text-[10px]">
+                  <td className="px-6 py-4 text-on-surface-variant text-xs">
+                    <span className="px-2.5 py-1 rounded-md bg-surface-container-high border border-outline-variant font-bold uppercase tracking-wider text-[10px]">
                       {draft.paymentMethod}
                     </span>
                   </td>
                   {activeTab === 'billed' && (
                     <td className="px-6 py-4 text-xs">
                       {draft.billingData && (
-                        <div className="space-y-0.5 text-slate-600 dark:text-slate-400 font-sans">
+                        <div className="space-y-0.5 text-on-surface-variant font-sans">
                           <p className="font-bold text-emerald-600 dark:text-emerald-400">
                             {draft.billingData.isConsumidorFinal ? "Consumidor Final" : "Factura Nominada"}
                           </p>
@@ -407,41 +409,41 @@ export function BillingDrafts() {
                               Doc: {draft.billingData.identificador}
                             </p>
                           )}
-                          <p className="text-[9px] text-slate-450">
+                          <p className="text-[9px] opacity-75">
                             CAE: {draft.billingData.cae || 'Simulado'}
                           </p>
                         </div>
                       )}
                     </td>
                   )}
-                  <td className="px-6 py-4 text-right font-black text-slate-900 dark:text-white">
+                  <td className="px-6 py-4 text-right font-black text-on-surface">
                     ${draft.amount.toLocaleString('es-AR')}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex gap-2 justify-center">
+                    <div className="flex gap-1.5 justify-center">
                       <button
                         onClick={() => handleOpenPreview(draft)}
-                        className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-all cursor-pointer"
+                        className="p-1.5 text-on-surface-variant hover:text-primary hover:bg-surface-container-high rounded-md transition-all cursor-pointer"
                         title="Ver detalle del Borrador"
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4.5 h-4.5" />
                       </button>
                       {activeTab === 'billed' && draft.billingData?.filePath && (
                         <button
                           onClick={() => handleOpenPDF(draft.billingData?.filePath || '')}
-                          className="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 rounded-lg transition-all cursor-pointer"
+                          className="p-1.5 text-on-surface-variant hover:text-emerald-650 hover:bg-surface-container-high rounded-md transition-all cursor-pointer"
                           title="Abrir PDF en la PC"
                         >
-                          <FileText className="w-4 h-4" />
+                          <FileText className="w-4.5 h-4.5" />
                         </button>
                       )}
                       {activeTab === 'billed' && !draft.billingData?.filePath && (
                         <button
                           onClick={() => handleRegeneratePDF(draft)}
-                          className="p-1.5 text-slate-500 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-955/30 rounded-lg transition-all cursor-pointer"
+                          className="p-1.5 text-on-surface-variant hover:text-amber-650 hover:bg-surface-container-high rounded-md transition-all cursor-pointer"
                           title="Regenerar Archivo PDF"
                         >
-                          <Printer className="w-4 h-4" />
+                          <Printer className="w-4.5 h-4.5" />
                         </button>
                       )}
                     </div>
@@ -456,14 +458,14 @@ export function BillingDrafts() {
       {/* BILLING MODAL */}
       {isBillingModalOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-md shadow-2xl space-y-6">
+          <div className="bg-surface-container-lowest rounded-2xl border border-outline p-6 w-full max-w-md shadow-2xl space-y-6 text-on-surface">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-emerald-600" /> Facturar Lote
+              <h3 className="text-lg font-black text-on-surface flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" /> Facturar Lote
               </h3>
               <button 
                 onClick={() => setIsBillingModalOpen(false)} 
-                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
+                className="p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -471,15 +473,15 @@ export function BillingDrafts() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-450 uppercase tracking-wider block mb-2">Tipo de Cliente</label>
-                <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-950 p-1 rounded-xl">
+                <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider block mb-2">Tipo de Cliente</label>
+                <div className="grid grid-cols-2 gap-2 bg-surface-container-low p-1 rounded-xl border border-outline-variant">
                   <button
                     onClick={() => setIsConsumidorFinal(true)}
                     className={cn(
                       "py-2 rounded-lg text-xs font-bold transition-all",
                       isConsumidorFinal 
-                        ? "bg-white dark:bg-slate-800 text-emerald-600 shadow-sm"
-                        : "text-slate-500 dark:text-slate-400"
+                        ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                        : "text-on-surface-variant"
                     )}
                   >
                     Consumidor Final
@@ -489,8 +491,8 @@ export function BillingDrafts() {
                     className={cn(
                       "py-2 rounded-lg text-xs font-bold transition-all",
                       !isConsumidorFinal 
-                        ? "bg-white dark:bg-slate-800 text-emerald-600 shadow-sm"
-                        : "text-slate-500 dark:text-slate-400"
+                        ? "bg-white dark:bg-slate-800 text-primary shadow-sm"
+                        : "text-on-surface-variant"
                     )}
                   >
                     Nominada (Individuo)
@@ -499,62 +501,62 @@ export function BillingDrafts() {
               </div>
 
               {!isConsumidorFinal && (
-                <div className="space-y-3 animate-in slide-in-from-top-2 duration-205">
+                <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
                   <div>
-                    <label className="text-xs font-bold text-slate-500 block mb-1">DNI / CUIT</label>
+                    <label className="text-xs font-bold text-on-surface-variant block mb-1">DNI / CUIT</label>
                     <input
                       type="text"
                       value={identificador}
                       onChange={e => setIdentificador(e.target.value)}
                       placeholder="Ej: 20-38472938-9"
-                      className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none transition-all"
+                      className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 block mb-1">Nombre o Razón Social</label>
+                    <label className="text-xs font-bold text-on-surface-variant block mb-1">Nombre o Razón Social</label>
                     <input
                       type="text"
                       value={razonSocial}
                       onChange={e => setRazonSocial(e.target.value)}
                       placeholder="Ej: Juan Pérez"
-                      className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none transition-all"
+                      className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-500 block mb-1">Dirección Comercial</label>
+                    <label className="text-xs font-bold text-on-surface-variant block mb-1">Dirección Comercial</label>
                     <input
                       type="text"
                       value={direccion}
                       onChange={e => setDireccion(e.target.value)}
                       placeholder="Ej: Av. Rivadavia 4567, CABA"
-                      className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none transition-all"
+                      className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                     />
                   </div>
                 </div>
               )}
 
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Fecha de Comprobante</label>
+                <label className="text-xs font-bold text-on-surface-variant block mb-1">Fecha de Comprobante</label>
                 <input
                   type="date"
                   value={billingDate}
                   onChange={e => setBillingDate(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-emerald-600 focus:border-transparent outline-none transition-all"
+                  className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-100 dark:border-slate-850 flex gap-2">
+            <div className="pt-4 border-t border-outline-variant flex gap-2">
               <button
                 onClick={() => setIsBillingModalOpen(false)}
-                className="flex-1 h-11 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all"
+                className="flex-1 h-11 rounded-lg text-xs font-bold bg-surface-container hover:bg-surface-container-high text-on-surface transition-all border border-outline-variant"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleProcessBilling}
                 disabled={isProcessing}
-                className="flex-1 h-11 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all disabled:opacity-50"
+                className="flex-1 h-11 rounded-lg text-xs font-bold bg-primary hover:opacity-90 text-on-primary flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all disabled:opacity-50"
               >
                 {isProcessing ? "Procesando..." : "Emitir Factura"}
               </button>
@@ -566,56 +568,56 @@ export function BillingDrafts() {
       {/* DRAFT PREVIEW MODAL */}
       {isInvoicePreviewOpen && previewDraft && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-xl shadow-2xl space-y-6">
+          <div className="bg-surface-container-lowest rounded-2xl border border-outline p-6 w-full max-w-xl shadow-2xl space-y-6 text-on-surface">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <FileText className="w-5 h-5 text-indigo-600" /> Detalle del Comprobante
+              <h3 className="text-lg font-black text-on-surface flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" /> Detalle del Comprobante
               </h3>
               <button 
                 onClick={() => setIsInvoicePreviewOpen(false)} 
-                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
+                className="p-1 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-all"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-4 bg-slate-50/50 dark:bg-slate-950/20 font-mono text-xs">
-              <div className="flex justify-between text-slate-500">
+            <div className="border border-outline-variant rounded-xl p-4 space-y-4 bg-surface-container-low font-mono text-xs">
+              <div className="flex justify-between text-on-surface-variant">
                 <span>ESTADO:</span>
                 <span className={cn(
                   "font-bold px-2 py-0.5 rounded text-[10px] uppercase",
                   previewDraft.billed 
-                    ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400" 
-                    : "bg-amber-100 text-amber-700 dark:bg-amber-955/40 dark:text-amber-400"
+                    ? "bg-emerald-500/10 text-emerald-600" 
+                    : "bg-amber-500/10 text-amber-600"
                 )}>
                   {previewDraft.billed ? "FACTURADO" : "PENDIENTE"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">IDENTIFICADOR BORRADOR:</span>
-                <span className="text-slate-900 dark:text-white">{previewDraft.id}</span>
+                <span className="text-on-surface-variant">IDENTIFICADOR BORRADOR:</span>
+                <span className="text-on-surface">{previewDraft.id}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">FECHA REGISTRO:</span>
-                <span className="text-slate-900 dark:text-white">{new Date(previewDraft.date).toLocaleString('es-AR')}</span>
+                <span className="text-on-surface-variant">FECHA REGISTRO:</span>
+                <span className="text-on-surface">{new Date(previewDraft.date).toLocaleString('es-AR')}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">CLIENTE COMERCIAL:</span>
-                <span className="text-slate-900 dark:text-white font-bold">{previewDraft.clientName}</span>
+                <span className="text-on-surface-variant">CLIENTE COMERCIAL:</span>
+                <span className="text-on-surface font-bold">{previewDraft.clientName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">MEDIO DE COBRO:</span>
-                <span className="text-slate-900 dark:text-white uppercase">{previewDraft.paymentMethod}</span>
+                <span className="text-on-surface-variant">MEDIO DE COBRO:</span>
+                <span className="text-on-surface uppercase">{previewDraft.paymentMethod}</span>
               </div>
               
-              <div className="border-t border-slate-200 dark:border-slate-800 pt-3">
-                <span className="text-slate-500 block mb-1">CONCEPTOS REGISTRADOS:</span>
-                <p className="text-slate-800 dark:text-slate-200 font-sans whitespace-pre-wrap">{previewDraft.concept}</p>
+              <div className="border-t border-outline-variant pt-3">
+                <span className="text-on-surface-variant block mb-1 font-bold">CONCEPTOS REGISTRADOS:</span>
+                <p className="text-on-surface font-sans whitespace-pre-wrap">{previewDraft.concept}</p>
               </div>
 
               {previewDraft.billed && previewDraft.billingData && (
-                <div className="border-t border-slate-200 dark:border-slate-800 pt-3 space-y-2">
-                  <span className="text-slate-500 block font-bold text-[10px] text-emerald-600 dark:text-emerald-450">INFORMACIÓN FISCAL ASOCIADA (AFIP):</span>
+                <div className="border-t border-outline-variant pt-3 space-y-2">
+                  <span className="text-emerald-600 dark:text-emerald-450 block font-bold text-[10px]">INFORMACIÓN FISCAL ASOCIADA (AFIP):</span>
                   <div className="flex justify-between">
                     <span>NRO COMPROBANTE:</span>
                     <span className="font-bold">{previewDraft.billingData.invoiceNumber?.toString().padStart(8, '0')}</span>
@@ -645,7 +647,7 @@ export function BillingDrafts() {
                 </div>
               )}
 
-              <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between text-base font-black text-slate-900 dark:text-white font-sans">
+              <div className="border-t border-outline-variant pt-3 flex justify-between text-base font-black text-on-surface font-sans">
                 <span>TOTAL COMERCIAL:</span>
                 <span>${previewDraft.amount.toLocaleString('es-AR')}</span>
               </div>
@@ -654,16 +656,16 @@ export function BillingDrafts() {
             <div className="flex gap-2">
               <button
                 onClick={() => setIsInvoicePreviewOpen(false)}
-                className="flex-1 h-11 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition-all cursor-pointer"
+                className="flex-1 h-11 rounded-lg text-xs font-bold bg-surface-container hover:bg-surface-container-high text-on-surface transition-all border border-outline-variant"
               >
                 Cerrar Detalle
               </button>
               {previewDraft.billed && previewDraft.billingData?.filePath && (
                 <button
                   onClick={() => handleOpenPDF(previewDraft.billingData?.filePath || '')}
-                  className="flex-1 h-11 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
+                  className="flex-1 h-11 rounded-lg text-xs font-bold bg-primary hover:opacity-90 text-on-primary flex items-center justify-center gap-2 shadow-md"
                 >
-                  <FileText className="w-4 h-4" /> Abrir PDF
+                  <FileText className="w-4.5 h-4.5" /> Abrir PDF
                 </button>
               )}
             </div>
