@@ -55,13 +55,14 @@ export function Login({ onLogin }: LoginProps) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-slate-900 overflow-hidden">
-      {/* Background Image & Gradient Overlay */}
-      <div 
-        className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-luminosity"
-        style={{ backgroundImage: "url('https://images.unsplash.com/photo-1514933651103-005eec06c04b?q=80&w=2000&auto=format&fit=crop')" }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent" />
+    <div className="min-h-screen flex items-center justify-center relative bg-slate-950 overflow-hidden">
+      {/* Liquid Animated Gradient Blobs */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-[500px] h-[500px] bg-indigo-500/20 rounded-full filter blur-[120px] animate-blob-one" />
+        <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-emerald-500/15 rounded-full filter blur-[140px] animate-blob-two" />
+        <div className="absolute top-1/2 left-1/3 -translate-y-1/2 w-[500px] h-[500px] bg-purple-500/15 rounded-full filter blur-[120px] animate-blob-three" />
+        <div className="absolute inset-0 bg-slate-950/30 backdrop-blur-[60px]" />
+      </div>
 
       {/* Login Card */}
       <div className="relative z-10 w-full max-w-md p-8 animate-in fade-in zoom-in-95 duration-500">

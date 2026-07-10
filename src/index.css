@@ -61,6 +61,27 @@
     from { transform: scale(0.95); }
     to { transform: scale(1); }
   }
+
+  @keyframes blob-one {
+    0%, 100% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(60px, -90px) scale(1.15); }
+    66% { transform: translate(-40px, 40px) scale(0.9); }
+  }
+  @keyframes blob-two {
+    0%, 100% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(-80px, 80px) scale(0.85); }
+    66% { transform: translate(80px, -40px) scale(1.2); }
+  }
+  @keyframes blob-three {
+    0%, 100% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(40px, 60px) scale(0.9); }
+    66% { transform: translate(-60px, -80px) scale(1.1); }
+  }
+
+  @keyframes marquee {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-50%, 0, 0); }
+  }
 }
 
 @layer utilities {
@@ -92,6 +113,20 @@
   }
   .fade-in { animation-name: fade-in; }
   .zoom-in { animation-name: zoom-in; }
+  
+  .animate-blob-one {
+    animation: blob-one 20s infinite alternate ease-in-out;
+  }
+  .animate-blob-two {
+    animation: blob-two 25s infinite alternate ease-in-out;
+  }
+  .animate-blob-three {
+    animation: blob-three 18s infinite alternate ease-in-out;
+  }
+  
+  .animate-marquee {
+    animation: marquee 30s linear infinite;
+  }
 }
 
 html.dark {

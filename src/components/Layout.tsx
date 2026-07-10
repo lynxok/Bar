@@ -31,6 +31,7 @@ import { NotificationsPanel } from "./NotificationsPanel";
 import { useStore } from "../contexts/StoreContext";
 import { isHost } from "../db/database";
 import { onSyncStateChange } from "../services/syncService";
+import { MagneticDock } from "./MagneticDock";
 
 interface Notification {
   id: string;
@@ -515,6 +516,7 @@ export function Layout() {
           <Outlet />
         </div>
         <ChatWidget />
+        <MagneticDock />
       </main>
     </div>
   );

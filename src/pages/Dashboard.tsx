@@ -162,6 +162,66 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
+      {/* Scroll Velocity / Ticker Marquee */}
+      <div className="w-full bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden py-3.5 shadow-lg relative flex items-center">
+        {/* Glow / Fade Effects on edges */}
+        <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-slate-950 to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-slate-950 to-transparent z-10 pointer-events-none" />
+        
+        {/* Marquee Track */}
+        <div className="flex whitespace-nowrap animate-marquee">
+          <div className="flex gap-16 text-[10px] font-black uppercase tracking-widest text-slate-400 items-center">
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              Facturación Hoy: <strong className="text-white">${totalSalesToday.toLocaleString()}</strong>
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-500" />
+              Mesas Activas: <strong className="text-white">{activeTablesCount} / {tables.length}</strong>
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              Comandas en curso: <strong className="text-white">{pendingOrdersCount}</strong>
+            </span>
+            {stockAlertsCount > 0 && (
+              <span className="flex items-center gap-2 text-red-400">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                Alertas de Stock: <strong className="text-red-200">{stockAlertsCount} productos bajos</strong>
+              </span>
+            )}
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400" />
+              Terminal Local: <strong className="text-white">Conectado LYNX-Host</strong>
+            </span>
+          </div>
+          {/* Duplicate for seamless looping */}
+          <div className="flex gap-16 text-[10px] font-black uppercase tracking-widest text-slate-400 items-center ml-16">
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              Facturación Hoy: <strong className="text-white">${totalSalesToday.toLocaleString()}</strong>
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-indigo-500" />
+              Mesas Activas: <strong className="text-white">{activeTablesCount} / {tables.length}</strong>
+            </span>
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              Comandas en curso: <strong className="text-white">{pendingOrdersCount}</strong>
+            </span>
+            {stockAlertsCount > 0 && (
+              <span className="flex items-center gap-2 text-red-400">
+                <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                Alertas de Stock: <strong className="text-red-200">{stockAlertsCount} productos bajos</strong>
+              </span>
+            )}
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-cyan-400" />
+              Terminal Local: <strong className="text-white">Conectado LYNX-Host</strong>
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
