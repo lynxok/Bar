@@ -12,6 +12,7 @@ import { BillingDrafts } from './pages/BillingDrafts';
 import { Settings } from './pages/Settings';
 import { ClientSummary } from './pages/ClientSummary';
 import { Security } from './pages/Security';
+import { Logs } from './pages/Logs';
 import Kitchen from './pages/Kitchen';
 import Help from './pages/Help';
 import { Login } from './pages/Login';
@@ -80,6 +81,7 @@ export default function App() {
             <Route path="facturacion" element={<BillingDrafts />} />
             <Route path="configuracion" element={<Settings />} />
             <Route path="seguridad" element={<Security />} />
+            <Route path="logs" element={<Logs />} />
             <Route path="cocina" element={<Kitchen />} />
             <Route path="ayuda" element={<Help />} />
             <Route path="mozo" element={<WaiterMobile />} />

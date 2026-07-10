@@ -22,7 +22,8 @@ import {
   Moon,
   ShieldAlert,
   ChefHat,
-  FileText
+  FileText,
+  Terminal
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { ChatWidget } from "./ChatWidget";
@@ -178,8 +179,20 @@ export function Layout() {
     });
   };
 
+  const userString = localStorage.getItem('bar_user');
+  let isSuperadminDev = false;
+  try {
+    if (userString) {
+      const u = JSON.parse(userString);
+      isSuperadminDev = u.role?.toLowerCase() === 'superadmin dev';
+    }
+  } catch (e) {
+    console.error(e);
+  }
+
   const MENU_ITEMS = [
     ...NAV_ITEMS,
+    ...(isSuperadminDev ? [{ path: "/logs", label: "Registro Técnico", icon: Terminal }] : []),
     { path: "/configuracion", label: "Configuración", icon: Settings },
     { path: "/ayuda", label: "Ayuda", icon: HelpCircle }
   ];

