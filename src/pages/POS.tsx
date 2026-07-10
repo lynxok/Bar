@@ -230,7 +230,7 @@ export function POS() {
                   <div className="p-3 flex-1 flex flex-col justify-between">
                     <h4 className="font-bold text-sm leading-tight text-on-surface">{product.name}</h4>
                     <div className="mt-1 flex items-baseline gap-2">
-                      <p className="text-emerald-600 dark:text-emerald-450 font-bold text-sm">${currentPrice.toFixed(2)}</p>
+                      <p className="text-emerald-600 font-bold text-sm">${currentPrice.toFixed(2)}</p>
                       {orderType === 'takeaway' && (
                         <p className="text-on-surface-variant font-medium text-xs line-through">${product.price.toFixed(2)}</p>
                       )}
@@ -249,7 +249,7 @@ export function POS() {
             <h3 className="font-bold text-xl text-on-surface">Pedido Actual</h3>
             <p className="text-sm text-on-surface-variant">{orderType === 'dine-in' ? 'Pedido Rápido' : 'Para Llevar'}</p>
           </div>
-          <button onClick={() => setCart([])} className="h-11 w-11 flex items-center justify-center text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-all active:scale-95" title="Vaciar carrito">
+          <button onClick={() => setCart([])} className="h-11 w-11 flex items-center justify-center text-rose-600 hover:bg-rose-50 rounded-xl transition-all active:scale-95" title="Vaciar carrito">
             <Trash2 className="h-5 w-5" />
           </button>
         </div>
@@ -302,10 +302,10 @@ export function POS() {
             </div>
             {cart.length > 0 && (
               <div className="flex justify-between items-center bg-amber-500/10 p-3 rounded-xl mt-3 border border-amber-500/20">
-                <span className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-bold text-sm">
+                <span className="flex items-center gap-2 text-amber-600 font-bold text-sm">
                   <Clock className="w-4 h-4" /> Tiempo Estimado
                 </span>
-                <span className="font-black text-amber-650 dark:text-amber-400 text-lg">~{getEstimatedWaitTime()} min</span>
+                <span className="font-black text-amber-650 text-lg">~{getEstimatedWaitTime()} min</span>
               </div>
             )}
           </div>
@@ -378,7 +378,7 @@ export function POS() {
                     type="text"
                     value={loyaltyId}
                     onChange={e => setLoyaltyId(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-950 border border-outline-variant rounded-xl font-bold text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400"
+                    className="w-full h-12 pl-12 pr-4 bg-white border border-outline-variant rounded-xl font-bold text-on-surface focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400"
                     placeholder="DNI o N° de Socio"
                   />
                 </div>
@@ -418,8 +418,8 @@ export function POS() {
                     <div className="text-4xl font-black">${total.toLocaleString()}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] font-black text-emerald-600 dark:text-emerald-450 uppercase tracking-widest mb-1">Puntos</div>
-                    <div className="text-xl font-black text-emerald-600 dark:text-emerald-450">+{Math.floor(total / 10)} pts</div>
+                    <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Puntos</div>
+                    <div className="text-xl font-black text-emerald-600">+{Math.floor(total / 10)} pts</div>
                   </div>
                 </div>
               </div>
@@ -453,7 +453,7 @@ export function POS() {
                 onChange={e => setBarcodeInput(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleBarcodeLookup(); }}
                 placeholder="Escanea o escribe el código de barras..."
-                className="w-full h-12 px-4 bg-white dark:bg-slate-950 border border-outline-variant rounded-xl font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400"
+                className="w-full h-12 px-4 bg-white border border-outline-variant rounded-xl font-bold focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder-slate-400"
                 autoFocus
               />
               <button
