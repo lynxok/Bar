@@ -5,6 +5,7 @@ import { cn } from "../lib/utils";
 import { Store, Upload, Save, Image as ImageIcon, X, Users, Shield, Trash2, Key, Plus, CheckCircle, Circle, Edit2, Cloud, Database, RefreshCw, DownloadCloud, Wifi, Globe, Copy, Eye, EyeOff, QrCode, Network, Server, AlertCircle } from "lucide-react";
 import { LoggerService } from "../lib/LoggerService";
 import QRCode from "qrcode";
+import InvoiceDesignSettings from "../components/InvoiceDesignSettings";
 
 export function Settings() {
   const { businessName, setBusinessName, logo, setLogo, taxRate, setTaxRate } = useBusiness();
@@ -1254,6 +1255,11 @@ export function Settings() {
               </div>
             </div>
           )}
+
+          {/* Invoice Customizer Section from Factureando */}
+          <div className="mt-8">
+            <InvoiceDesignSettings />
+          </div>
         </div>
       )}
 

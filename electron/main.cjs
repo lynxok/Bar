@@ -284,64 +284,130 @@ async function generatePDF(templateData, savePath) {
   return new Promise((resolve, reject) => {
     let pdfWindow = new BrowserWindow({ show: false, webPreferences: { nodeIntegration: false } });
     
+    const s = templateData.settings || {};
+    
+    // Paleta de colores
+    const palettes = {
+      slate: { primary: '#1e293b', secondary: '#94a3b8', text: '#ffffff' },
+      blue: { primary: '#1e3a8a', secondary: '#60a5fa', text: '#ffffff' },
+      emerald: { primary: '#064e3b', secondary: '#34d299', text: '#ffffff' },
+      amber: { primary: '#78350f', secondary: '#fbc124', text: '#ffffff' },
+      monochrome: { primary: '#000000', secondary: '#71717a', text: '#ffffff' },
+      soft_white: { primary: '#f1f5f9', secondary: '#cbd5e1', text: '#1e293b' }
+    };
+    const activePalette = palettes[s.pdfColorPalette || 'slate'] || palettes.slate;
+
+    // Logo del Comercio
+    const showLogo = s.pdfLogoPosition !== 'oculto' && s.invoiceLogo;
+    const logoBase64 = s.invoiceLogo || '';
+    const logoWidth = s.pdfLogoSizeWidth || 30;
+    const logoX = s.pdfLogoX || 15;
+    const logoY = s.pdfLogoY || 12;
+
+    // Altura y márgenes
+    const headerHeight = s.pdfHeaderHeight || 55;
+    const companyNameSize = s.pdfCompanyNameSize || 16;
+    const companyNameY = s.pdfCompanyNameY || 25;
+    const leftColAlign = s.pdfLeftColAlign || 'centrado';
+    const leftColX = s.pdfLeftColX || 15;
+    const rightColX = s.pdfRightColX || 110;
+    const rightColY = s.pdfRightColY || 15;
+    const rightColTitleSize = s.pdfRightColTitleSize || 18;
+    const rightColDetailsSize = s.pdfRightColDetailsSize || 9;
+    const invoiceTypeX = s.pdfInvoiceTypeX || 95;
+    const invoiceTypeY = s.pdfInvoiceTypeY || 10;
+
+    // Emisor address and details
+    const emisorName = s.nombreFantasia || templateData.emisorName;
+    const emisorDom = s.domicilioComercial || templateData.emisorDom;
+    const ingresosBrutos = s.ingresosBrutos || templateData.emisorCuit;
+    const inicioActividades = s.monotributoStartDate ? new Date(s.monotributoStartDate).toLocaleDateString('es-AR') : templateData.inicioActividades;
+
+    // Logo LYNX / Branding
+    const showLynx = s.pdfLynxPosition !== 'oculto';
+    const lynxPosition = s.pdfLynxPosition || 'abajo_derecha';
+    const lynxSize = s.pdfLynxSize || 25;
+    const lynxOpacity = s.pdfLynxOpacity || 0.08;
+    const lynxLogoBase64 = s.pdfLynxLogo || '';
+
     const html = `
       <html>
         <head>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
-            body { font-family: 'Roboto', sans-serif; padding: 20px; color: #000; font-size: 11px; }
-            .container { border: 1px solid #000; padding: 10px; }
-            .header { border-bottom: 1px solid #000; display: flex; align-items: stretch; min-height: 120px; }
-            .header-left { flex: 1; padding: 10px; border-right: 1px solid #000; position: relative; }
-            .header-right { flex: 1; padding: 10px; }
-            .letter-box { position: absolute; right: -21px; top: -1px; border: 1px solid #000; background: #fff; width: 40px; height: 40px; text-align: center; z-index: 10; font-size: 30px; font-weight: bold; line-height: 40px; }
-            .letter-box span { display: block; font-size: 8px; line-height: 10px; }
+            body { font-family: 'Roboto', sans-serif; padding: 20px; color: #000; font-size: 11px; margin: 0; }
+            .container { border: 1px solid ${activePalette.primary}; padding: 15px; border-radius: 8px; position: relative; }
             
-            .emisor-name { font-size: 18px; font-weight: bold; margin-bottom: 5px; }
-            .emisor-info { line-height: 1.4; }
-            .invoice-type { font-size: 16px; font-weight: bold; text-align: right; }
-            .invoice-nro { font-size: 14px; text-align: right; margin-top: 5px; }
+            /* Cabecera */
+            .header { border: 1.5px solid ${activePalette.primary}; display: flex; align-items: stretch; height: ${headerHeight}mm; position: relative; box-sizing: border-box; }
+            .header-left { width: 50%; padding: 10px; border-right: 1px solid ${activePalette.primary}; display: flex; flex-direction: column; justify-content: flex-start; align-items: ${leftColAlign === 'centrado' ? 'center' : 'flex-start'}; text-align: ${leftColAlign === 'centrado' ? 'center' : 'left'}; box-sizing: border-box; }
+            .header-right { width: 50%; padding: 10px; box-sizing: border-box; position: relative; padding-left: 20px; }
             
-            .section-title { background: #eee; padding: 4px 8px; font-weight: bold; border: 1px solid #000; margin-top: 10px; margin-bottom: 0; }
-            .client-info { border: 1px solid #000; border-top: none; padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+            /* Tipo de Comprobante C */
+            .letter-box { position: absolute; left: calc(50% - 10mm); top: -0.5px; border: 1.5px solid ${activePalette.primary}; background: ${activePalette.primary}; color: ${activePalette.text}; width: 20mm; height: 20mm; text-align: center; z-index: 10; font-size: 26px; font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+            .letter-box span { display: block; font-size: 8px; font-weight: normal; margin-top: 2px; }
             
-            table { width: 100%; border-collapse: collapse; margin-top: 15px; border: 1px solid #000; }
-            th { border: 1px solid #000; background: #eee; padding: 6px; text-align: left; }
-            td { border: 1px solid #000; padding: 6px; }
+            .emisor-name { font-size: ${companyNameSize}px; font-weight: bold; margin-bottom: 5px; color: ${activePalette.primary}; text-transform: uppercase; }
+            .emisor-info { line-height: 1.5; font-size: 9px; color: #334155; }
             
-            .totals-container { display: flex; justify-content: flex-end; margin-top: 15px; }
-            .totals-box { border: 1px solid #000; padding: 10px; min-width: 200px; }
-            .total-row { display: flex; justify-content: space-between; font-size: 14px; font-weight: bold; }
+            .invoice-type { font-size: ${rightColTitleSize}px; font-weight: 700; color: ${activePalette.primary}; margin-bottom: 8px; text-transform: uppercase; }
+            .invoice-details { line-height: 1.4; font-size: ${rightColDetailsSize}px; }
+
+            /* Logo del comercio */
+            .logo-img { max-width: ${logoWidth}mm; height: auto; margin-bottom: 8px; }
+
+            /* Datos Receptor */
+            .section-title { background: ${activePalette.primary}; color: ${activePalette.text}; padding: 6px 12px; font-weight: bold; border-radius: 4px; margin-top: 15px; margin-bottom: 0; font-size: 10px; letter-spacing: 0.05em; }
+            .client-info { border: 1px solid ${activePalette.primary}; border-top: none; padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
             
-            .footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #000; padding-top: 10px; }
-            .qr-container { display: flex; align-items: center; gap: 10px; }
-            .qr-image { width: 80px; height: 80px; }
-            .cae-info { text-align: right; line-height: 1.5; font-size: 12px; }
-            .cae-label { font-weight: bold; }
-            .logo-placeholder { font-weight: bold; color: #000; opacity: 0.8; font-style: italic; font-size: 14px; margin-bottom: 10px; }
+            /* Tabla */
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; border: 1.5px solid ${activePalette.primary}; }
+            th { border: 1px solid ${activePalette.primary}; background: ${activePalette.primary}; color: ${activePalette.text}; padding: 8px; text-align: left; font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; }
+            td { border: 1px solid ${activePalette.secondary}; padding: 8px; font-size: 10px; }
+            tr:nth-child(even) { background-color: #f8fafc; }
+            
+            /* Totales */
+            .totals-container { display: flex; justify-content: flex-end; margin-top: 20px; }
+            .totals-box { border: 1.5px solid ${activePalette.primary}; padding: 12px; min-width: 250px; border-radius: 6px; }
+            .total-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #475569; }
+            .total-row.final { border-top: 1.5px solid ${activePalette.primary}; margin-top: 8px; padding-top: 8px; font-size: 15px; font-weight: bold; color: ${activePalette.primary}; }
+            
+            /* Marca de agua */
+            .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: ${lynxSize}mm; opacity: ${lynxOpacity}; pointer-events: none; z-index: 0; }
+
+            /* Footer */
+            .footer { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #cbd5e1; padding-top: 15px; }
+            .qr-container { display: flex; align-items: center; gap: 12px; }
+            .qr-image { width: 75px; height: 75px; }
+            .cae-info { text-align: right; line-height: 1.6; font-size: 11px; color: #334155; }
+            .cae-label { font-weight: bold; color: #0f172a; }
+            .branding { font-size: 8px; color: #94a3b8; margin-top: 4px; font-style: italic; }
           </style>
         </head>
         <body>
           <div class="container">
+            ${lynxPosition === 'marca_agua' && lynxLogoBase64 ? `<img class="watermark" src="${lynxLogoBase64}">` : ''}
+
             <div class="header">
               <div class="header-left">
                 <div class="letter-box">${templateData.tipoLetra}<span>Cod. ${templateData.tipoCod}</span></div>
-                <div class="logo-placeholder">LYNX BarOS</div>
-                <div class="emisor-name">${templateData.emisorName}</div>
+                ${showLogo ? `<img class="logo-img" src="${logoBase64}">` : ''}
+                <div class="emisor-name">${emisorName}</div>
                 <div class="emisor-info">
-                  Razón Social: ${templateData.emisorName}<br>
-                  Domicilio Comercial: ${templateData.emisorDom}<br>
+                  Domicilio Comercial: <b>${emisorDom}</b><br>
                   Condición frente al IVA: <b>Monotributista</b>
                 </div>
               </div>
               <div class="header-right">
                 <div class="invoice-type">${templateData.tipoNombre}</div>
-                <div class="invoice-nro">Punto de Venta: ${templateData.pv.toString().padStart(5, '0')} Comp. Nro: ${templateData.nro.toString().padStart(8, '0')}</div>
-                <div style="margin-top: 10px">
-                  Fecha de Emisión: <b>${templateData.fecha}</b><br>
-                  CUIT: <b>${templateData.emisorCuit}</b><br>
-                  Ingresos Brutos: <b>${templateData.emisorCuit}</b><br>
-                  Inicio de Actividades: <b>${templateData.inicioActividades}</b>
+                <div class="invoice-details">
+                  <b>Punto de Venta:</b> ${templateData.pv.toString().padStart(5, '0')}<br>
+                  <b>Comp. Nro:</b> ${templateData.nro.toString().padStart(8, '0')}<br>
+                  <b>Fecha de Emisión:</b> ${templateData.fecha}<br>
+                  <b>Fecha de Vto. de Pago:</b> ${templateData.fecha}<br><br>
+                  <b>CUIT:</b> ${templateData.emisorCuit}<br>
+                  <b>Ingresos Brutos:</b> ${ingresosBrutos}<br>
+                  <b>Inicio de Actividades:</b> ${inicioActividades}
                 </div>
               </div>
             </div>
@@ -361,9 +427,9 @@ async function generatePDF(templateData, savePath) {
             <table>
               <thead>
                 <tr>
-                  <th>Cod.</th>
-                  <th>Descripción / Producto / Servicio</th>
-                  <th style="text-align: right">Total</th>
+                  <th style="width: 10%">Cod.</th>
+                  <th style="width: 70%">Descripción / Producto / Servicio</th>
+                  <th style="text-align: right; width: 20%">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -385,7 +451,7 @@ async function generatePDF(templateData, savePath) {
                   <span>Importe Exento:</span>
                   <span>$ 0.00</span>
                 </div>
-                <div class="total-row" style="border-top: 1px solid #000; margin-top: 5px; padding-top: 5px; font-size: 16px;">
+                <div class="total-row final">
                   <span>TOTAL:</span>
                   <span>$ ${templateData.monto.toLocaleString('es-AR', {minimumFractionDigits: 2})}</span>
                 </div>
@@ -395,9 +461,10 @@ async function generatePDF(templateData, savePath) {
             <div class="footer">
               <div class="qr-container">
                 <img class="qr-image" src="${templateData.qrBase64}">
-                <div style="font-size: 8px; color: #555;">
+                <div style="font-size: 8px; color: #64748b;">
                   Comprobante Autorizado por AFIP (ARCA)<br>
-                  Este PDF ha sido generado por LYNX BarOS
+                  Este PDF ha sido generado por Factureando / LYNX BarOS
+                  ${showLynx && lynxPosition !== 'marca_agua' ? `<div class="branding">Powered by LYNX Consulting</div>` : ''}
                 </div>
               </div>
               <div class="cae-info">
@@ -610,7 +677,8 @@ ipcMain.handle('arca-generate-invoice', async (event, { settings, client, amount
         clienteDom: client.isConsumidorFinal ? 'Consumidor Final' : client.domicilio,
         pv, nro: nro, fecha: new Date().toLocaleDateString('es-AR'),
         concepto: concept || 'Consumo Gastronómico',
-        monto: amount, cae: res.cae, caeVe: res.caeFchVto, qrBase64
+        monto: amount, cae: res.cae, caeVe: res.caeFchVto, qrBase64,
+        settings: settings.arcaInfo
       }, fullPath);
 
       return {
@@ -684,7 +752,8 @@ ipcMain.handle('arca-regenerate-pdf', async (event, { draft, settings }) => {
       clienteDom: draft.billingData.isConsumidorFinal ? 'Consumidor Final' : draft.billingData.direccion,
       pv, nro: draft.billingData.invoiceNumber, fecha: new Date(draft.date).toLocaleDateString('es-AR'),
       concepto: draft.concept || 'Consumo Gastronómico',
-      monto: draft.amount, cae: draft.billingData.cae, caeVe: draft.billingData.caeVto, qrBase64
+      monto: draft.amount, cae: draft.billingData.cae, caeVe: draft.billingData.caeVto, qrBase64,
+      settings: settings.arcaInfo
     }, fullPath);
 
     return { success: true, filePath: fullPath };

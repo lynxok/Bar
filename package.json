@@ -28,6 +28,8 @@
     "electron-is-dev": "^3.0.1",
     "electron-updater": "^6.8.3",
     "express": "^4.21.2",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "node-forge": "^1.4.0",
