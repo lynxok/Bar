@@ -955,13 +955,13 @@ export function Settings() {
               {/* Left Column: Basic Info */}
               <div className="space-y-6">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre de Usuario</label>
                   <input 
                     type="text" 
                     value={newUser.name}
                     onChange={e => setNewUser({...newUser, name: e.target.value})}
                     className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
-                    placeholder="Ej: Laura González"
+                    placeholder="Ej: lgonzalez o laura.g"
                   />
                 </div>
 
@@ -985,14 +985,13 @@ export function Settings() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">PIN de Acceso</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Contraseña</label>
                   <input 
                     type="password" 
-                    maxLength={4}
                     value={newUser.pin}
                     onChange={e => setNewUser({...newUser, pin: e.target.value})}
-                    className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all text-center tracking-[1em]"
-                    placeholder="0000"
+                    className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    placeholder="••••••••"
                   />
                 </div>
 
