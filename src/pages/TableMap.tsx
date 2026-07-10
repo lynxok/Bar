@@ -26,12 +26,27 @@ export function TableMap() {
   const { taxRate } = useBusiness();
 
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [hoveredTableId, setHoveredTableId] = useState<string | null>(null);
+
+  const handleCleanTable = async (tableId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      await updateTable(tableId, { status: 'available', order: [], lastUpdate: new Date().toISOString() });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const [selectedTableIds, setSelectedTableIds] = useState<Set<string>>(new Set());
   const [selectionBox, setSelectionBox] = useState<{ x1: number, y1: number, x2: number, y2: number } | null>(null);
   const [isMarqueeMode, setIsMarqueeMode] = useState(false);
   const [isEditingLayout, setIsEditingLayout] = useState(false);
   const [newLayoutName, setNewLayoutName] = useState("");
   const [showSavedPlans, setShowSavedPlans] = useState(false);
+  const [waiterFilter, setWaiterFilter] = useState<string>("Todos");
+  const [isMergeMode, setIsMergeMode] = useState(false);
+  const [mergeTargetId, setMergeTargetId] = useState<string | null>(null);
+  const [mergeSourceId, setMergeSourceId] = useState<string | null>(null);
   const [qrModalTableId, setQrModalTableId] = useState<string | null>(null);
   const [qrUrl, setQrUrl] = useState<string>('');
 
@@ -82,9 +97,7 @@ export function TableMap() {
         if (confirm(`¿Deseas eliminar las ${selectedTableIds.size} mesas seleccionadas?`)) {
           const idsArray = Array.from(selectedTableIds);
           try {
-            await db.transaction('rw', db.salonTables, async () => {
-              await db.salonTables.bulkDelete(idsArray);
-            });
+            await db.salonTables.bulkDelete(idsArray);
             setSelectedTableIds(new Set());
           } catch (err) {
             console.error(err);
@@ -105,8 +118,6 @@ export function TableMap() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('Efectivo');
   const [loyaltyId, setLoyaltyId] = useState('');
-  const [waiterFilter, setWaiterFilter] = useState<string>("Todos");
-  const [mergeSourceId, setMergeSourceId] = useState<string | null>(null);
   const panStart = useRef({ mx: 0, my: 0, px: 0, py: 0 });
 
   // Auxiliary Chair Adjustment (Min 44px targets)
@@ -154,7 +165,6 @@ export function TableMap() {
           lastUpdate: new Date().toISOString()
         });
       });
-      alert(`Mesas unidas. Pedidos de ${mergeSourceId} traspasados a ${targetTableId}.`);
     } catch (err) {
       console.error(err);
       alert('Error al fusionar las mesas.');
@@ -306,8 +316,20 @@ export function TableMap() {
       x: cx - (cx - p.x) * (newZoom / zoom),
       y: cy - (cy - p.y) * (newZoom / zoom),
     }));
-    setZoom(newZoom);
   }, [zoom]);
+
+  const adjustZoom = (factor: number) => {
+    const rect = canvasRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const cx = rect.width / 2;
+    const cy = rect.height / 2;
+    const newZoom = Math.min(3, Math.max(0.2, zoom * factor));
+    setPan(p => ({
+      x: cx - (cx - p.x) * (newZoom / zoom),
+      y: cy - (cy - p.y) * (newZoom / zoom),
+    }));
+    setZoom(newZoom);
+  };
 
   // Fit all tables in view
   const fitAll = useCallback(() => {
@@ -401,21 +423,7 @@ export function TableMap() {
       return;
     }
 
-    if (e.button === 1 || (e.button === 0)) {
-      const rect = canvasRef.current?.getBoundingClientRect();
-      if (rect && tables.length > 0) {
-        const minX = Math.min(...tables.map(t => t.x));
-        const minY = Math.min(...tables.map(t => t.y));
-        const maxX = Math.max(...tables.map(t => t.x + t.width));
-        const maxY = Math.max(...tables.map(t => t.y + t.height));
-        const contentW = (maxX - minX) * zoom;
-        const contentH = (maxY - minY) * zoom;
-        
-        if (contentW <= rect.width && contentH <= rect.height) {
-          return;
-        }
-      }
-
+    if (e.button === 1 || e.button === 0) {
       e.preventDefault();
       setIsPanning(true);
       panStart.current = { mx: e.clientX, my: e.clientY, px: pan.x, py: pan.y };
@@ -468,21 +476,21 @@ export function TableMap() {
       if (selectedTableIds.has(draggingId)) {
         const mainTableInit = initialPositions.current[draggingId];
         if (mainTableInit) {
-          setDragPos({ x: Math.round(mainTableInit.x + dx), y: Math.round(mainTableInit.y + dy) });
+          setDragPos({ x: Math.round((mainTableInit.x + dx) / 10) * 10, y: Math.round((mainTableInit.y + dy) / 10) * 10 });
         }
         tables.forEach(t => {
           if (selectedTableIds.has(t.id)) {
             const init = initialPositions.current[t.id];
             if (init) {
               updateTable(t.id, {
-                x: Math.round(init.x + dx),
-                y: Math.round(init.y + dy)
+                x: Math.round((init.x + dx) / 10) * 10,
+                y: Math.round((init.y + dy) / 10) * 10
               }).catch(console.error);
             }
           }
         });
       } else {
-        setDragPos({ x: c.x - dragOffset.x, y: c.y - dragOffset.y });
+        setDragPos({ x: Math.round((c.x - dragOffset.x) / 10) * 10, y: Math.round((c.y - dragOffset.y) / 10) * 10 });
       }
     }
 
@@ -508,19 +516,19 @@ export function TableMap() {
     if (draggingId && isEditingLayout) {
       if (selectedTableIds.has(draggingId)) {
         try {
-          await db.transaction('rw', db.salonTables, async () => {
-            for (const id of Array.from(selectedTableIds)) {
+          await Promise.all(
+            Array.from(selectedTableIds).map(async (id) => {
               const t = tables.find(tbl => tbl.id === id);
               if (t) {
                 await db.salonTables.update(id, { x: t.x, y: t.y });
               }
-            }
-          });
+            })
+          );
         } catch (err) {
           console.error(err);
         }
       } else {
-        await moveTable(draggingId, Math.round(dragPos.x), Math.round(dragPos.y));
+        await moveTable(draggingId, Math.round(dragPos.x / 10) * 10, Math.round(dragPos.y / 10) * 10);
       }
     }
 
@@ -564,24 +572,34 @@ export function TableMap() {
   };
 
   const STATUS_CLASSES: Record<Table['status'], string> = {
-    available: "bg-emerald-500 border-emerald-700 text-white",
-    occupied_no_order: "bg-sky-500 border-sky-700 text-white",
-    waiting_food: "bg-amber-500 border-amber-700 text-white",
-    consuming: "bg-purple-500 border-purple-700 text-white",
-    checkout: "bg-rose-500 border-rose-700 text-white",
-    dirty: "bg-stone-500 border-stone-700 text-white",
-    occupied: "bg-rose-500 border-rose-700 text-white",
+    available: "bg-gradient-to-br from-emerald-400 to-emerald-600 border-emerald-600/20 text-white shadow-emerald-100/50 shadow-md",
+    occupied_no_order: "bg-gradient-to-br from-sky-400 to-sky-600 border-sky-600/20 text-white shadow-sky-100/50 shadow-md",
+    waiting_food: "bg-gradient-to-br from-amber-400 to-orange-500 border-amber-600/20 text-white shadow-amber-100/50 shadow-md",
+    consuming: "bg-gradient-to-br from-indigo-500 to-violet-600 border-indigo-600/20 text-white shadow-indigo-100/50 shadow-md",
+    checkout: "bg-gradient-to-br from-rose-500 to-pink-600 border-rose-600/20 text-white shadow-rose-100/50 shadow-md animate-pulse",
+    dirty: "bg-gradient-to-br from-slate-400 to-slate-500 border-slate-500/20 text-white shadow-slate-100/50 shadow-md",
+    occupied: "bg-gradient-to-br from-rose-500 to-pink-600 border-rose-600/20 text-white shadow-rose-100/50 shadow-md animate-pulse",
   };
 
-  const ChairCircle = ({ cx, cy, status }: { cx: number, cy: number, status: string, key?: string | number }) => (
-    <div
-      className={cn(
-        "absolute w-4.5 h-4.5 rounded-full border-2 shadow-md transition-colors",
-        status === 'available' ? "bg-slate-100 border-white" : "bg-white border-slate-300"
-      )}
-      style={{ top: cy - 9, left: cx - 9 }}
-    />
-  );
+  const ChairCircle = ({ cx, cy, status }: { cx: number, cy: number, status: string, key?: string | number }) => {
+    const dotColors: Record<string, string> = {
+      available: "bg-emerald-500",
+      occupied_no_order: "bg-sky-500",
+      waiting_food: "bg-amber-500",
+      consuming: "bg-indigo-600",
+      checkout: "bg-rose-500",
+      dirty: "bg-slate-400",
+      occupied: "bg-rose-500",
+    };
+    return (
+      <div
+        className="absolute w-5 h-5 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center transition-all z-20"
+        style={{ top: cy - 10, left: cx - 10 }}
+      >
+        <div className={cn("w-2.5 h-2.5 rounded-full", dotColors[status] || "bg-slate-300")} />
+      </div>
+    );
+  };
 
   const renderChairs = (table: Table) => {
     if (table.type === 'stool' || table.type === 'wall' || table.type === 'bar') return null;
@@ -633,9 +651,15 @@ export function TableMap() {
     const elapsedMinutes = Math.floor((Date.now() - new Date(table.lastUpdate).getTime()) / 60000);
     const baseSize = Math.min(table.width, table.height);
     const fontSize = Math.max(9, Math.round(baseSize * 0.1));
+    const isLateWaiting = table.status === 'waiting_food' && elapsedMinutes >= 15;
     return (
       <div 
-        className="flex items-center gap-1 font-black mt-1 opacity-90 bg-black/10 px-1.5 py-0.5 rounded-full text-white"
+        className={cn(
+          "flex items-center gap-1 font-black mt-1 px-2 py-0.5 rounded-full text-white z-10 transition-all",
+          isLateWaiting 
+            ? "bg-rose-600 animate-bounce shadow-md" 
+            : "bg-black/10 opacity-90"
+        )}
         style={{ fontSize: `${fontSize}px` }}
       >
         <span>⏱ {elapsedMinutes}m</span>
@@ -670,6 +694,12 @@ export function TableMap() {
           filter: isSelected ? 'drop-shadow(0 0 8px rgba(99,102,241,0.9))' : isDragging ? 'drop-shadow(0 8px 20px rgba(0,0,0,0.25))' : 'none',
         }}
         onMouseDown={(e) => onMouseDown(e, table)}
+        onMouseEnter={() => {
+          if (!isEditingLayout && !draggingId && !isPanning) {
+            setHoveredTableId(table.id);
+          }
+        }}
+        onMouseLeave={() => setHoveredTableId(null)}
         onClick={(e) => {
           e.stopPropagation();
           if (isEditingLayout) {
@@ -694,8 +724,20 @@ export function TableMap() {
               }
               setSelectedTableIds(next);
             } else {
-              if (mergeSourceId) {
-                handleMergeTables(table.id);
+              if (isMergeMode) {
+                if (!mergeSourceId) {
+                  if (table.status === 'available') {
+                    alert('Debes seleccionar una mesa ocupada como origen.');
+                    return;
+                  }
+                  setMergeSourceId(table.id);
+                } else {
+                  if (table.id === mergeSourceId) {
+                    setMergeSourceId(null);
+                    return;
+                  }
+                  setMergeTargetId(table.id);
+                }
               } else {
                 setSelectedTableId(table.id);
               }
@@ -716,10 +758,15 @@ export function TableMap() {
           </div>
         ) : (
           <div className={cn(
-            "w-full h-full flex flex-col items-center justify-center relative border-4 shadow-lg transition-all",
+            "w-full h-full flex flex-col items-center justify-center relative border shadow-lg transition-all overflow-visible",
             (table.type === 'round' || table.type === 'stool') ? "rounded-full" : "rounded-2xl",
             STATUS_CLASSES[table.status] || "bg-white border-slate-100 text-slate-800"
           )}>
+            {/* Glass inner ring reflection */}
+            <div className={cn(
+              "absolute inset-1 border pointer-events-none opacity-25 z-0",
+              (table.type === 'round' || table.type === 'stool') ? "rounded-full border-white" : "rounded-xl border-white"
+            )} />
             {(() => {
               const baseSize = Math.min(table.width, table.height);
               const fontSizeId = Math.max(9, Math.round(baseSize * 0.11));
@@ -832,12 +879,53 @@ export function TableMap() {
                 </div>
 
                 {editingTable.type !== 'stool' && editingTable.type !== 'wall' && (
-                  <div className="space-y-1">
+                  <div className="space-y-2">
                     <label className="text-[10px] font-bold text-slate-400 uppercase">Sillas</label>
                     <div className="flex items-center gap-4 bg-white/5 p-1.5 rounded-xl border border-white/10">
-                      <button onClick={() => updateTable(editingTable.id, { capacity: Math.max(1, editingTable.capacity - 1) })} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20"><Minus className="w-4 h-4" /></button>
+                      <button onClick={() => {
+                        const newCap = Math.max(1, editingTable.capacity - 1);
+                        const half = Math.floor(newCap / 2);
+                        updateTable(editingTable.id, { 
+                          capacity: newCap, 
+                          chairsConfig: editingTable.chairsConfig ? { top: half, bottom: newCap - half, left: 0, right: 0 } : undefined 
+                        });
+                      }} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20"><Minus className="w-4 h-4" /></button>
                       <span className="flex-1 text-center font-black text-lg">{editingTable.capacity}</span>
-                      <button onClick={() => updateTable(editingTable.id, { capacity: editingTable.capacity + 1 })} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20"><Plus className="w-4 h-4" /></button>
+                      <button onClick={() => {
+                        const newCap = editingTable.capacity + 1;
+                        const half = Math.floor(newCap / 2);
+                        updateTable(editingTable.id, { 
+                          capacity: newCap, 
+                          chairsConfig: editingTable.chairsConfig ? { top: half, bottom: newCap - half, left: 0, right: 0 } : undefined 
+                        });
+                      }} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20"><Plus className="w-4 h-4" /></button>
+                    </div>
+                    {/* Capacity Presets */}
+                    <div className="flex gap-1.5">
+                      {[2, 4, 6, 8].map(cap => {
+                        const half = Math.floor(cap / 2);
+                        return (
+                          <button
+                            key={cap}
+                            onClick={() => {
+                              updateTable(editingTable.id, {
+                                capacity: cap,
+                                chairsConfig: (editingTable.type === 'round' || editingTable.type === 'stool')
+                                  ? undefined
+                                  : { top: half, bottom: cap - half, left: 0, right: 0 }
+                              });
+                            }}
+                            className={cn(
+                              "flex-1 py-1.5 text-[9px] font-black rounded-lg border transition-all",
+                              editingTable.capacity === cap 
+                                ? "bg-indigo-600 border-indigo-500 text-white" 
+                                : "bg-white/5 border-white/10 hover:bg-white/10"
+                            )}
+                          >
+                            {cap} P
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -1155,30 +1243,29 @@ export function TableMap() {
             {!isEditingLayout && !isMarqueeMode && (
               <button
                 onClick={() => {
-                  if (mergeSourceId) {
+                  if (isMergeMode) {
+                    setIsMergeMode(false);
                     setMergeSourceId(null);
+                    setMergeTargetId(null);
                   } else {
                     const activeOccupied = tables.filter(t => t.status !== 'available' && t.type !== 'wall');
                     if (activeOccupied.length === 0) {
                       alert('No hay mesas ocupadas para iniciar una unión.');
                       return;
                     }
-                    const sourceId = prompt(`Ingrese el ID de la mesa de origen (ej. T-01): \nMesas Ocupadas: ${activeOccupied.map(t=>t.id).join(', ')}`);
-                    if (sourceId && tables.some(t => t.id === sourceId)) {
-                      setMergeSourceId(sourceId);
-                    } else if (sourceId) {
-                      alert('Mesa de origen inválida.');
-                    }
+                    setIsMergeMode(true);
+                    setMergeSourceId(null);
+                    setMergeTargetId(null);
                   }
                 }}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all active:scale-95 shadow-sm border",
-                  mergeSourceId
+                  isMergeMode
                     ? "bg-rose-500 border-rose-500 text-white animate-pulse"
                     : "bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100"
                 )}
               >
-                {mergeSourceId ? `Cancelando acople (Desde ${mergeSourceId})` : 'Unir Mesas (Merge)'}
+                {isMergeMode ? `Cancelando fusión visual` : 'Unir Mesas (Merge)'}
               </button>
             )}
 
@@ -1240,10 +1327,19 @@ export function TableMap() {
           </div>
         )}
 
+        {isMergeMode && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-rose-600 text-white px-6 py-2.5 rounded-full shadow-lg text-xs font-black uppercase tracking-wider z-40 border border-white/20 animate-pulse">
+            {!mergeSourceId 
+              ? "Selecciona la MESA ORIGEN (que tiene el pedido) haciendo clic sobre ella" 
+              : `Mesa Origen: ${mergeSourceId} · Ahora selecciona la MESA DESTINO`
+            }
+          </div>
+        )}
+
         <div
           ref={canvasRef}
           className={cn(
-            "flex-1 w-full bg-white rounded-[3.5rem] border-4 border-slate-950 relative overflow-hidden shadow-inner shadow-slate-900/10",
+            "flex-1 w-full bg-slate-50/50 rounded-[3.5rem] border border-slate-200/80 relative overflow-hidden shadow-inner shadow-slate-900/5",
             isEditingLayout ? "ring-[12px] ring-indigo-50 border-indigo-100" : "",
             isPanning ? "cursor-move" : !isEditingLayout ? "cursor-default" : "cursor-default"
           )}
@@ -1278,14 +1374,112 @@ export function TableMap() {
                 }}
               />
             )}
+
+            {/* Tarjeta Flotante (Hover Card) */}
+            {(() => {
+              const hoveredTable = tables.find(t => t.id === hoveredTableId);
+              if (!hoveredTable || hoveredTable.type === 'wall') return null;
+              
+              const totalItemsPrice = hoveredTable.order.reduce((acc, i) => acc + (i.price * i.qty), 0);
+              
+              return (
+                <div 
+                  className="absolute bg-slate-950/90 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-slate-700/50 w-64 z-50 transition-all duration-200 pointer-events-auto flex flex-col gap-2 font-sans text-left"
+                  style={{
+                    left: hoveredTable.x + hoveredTable.width / 2,
+                    top: hoveredTable.y - 12,
+                    transform: 'translate(-50%, -100%)',
+                  }}
+                  onMouseEnter={() => setHoveredTableId(hoveredTable.id)}
+                  onMouseLeave={() => setHoveredTableId(null)}
+                >
+                  {/* Header */}
+                  <div className="flex justify-between items-center border-b border-white/10 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-xs tracking-wider">MESA {hoveredTable.id}</span>
+                      <span className={cn(
+                        "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md",
+                        hoveredTable.status === 'available' ? "bg-emerald-500/20 text-emerald-400" :
+                        hoveredTable.status === 'dirty' ? "bg-slate-500/20 text-slate-400" :
+                        hoveredTable.status === 'waiting_food' ? "bg-amber-500/20 text-amber-400 animate-pulse" :
+                        hoveredTable.status === 'checkout' ? "bg-rose-500/20 text-rose-400 animate-pulse" :
+                        "bg-indigo-500/20 text-indigo-400"
+                      )}>
+                        {hoveredTable.status === 'available' ? "Libre" :
+                         hoveredTable.status === 'dirty' ? "Sucia" :
+                         hoveredTable.status === 'waiting_food' ? "Espera Cocina" :
+                         hoveredTable.status === 'checkout' ? "Por Cobrar" : "Ocupada"}
+                      </span>
+                    </div>
+                    {hoveredTable.waiterName && (
+                      <span className="text-[9px] bg-white/15 px-2 py-0.5 rounded-full font-bold">
+                        {hoveredTable.waiterName}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Details */}
+                  <div className="text-[11px] text-slate-300 space-y-1">
+                    {hoveredTable.status !== 'available' && hoveredTable.lastUpdate && (
+                      <div className="flex justify-between">
+                        <span>Tiempo activo:</span>
+                        <span className="font-bold text-white">
+                          {Math.floor((Date.now() - new Date(hoveredTable.lastUpdate).getTime()) / 60000)} minutos
+                        </span>
+                      </div>
+                    )}
+                    {hoveredTable.status !== 'available' && hoveredTable.status !== 'dirty' && (
+                      <>
+                        <div className="flex justify-between">
+                          <span>Consumo actual:</span>
+                          <span className="font-black text-amber-400 text-xs">
+                            ${totalItemsPrice}
+                          </span>
+                        </div>
+                        <div className="border-t border-white/5 my-2 pt-2">
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">Items comandados</span>
+                          {hoveredTable.order.length === 0 ? (
+                            <span className="italic text-slate-500 block">Sin ítems aún</span>
+                          ) : (
+                            <div className="max-h-24 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+                              {hoveredTable.order.slice(0, 3).map(i => (
+                                <div key={i.id} className="flex justify-between text-slate-400">
+                                  <span className="truncate max-w-[130px] font-medium">{i.name}</span>
+                                  <span className="font-bold text-white">x{i.qty}</span>
+                                </div>
+                              ))}
+                              {hoveredTable.order.length > 3 && (
+                                <div className="text-[9px] text-slate-500 italic font-semibold">
+                                  + {hoveredTable.order.length - 3} más...
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Quick actions */}
+                  {hoveredTable.status === 'dirty' && (
+                    <button 
+                      onClick={(e) => handleCleanTable(hoveredTable.id, e)}
+                      className="w-full mt-1.5 py-2 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl text-[9px] font-black tracking-widest uppercase transition-all shadow-md"
+                    >
+                      🧹 Limpiar y Habilitar
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Zoom controls */}
           <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-20 bg-slate-900/10 backdrop-blur-md p-1.5 rounded-3xl border border-slate-200/50 shadow-xl">
-            <button onClick={() => { const nz = Math.min(3, zoom * 1.2); setZoom(nz); }} className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95" title="Acercar">
+            <button onClick={() => adjustZoom(1.2)} className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95" title="Acercar">
               <ZoomIn className="w-5 h-5" />
             </button>
-            <button onClick={() => { const nz = Math.max(0.2, zoom / 1.2); setZoom(nz); }} className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95" title="Alejar">
+            <button onClick={() => adjustZoom(1 / 1.2)} className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95" title="Alejar">
               <ZoomOut className="w-5 h-5" />
             </button>
             <button onClick={fitAll} title="Ajustar todo" className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95">
@@ -1374,6 +1568,44 @@ export function TableMap() {
           </div>
         </div>
       )}
+      {/* Visual Table Merge Confirmation Modal */}
+      {isMergeMode && mergeSourceId && mergeTargetId && (
+        <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col gap-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3 text-indigo-600">
+              <ArrowRightLeft className="w-8 h-8" />
+              <h3 className="font-black text-lg text-slate-900 uppercase tracking-tight">Confirmar Unión</h3>
+            </div>
+            <p className="text-slate-600 text-sm leading-relaxed">
+              ¿Deseas transferir los pedidos y consumos de la mesa <span className="font-black text-indigo-600">{mergeSourceId}</span> a la mesa <span className="font-black text-indigo-600">{mergeTargetId}</span>?
+            </p>
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => {
+                  setMergeSourceId(null);
+                  setMergeTargetId(null);
+                  setIsMergeMode(false);
+                }}
+                className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-black uppercase tracking-wider transition-all"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  await handleMergeTables(mergeTargetId);
+                  setMergeSourceId(null);
+                  setMergeTargetId(null);
+                  setIsMergeMode(false);
+                }}
+                className="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-indigo-100"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Payment & Loyalty Modal */}
       {isPaymentModalOpen && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[200] flex items-center justify-center p-6">

@@ -136,7 +136,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     { id: 'T-04', status: 'available', order: [], lastUpdate: new Date().toISOString(), x: 100, y: 280, type: 'round', width: 80, height: 80, capacity: 4 },
   ];
 
-  const tables = tablesFromDB.length > 0 ? tablesFromDB : defaultTables;
+  const tables = tablesFromDB;
 
   useEffect(() => {
     const initTables = async () => {
