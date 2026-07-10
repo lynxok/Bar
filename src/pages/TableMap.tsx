@@ -97,7 +97,7 @@ export function TableMap() {
         if (confirm(`¿Deseas eliminar las ${selectedTableIds.size} mesas seleccionadas?`)) {
           const idsArray = Array.from(selectedTableIds);
           try {
-            await db.salonTables.bulkDelete(idsArray);
+            await Promise.all(idsArray.map(id => db.salonTables.delete(id)));
             setSelectedTableIds(new Set());
           } catch (err) {
             console.error(err);
