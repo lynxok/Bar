@@ -59,7 +59,7 @@ export function Logs() {
             <div>
               <h2 className="text-xl font-black text-on-surface tracking-tight uppercase">REGISTRO TÉCNICO (LOGS DEL SISTEMA)</h2>
               <p className="text-xs text-on-surface-variant mt-1">
-                Panel exclusivo de diagnóstico para el rol <span className="font-bold text-rose-600">Superadmin Dev</span>.
+                Panel exclusivo de diagnóstico para el rol <span className="font-bold text-rose-600">Superadmin</span>.
               </p>
             </div>
           </div>

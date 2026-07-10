@@ -180,11 +180,11 @@ export function Layout() {
   };
 
   const userString = localStorage.getItem('bar_user');
-  let isSuperadminDev = false;
+  let isSuperadmin = false;
   try {
     if (userString) {
       const u = JSON.parse(userString);
-      isSuperadminDev = u.role?.toLowerCase() === 'superadmin dev';
+      isSuperadmin = u.role?.toLowerCase() === 'superadmin';
     }
   } catch (e) {
     console.error(e);
@@ -192,7 +192,7 @@ export function Layout() {
 
   const MENU_ITEMS = [
     ...NAV_ITEMS,
-    ...(isSuperadminDev ? [{ path: "/logs", label: "Registro Técnico", icon: Terminal }] : []),
+    ...(isSuperadmin ? [{ path: "/logs", label: "Registro Técnico", icon: Terminal }] : []),
     { path: "/configuracion", label: "Configuración", icon: Settings },
     { path: "/ayuda", label: "Ayuda", icon: HelpCircle }
   ];

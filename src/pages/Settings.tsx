@@ -968,7 +968,7 @@ export function Settings() {
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Rol en el Sistema</label>
                   <div className="grid grid-cols-2 gap-2">
-                    {['Admin', 'Cajero', 'Mozo', 'Cocinero', 'Superadmin Dev'].map(role => (
+                    {['Admin', 'Cajero', 'Mozo', 'Cocinero'].map(role => (
                       <button 
                         key={role}
                         onClick={() => setNewUser({...newUser, role})}
