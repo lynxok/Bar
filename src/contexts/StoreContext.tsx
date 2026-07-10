@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder } from '../db/database';
-export type { Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder };
+import { db, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft } from '../db/database';
+export type { Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft };
 
 export interface OrderItem {
   id: string;
@@ -44,6 +44,7 @@ interface StoreContextType {
   loyaltyTransactions: LoyaltyTransaction[];
   activeShift: Shift | null;
   clientOrders: ClientOrder[];
+  billingDrafts: BillingDraft[];
 
   submitClientOrder: (tableId: string, customerId: string, items: any[], total: number) => Promise<void>;
   approveClientOrder: (orderId: number) => Promise<void>;
@@ -83,6 +84,10 @@ interface StoreContextType {
 
   // Loyalty Config persistence helpers
   updateLoyaltyConfig: (updates: Partial<LoyaltyConfig>) => Promise<void>;
+
+  // Borradores y ARCA
+  createBillingDraft: (clientName: string, concept: string, paymentMethod: string, amount: number) => Promise<string>;
+  markDraftsAsBilled: (ids: string[], billingData: any) => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -108,6 +113,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const messages = useLiveQuery(() => db.messages.orderBy('timestamp').toArray()) || [];
   const floorPlans = useLiveQuery(() => db.floorPlans.orderBy('timestamp').reverse().toArray()) || [];
   const clientOrders = useLiveQuery(() => db.clientOrders.orderBy('timestamp').reverse().toArray()) || [];
+  const billingDrafts = useLiveQuery(() => db.billingDrafts.orderBy('date').reverse().toArray()) || [];
 
   // Persistent Loyalty Config & Transactions from IndexedDB
   const loyaltyConfigRaw = useLiveQuery(() => db.loyaltyConfig.get('global'));
@@ -310,7 +316,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   // Close order and deduct stock + add points and transaction logs
   const closeOrder = async (tableId: string, paymentMethod: string, customerId?: string) => {
-    await db.transaction('rw', [db.salonTables, db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig], async () => {
+    await db.transaction('rw', [db.salonTables, db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig, db.billingDrafts], async () => {
       const table = await db.salonTables.get(tableId);
       if (!table || table.order.length === 0) return;
       const total = table.order.reduce((acc: number, i: any) => acc + (i.price * i.qty), 0);
@@ -323,6 +329,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         customerId,
         status: 'closed',
         timestamp: new Date().toISOString()
+      });
+
+      let clientName = 'Mesa ' + tableId.replace('T-', '');
+      if (customerId) {
+        const customer = await db.customers.where('dni').equals(customerId).first();
+        if (customer) clientName = customer.name;
+      }
+
+      const itemsList = table.order.map((i: any) => `${i.qty}x ${i.name}`).join(', ');
+      
+      await db.billingDrafts.add({
+        id: Math.random().toString(36).substring(7),
+        date: new Date().toISOString(),
+        clientName,
+        concept: itemsList,
+        paymentMethod,
+        amount: total,
+        billed: false
       });
 
       if (customerId) {
@@ -379,7 +403,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const closePOSOrder = async (items: OrderItem[], total: number, paymentMethod: string, customerId?: string) => {
-    await db.transaction('rw', [db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig], async () => {
+    await db.transaction('rw', [db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig, db.billingDrafts], async () => {
       if (items.length === 0) return;
 
       await db.orders.add({
@@ -390,6 +414,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         customerId,
         status: 'closed',
         timestamp: new Date().toISOString()
+      });
+
+      let clientName = 'Consumidor Final';
+      if (customerId) {
+        const customer = await db.customers.where('dni').equals(customerId).first();
+        if (customer) clientName = customer.name;
+      }
+
+      const itemsList = items.map((i: any) => `${i.qty}x ${i.name}`).join(', ');
+
+      await db.billingDrafts.add({
+        id: Math.random().toString(36).substring(7),
+        date: new Date().toISOString(),
+        clientName,
+        concept: itemsList,
+        paymentMethod,
+        amount: total,
+        billed: false
       });
 
       if (customerId) {
@@ -645,11 +687,43 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const createBillingDraft = async (clientName: string, concept: string, paymentMethod: string, amount: number) => {
+    const id = Math.random().toString(36).substring(7);
+    await db.billingDrafts.add({
+      id,
+      date: new Date().toISOString(),
+      clientName,
+      concept,
+      paymentMethod,
+      amount,
+      billed: false
+    });
+    return id;
+  };
+
+  const markDraftsAsBilled = async (ids: string[], billingData: any) => {
+    await db.transaction('rw', db.billingDrafts, async () => {
+      for (const id of ids) {
+        const draft = await db.billingDrafts.get(id);
+        if (draft) {
+          await db.billingDrafts.update(id, {
+            billed: true,
+            billingData: {
+              ...draft.billingData,
+              ...billingData
+            }
+          });
+        }
+      }
+    });
+  };
+
   return (
     <StoreContext.Provider value={{
       products, tables, expenses, paymentOrders, orders, comandas,
       rewards, customers, shifts, users, messages, floorPlans,
       loyaltyConfig, loyaltyTransactions, activeShift, clientOrders,
+      billingDrafts,
       submitClientOrder, approveClientOrder, rejectClientOrder,
       saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan,
       sendMessage, markAsRead,
@@ -662,6 +736,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setProducts, addProduct, updateProduct, deleteProduct,
       moveTable, addTable, removeTable, updateTable,
       updateLoyaltyConfig,
+      createBillingDraft, markDraftsAsBilled
     }}>
       {children}
     </StoreContext.Provider>

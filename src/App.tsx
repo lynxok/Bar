@@ -8,6 +8,7 @@ import { Finance } from './pages/Finance';
 import { CashClose } from './pages/CashClose';
 import { Analytics } from './pages/Analytics';
 import { Loyalty } from './pages/Loyalty';
+import { BillingDrafts } from './pages/BillingDrafts';
 import { Settings } from './pages/Settings';
 import { ClientSummary } from './pages/ClientSummary';
 import { Security } from './pages/Security';
@@ -16,10 +17,17 @@ import Help from './pages/Help';
 import { Login } from './pages/Login';
 import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
+import { startSyncService, stopSyncService } from './services/syncService';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Iniciar servicio de sincronización
+  useEffect(() => {
+    startSyncService();
+    return () => stopSyncService();
+  }, []);
 
   // Check local storage on load
   useEffect(() => {
@@ -69,6 +77,7 @@ export default function App() {
             <Route path="cierre" element={<CashClose />} />
             <Route path="analitica" element={<Analytics />} />
             <Route path="fidelizacion" element={<Loyalty />} />
+            <Route path="facturacion" element={<BillingDrafts />} />
             <Route path="configuracion" element={<Settings />} />
             <Route path="seguridad" element={<Security />} />
             <Route path="cocina" element={<Kitchen />} />

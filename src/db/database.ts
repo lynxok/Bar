@@ -141,6 +141,7 @@ export interface User {
   role: string;
   pin?: string;
   permissions: string[];
+  status?: string;
 }
 
 export interface Message {
@@ -197,6 +198,26 @@ export interface ClientOrder {
   timestamp: string;
 }
 
+export interface BillingDraft {
+  id?: string;
+  date: string;
+  clientName: string;
+  concept: string;
+  paymentMethod: string;
+  amount: number;
+  billed: boolean;
+  billingData?: {
+    isConsumidorFinal: boolean;
+    identificador?: string;
+    direccion?: string;
+    billingDate: string;
+    invoiceNumber?: number;
+    cae?: string;
+    caeVto?: string;
+    filePath?: string;
+  };
+}
+
 export class BarDatabase extends Dexie {
   products!: Table<Product>;
   orders!: Table<Order>;
@@ -218,10 +239,11 @@ export class BarDatabase extends Dexie {
   loyaltyConfig!: Table<LoyaltyConfig>;
   loyaltyTransactions!: Table<LoyaltyTransaction>;
   clientOrders!: Table<ClientOrder>;
+  billingDrafts!: Table<BillingDraft>;
 
   constructor() {
     super('BarDatabase');
-    this.version(9).stores({
+    this.version(10).stores({
       products: '++id, name, sku, category',
       orders: '++id, tableId, status, timestamp',
       expenses: '++id, provider, date, category',
@@ -239,10 +261,143 @@ export class BarDatabase extends Dexie {
       floorPlans: '++id, name, timestamp',
       loyaltyConfig: 'id',
       loyaltyTransactions: '++id, customerDni, timestamp',
-      clientOrders: '++id, tableId, status, timestamp'
+      clientOrders: '++id, tableId, status, timestamp',
+      billingDrafts: 'id, date, billed'
     });
   }
 }
 
 export const db = new BarDatabase();
 
+export const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+// El host principal es la aplicación de Electron.
+export const isHost = isElectron;
+
+// 1. ESCUCHADOR IPC EN EL HOST (ELECTRON)
+// Cuando Express recibe una llamada HTTP de un celular, la envía aquí vía IPC.
+// Este código consulta el IndexedDB real de la PC principal y devuelve el resultado.
+if (isElectron) {
+  const ipc = (window as any).require('electron').ipcRenderer;
+  ipc.on('db-request', async (_: any, { requestId, table, id, method, body, query }: any) => {
+    try {
+      const targetTable = (db as any)[table];
+      if (!targetTable) throw new Error(`Table ${table} not found`);
+
+      let data;
+      const key = id ? (isNaN(Number(id)) ? id : Number(id)) : null;
+
+      if (method === 'GET') {
+        if (key !== null) {
+          data = await targetTable.get(key);
+        } else {
+          // Filtrado básico para consultas comunes
+          if (query && query.where && query.equals) {
+            data = await targetTable.where(query.where).equals(query.equals).toArray();
+          } else if (query && query.orderBy) {
+            if (query.reverse === 'true') {
+              data = await targetTable.orderBy(query.orderBy).reverse().toArray();
+            } else {
+              data = await targetTable.orderBy(query.orderBy).toArray();
+            }
+          } else {
+            data = await targetTable.toArray();
+          }
+        }
+      } else if (method === 'POST') {
+        data = await targetTable.add(body);
+      } else if (method === 'PUT') {
+        data = await targetTable.update(key, body);
+      } else if (method === 'DELETE') {
+        data = await targetTable.delete(key);
+      }
+
+      ipc.send('db-response', { requestId, success: true, data });
+    } catch (err: any) {
+      console.error('Error procesando consulta remota de base de datos:', err);
+      ipc.send('db-response', { requestId, success: false, error: err.message });
+    }
+  });
+}
+
+// 2. INTERCEPTORES DE ESCRITURA EN EL CLIENTE (CELULARES/TABLETS)
+// Cuando el celular hace una operación de escritura (add, update, delete) en Dexie,
+// se ejecuta localmente (para feedback visual instantáneo) y se envía al Host por HTTP API.
+if (!isHost) {
+  const apiFetch = async (path: string, options?: RequestInit) => {
+    const hostUrl = window.location.origin;
+    const res = await fetch(`${hostUrl}${path}`, options);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  };
+
+  const wrapTableForClient = (tableName: string, originalTable: any) => {
+    // Interceptar ADD
+    const originalAdd = originalTable.add.bind(originalTable);
+    originalTable.originalAdd = originalAdd;
+    originalTable.add = async function(item: any, key?: any) {
+      const localId = await originalAdd(item, key);
+      const itemWithId = { ...item };
+      
+      const idKey = originalTable.schema.primKey.name || 'id';
+      if (localId && !itemWithId[idKey]) {
+        itemWithId[idKey] = localId;
+      }
+      
+      try {
+        await apiFetch(`/api/db/${tableName}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(itemWithId)
+        });
+      } catch (err) {
+        console.error(`Error de sincronización (ADD) en tabla ${tableName}:`, err);
+      }
+      return localId;
+    };
+
+    // Interceptar UPDATE
+    const originalUpdate = originalTable.update.bind(originalTable);
+    originalTable.originalUpdate = originalUpdate;
+    originalTable.update = async function(key: any, changes: any) {
+      const localResult = await originalUpdate(key, changes);
+      try {
+        await apiFetch(`/api/db/${tableName}/${key}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(changes)
+        });
+      } catch (err) {
+        console.error(`Error de sincronización (UPDATE) en tabla ${tableName}:`, err);
+      }
+      return localResult;
+    };
+
+    // Interceptar DELETE
+    const originalDelete = originalTable.delete.bind(originalTable);
+    originalTable.originalDelete = originalDelete;
+    originalTable.delete = async function(key: any) {
+      const localResult = await originalDelete(key);
+      try {
+        await apiFetch(`/api/db/${tableName}/${key}`, {
+          method: 'DELETE'
+        });
+      } catch (err) {
+        console.error(`Error de sincronización (DELETE) en tabla ${tableName}:`, err);
+      }
+      return localResult;
+    };
+  };
+
+  const tableNames = [
+    'products', 'orders', 'expenses', 'salonTables', 'paymentOrders', 
+    'systemLogs', 'auditLogs', 'comandas', 'rewards', 'customers', 
+    'shifts', 'users', 'messages', 'floorPlans', 'loyaltyConfig', 
+    'loyaltyTransactions', 'clientOrders'
+  ];
+  
+  tableNames.forEach(name => {
+    if ((db as any)[name]) {
+      wrapTableForClient(name, (db as any)[name]);
+    }
+  });
+}

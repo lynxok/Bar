@@ -17,6 +17,16 @@ export function WaiterMobile() {
   const [productSearch, setProductSearch] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
+  // Toast State
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  const triggerToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => {
+      setToast(null);
+    }, 3000);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('bar_user');
     window.location.reload();
@@ -135,16 +145,28 @@ export function WaiterMobile() {
       // Reset back to tables screen
       setSelectedTableId(null);
       setComandaItems([]);
-      alert(`Comanda enviada con éxito para la Mesa ${selectedTableId.replace('T-', '')}`);
+      triggerToast(`Comanda enviada con éxito para la Mesa ${selectedTableId.replace('T-', '')}`, 'success');
     } catch (err) {
       console.error(err);
-      alert('Error al enviar la comanda.');
+      triggerToast('Error al enviar la comanda.', 'error');
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-900 text-slate-100 max-w-[430px] mx-auto border-x border-slate-800 shadow-2xl relative">
       
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`absolute top-4 left-4 right-4 z-50 p-4 rounded-xl border shadow-2xl transition-all duration-300 transform translate-y-0 flex items-center justify-between ${
+          toast.type === 'success' 
+            ? 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200' 
+            : 'bg-red-950/90 border-red-500/50 text-red-200'
+        }`}>
+          <div className="text-sm font-semibold">{toast.message}</div>
+          <button onClick={() => setToast(null)} className="text-xs opacity-60 hover:opacity-100">Cerrar</button>
+        </div>
+      )}
+
       {/* Header */}
       <header className="h-16 bg-slate-950 flex items-center justify-between px-4 border-b border-slate-800 shrink-0 sticky top-0 z-50">
         <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
@@ -351,16 +373,16 @@ export function WaiterMobile() {
                       <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
                         <button
                           onClick={() => handleUpdateQty(item.name, -1)}
-                          className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-slate-800 active:scale-90 rounded-lg transition-all"
+                          className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-slate-800 active:scale-90 rounded-lg transition-all"
                         >
-                          <Minus className="w-4 h-4" />
+                          <Minus className="w-5 h-5" />
                         </button>
                         <span className="w-8 text-center text-sm font-bold text-white">{item.qty}</span>
                         <button
                           onClick={() => handleUpdateQty(item.name, 1)}
-                          className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-emerald-400 hover:bg-slate-800 active:scale-90 rounded-lg transition-all"
+                          className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-emerald-400 hover:bg-slate-800 active:scale-90 rounded-lg transition-all"
                         >
-                          <Plus className="w-4 h-4" />
+                          <Plus className="w-5 h-5" />
                         </button>
                       </div>
                     </div>

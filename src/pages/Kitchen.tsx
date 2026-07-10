@@ -99,15 +99,44 @@ export default function Kitchen() {
   };
 
   const getStatusColor = (status: string, timestamp: string) => {
-    if (status === 'ready') return 'border-green-500 bg-green-50';
+    if (status === 'ready') return {
+      card: 'border-green-500 bg-white border-2',
+      header: 'bg-green-500 text-white border-green-500',
+      title: 'text-white',
+      clock: 'text-green-100',
+      badge: 'bg-white text-green-700'
+    };
     
     const minutes = (Date.now() - new Date(timestamp).getTime()) / 60000;
-    if (minutes > 20) return 'border-red-500 bg-red-50 animate-pulse';
-    if (minutes > 10) return 'border-orange-500 bg-orange-50';
-    return 'border-indigo-500 bg-white';
+    
+    if (minutes > 12) return {
+      card: 'border-red-600 border-[3px] bg-white shadow-xl shadow-red-100/50 animate-pulse',
+      header: 'bg-red-600 text-white border-red-600',
+      title: 'text-white font-black',
+      clock: 'text-red-100 font-bold',
+      badge: 'bg-white text-red-600'
+    };
+    if (minutes >= 5) return {
+      card: 'border-amber-500 border-2 bg-white',
+      header: 'bg-amber-500 text-white border-amber-500',
+      title: 'text-white',
+      clock: 'text-amber-100',
+      badge: 'bg-white text-amber-600'
+    };
+    return {
+      card: 'border-emerald-500 border-2 bg-white',
+      header: 'bg-emerald-500 text-white border-emerald-500',
+      title: 'text-white',
+      clock: 'text-emerald-100',
+      badge: 'bg-white text-emerald-700'
+    };
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, customClass?: string) => {
+    if (customClass) {
+      const label = status === 'pending' ? 'Pendiente' : status === 'preparing' ? 'Preparando' : 'Listo';
+      return <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase", customClass)}>{label}</span>;
+    }
     switch (status) {
       case 'pending': return <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] font-bold uppercase">Pendiente</span>;
       case 'preparing': return <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-[10px] font-bold uppercase animate-pulse">Preparando</span>;
@@ -202,53 +231,54 @@ export default function Kitchen() {
           </div>
         ) : (
           filteredComandas
-            .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-            .map((order) => {
-              const cardItems = getFilteredItems(order.items);
-              if (cardItems.length === 0) return null;
+              .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+              .map((order) => {
+                const cardItems = getFilteredItems(order.items);
+                if (cardItems.length === 0) return null;
+                const styles = getStatusColor(order.status, order.timestamp);
 
-              return (
-                <div 
-                  key={order.id} 
-                  className={cn(
-                    "flex flex-col border-2 rounded-3xl overflow-hidden transition-all shadow-sm",
-                    getStatusColor(order.status, order.timestamp)
-                  )}
-                >
-                  {/* Card Header */}
-                  <div className="p-4 border-b border-inherit flex justify-between items-start">
-                    <div>
-                      <h3 className="font-black text-slate-800 text-lg leading-none mb-1">
-                        {order.tableId.startsWith('T-') ? `MESA ${order.tableId.split('-')[1]}` : 'POS / LLEVAR'}
-                      </h3>
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-500 uppercase">
-                        <Clock className="w-3 h-3" />
-                        {formatDistanceToNow(new Date(order.timestamp), { addSuffix: true, locale: es })}
-                      </div>
-                    </div>
-                    {getStatusBadge(order.status)}
-                  </div>
-
-                  {/* Items List */}
-                  <div className="p-4 flex-1 space-y-3">
-                    {cardItems.map((item: any, idx: number) => (
-                      <div key={idx} className="flex justify-between items-start group">
-                        <div className="flex gap-3">
-                          <span className="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg font-black text-xs">
-                            {item.qty}
-                          </span>
-                          <div className="flex flex-col">
-                            <span className="font-bold text-slate-800 text-sm leading-tight uppercase">{item.name}</span>
-                            {item.notes && (
-                              <span className="text-[10px] text-red-500 font-bold bg-red-50 px-1 rounded mt-0.5">
-                                * {item.notes}
-                              </span>
-                            )}
-                          </div>
+                return (
+                  <div 
+                    key={order.id} 
+                    className={cn(
+                      "flex flex-col rounded-3xl overflow-hidden transition-all shadow-sm",
+                      styles.card
+                    )}
+                  >
+                    {/* Card Header Banner */}
+                    <div className={cn("p-4 flex justify-between items-start border-b transition-all", styles.header)}>
+                      <div>
+                        <h3 className={cn("font-black text-lg leading-none mb-1", styles.title)}>
+                          {order.tableId.startsWith('T-') ? `MESA ${order.tableId.split('-')[1]}` : 'POS / LLEVAR'}
+                        </h3>
+                        <div className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase", styles.clock)}>
+                          <Clock className="w-3 h-3" />
+                          {formatDistanceToNow(new Date(order.timestamp), { addSuffix: true, locale: es })}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                      {getStatusBadge(order.status, styles.badge)}
+                    </div>
+
+                    {/* Items List */}
+                    <div className="p-4 flex-1 space-y-3 bg-white">
+                      {cardItems.map((item: any, idx: number) => (
+                        <div key={idx} className="flex justify-between items-start group">
+                          <div className="flex gap-3">
+                            <span className="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg font-black text-xs">
+                              {item.qty}
+                            </span>
+                            <div className="flex flex-col">
+                              <span className="font-bold text-slate-800 text-sm leading-tight uppercase">{item.name}</span>
+                              {item.notes && (
+                                <span className="text-sm font-extrabold bg-amber-400 text-slate-900 border border-amber-500 px-2 py-1 rounded-md mt-1.5 block shadow-sm">
+                                  ⚠️ {item.notes}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
 
                   {/* Footer Actions */}
                   <div className="p-4 bg-white/50 mt-auto border-t border-inherit">

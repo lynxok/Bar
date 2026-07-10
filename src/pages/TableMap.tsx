@@ -751,10 +751,10 @@ export function TableMap() {
         {isSelected && isEditingLayout && isRotatable(table.type) && (
           <div
             title="Rotar"
-            className="absolute -top-8 left-1/2 -translate-x-1/2 w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center cursor-grab shadow-lg shadow-indigo-400/60 z-20 hover:bg-indigo-700 border-2 border-white"
+            className="absolute -top-12 left-1/2 -translate-x-1/2 w-11 h-11 bg-indigo-600 text-white rounded-full flex items-center justify-center cursor-grab shadow-xl shadow-indigo-400/60 z-20 hover:bg-indigo-700 border-2 border-white transition-all active:scale-95"
             onMouseDown={(e) => onRotateHandleMouseDown(e, table)}
           >
-            <RotateCw className="w-3.5 h-3.5" />
+            <RotateCw className="w-5 h-5" />
           </div>
         )}
 
@@ -764,13 +764,13 @@ export function TableMap() {
 
         {isSelected && isEditingLayout && (
           <div
-            className="absolute right-0 bottom-0 w-8 h-8 flex items-center justify-center cursor-se-resize translate-x-3 translate-y-3 z-30 group/resize animate-in zoom-in-50 duration-200"
+            className="absolute right-0 bottom-0 w-11 h-11 flex items-center justify-center cursor-se-resize translate-x-4 translate-y-4 z-30 group/resize animate-in zoom-in-50 duration-200"
             style={{ touchAction: 'none' }}
             onPointerDown={(e) => handleResizeStart(e, table)}
             onPointerMove={(e) => handleResizeMove(e, table)}
             onPointerUp={(e) => handleResizeEnd(e, table)}
           >
-            <div className="w-2.5 h-2.5 bg-indigo-600 border border-white rounded-full shadow-md group-hover/resize:scale-125 transition-transform" />
+            <div className="w-4 h-4 bg-indigo-600 border-2 border-white rounded-full shadow-md group-hover/resize:scale-125 transition-transform" />
           </div>
         )}
       </div>
@@ -952,10 +952,10 @@ export function TableMap() {
                         
                         <div className="absolute top-1 flex flex-col items-center">
                           <span className="text-[8px] font-black text-slate-500">N</span>
-                          <div className="flex gap-1">
-                            <button onClick={() => adjustChair(editingTable, 'top', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
-                            <span className="w-4 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.top || 0}</span>
-                            <button onClick={() => adjustChair(editingTable, 'top', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                          <div className="flex gap-1 items-center">
+                            <button onClick={() => adjustChair(editingTable, 'top', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
+                            <span className="w-6 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.top || 0}</span>
+                            <button onClick={() => adjustChair(editingTable, 'top', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
                           </div>
                         </div>
 
@@ -963,26 +963,26 @@ export function TableMap() {
                           <div className="flex flex-col items-center">
                             <span className="text-[8px] font-black text-slate-500">O</span>
                             <div className="flex items-center gap-1">
-                              <button onClick={() => adjustChair(editingTable, 'left', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
-                              <span className="w-4 text-center text-xs font-black">{editingTable.chairsConfig?.left || 0}</span>
-                              <button onClick={() => adjustChair(editingTable, 'left', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                              <button onClick={() => adjustChair(editingTable, 'left', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
+                              <span className="w-6 text-center text-xs font-black">{editingTable.chairsConfig?.left || 0}</span>
+                              <button onClick={() => adjustChair(editingTable, 'left', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
                             </div>
                           </div>
                           <div className="flex flex-col items-center">
                             <span className="text-[8px] font-black text-slate-500">E</span>
                             <div className="flex items-center gap-1">
-                              <button onClick={() => adjustChair(editingTable, 'right', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
-                              <span className="w-4 text-center text-xs font-black">{editingTable.chairsConfig?.right || 0}</span>
-                              <button onClick={() => adjustChair(editingTable, 'right', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                              <button onClick={() => adjustChair(editingTable, 'right', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
+                              <span className="w-6 text-center text-xs font-black">{editingTable.chairsConfig?.right || 0}</span>
+                              <button onClick={() => adjustChair(editingTable, 'right', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
                             </div>
                           </div>
                         </div>
 
                         <div className="absolute bottom-1 flex flex-col items-center">
-                          <div className="flex gap-1">
-                            <button onClick={() => adjustChair(editingTable, 'bottom', -1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">-</button>
-                            <span className="w-4 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.bottom || 0}</span>
-                            <button onClick={() => adjustChair(editingTable, 'bottom', 1)} className="w-8 h-8 bg-white/10 hover:bg-white/20 rounded flex items-center justify-center font-bold text-xs">+</button>
+                          <div className="flex gap-1 items-center">
+                            <button onClick={() => adjustChair(editingTable, 'bottom', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
+                            <span className="w-6 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.bottom || 0}</span>
+                            <button onClick={() => adjustChair(editingTable, 'bottom', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
                           </div>
                           <span className="text-[8px] font-black text-slate-500 mt-0.5">S</span>
                         </div>
@@ -1106,6 +1106,20 @@ export function TableMap() {
 
       {/* Main Map */}
       <div className="flex-1 p-8 flex flex-col relative overflow-hidden">
+        {isEditingLayout && (
+          <div className="mb-4 bg-amber-500 text-amber-950 px-4 py-3 rounded-2xl border border-amber-600 shadow-lg flex items-center justify-between animate-pulse">
+            <div className="flex items-center gap-2">
+              <Layout className="w-5 h-5 animate-bounce" />
+              <span className="font-bold text-sm tracking-wide">MODO EDICIÓN ACTIVO: Estás modificando el diseño del salón. Los cambios afectarán la vista de ventas.</span>
+            </div>
+            <button
+              onClick={() => { setIsEditingLayout(false); setSelectedTableIds(new Set()); }}
+              className="bg-amber-950 text-amber-300 hover:bg-amber-900 px-3 py-1 rounded-xl text-xs font-black uppercase transition-colors"
+            >
+              Guardar y Salir
+            </button>
+          </div>
+        )}
         <div className="mb-6 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-6">
             <div>
@@ -1267,17 +1281,17 @@ export function TableMap() {
           </div>
 
           {/* Zoom controls */}
-          <div className="absolute bottom-6 right-6 flex flex-col gap-2 z-20">
-            <button onClick={() => { const nz = Math.min(3, zoom * 1.2); setZoom(nz); }} className="w-10 h-10 bg-white shadow-lg border border-slate-100 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition-all">
-              <ZoomIn className="w-4 h-4 text-slate-600" />
+          <div className="absolute bottom-6 right-6 flex flex-col gap-3 z-20 bg-slate-900/10 backdrop-blur-md p-1.5 rounded-3xl border border-slate-200/50 shadow-xl">
+            <button onClick={() => { const nz = Math.min(3, zoom * 1.2); setZoom(nz); }} className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95" title="Acercar">
+              <ZoomIn className="w-5 h-5" />
             </button>
-            <button onClick={() => { const nz = Math.max(0.2, zoom / 1.2); setZoom(nz); }} className="w-10 h-10 bg-white shadow-lg border border-slate-100 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition-all">
-              <ZoomOut className="w-4 h-4 text-slate-600" />
+            <button onClick={() => { const nz = Math.max(0.2, zoom / 1.2); setZoom(nz); }} className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95" title="Alejar">
+              <ZoomOut className="w-5 h-5" />
             </button>
-            <button onClick={fitAll} title="Ajustar todo" className="w-10 h-10 bg-white shadow-lg border border-slate-100 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition-all">
-              <Maximize2 className="w-4 h-4 text-slate-600" />
+            <button onClick={fitAll} title="Ajustar todo" className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95">
+              <Maximize2 className="w-5 h-5" />
             </button>
-            <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="w-10 h-10 bg-white shadow-lg border border-slate-100 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition-all text-[10px] font-black text-slate-500">
+            <button onClick={() => { setZoom(1); setPan({ x: 0, y: 0 }); }} className="w-12 h-12 bg-white shadow border border-slate-200 rounded-2xl flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-400 text-slate-700 hover:text-indigo-600 transition-all active:scale-95 text-xs font-black" title="Restaurar zoom 1:1">
               1:1
             </button>
           </div>

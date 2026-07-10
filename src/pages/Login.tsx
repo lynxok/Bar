@@ -10,38 +10,47 @@ export function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { users } = useStore();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
-    // Superadmin Check (Hardcoded as requested)
-    if (email === 'ignaciovalente@hotmail.com' && password === 'Elpibe0610') {
-      onLogin({ 
-        id: 'superadmin', 
-        name: 'Ignacio Valente', 
-        role: 'Superadmin', 
-        permissions: ['all'] 
-      });
-      return;
-    }
-
-    // Local DB Users Check (Staff using their Name as Email and PIN as Password)
-    const dbUser = users.find(
-      u => u.name.toLowerCase() === email.toLowerCase() && u.pin === password
-    );
-    
-    if (dbUser) {
-      if (dbUser.status === 'Inactive') {
-        setError('El usuario está inactivo. Contacte al administrador.');
+    // Simulate login loader for UX
+    setTimeout(() => {
+      // Superadmin Check (Hardcoded as requested)
+      if (email === 'ignaciovalente@hotmail.com' && password === 'Elpibe0610') {
+        onLogin({ 
+          id: 'superadmin', 
+          name: 'Ignacio Valente', 
+          role: 'Superadmin', 
+          permissions: ['all'] 
+        });
+        setIsLoading(false);
         return;
       }
-      onLogin(dbUser);
-      return;
-    }
 
-    setError('Credenciales incorrectas o usuario no encontrado.');
+      // Local DB Users Check (Staff using their Name as Email and PIN as Password)
+      const dbUser = users.find(
+        u => u.name.toLowerCase() === email.toLowerCase() && u.pin === password
+      );
+      
+      if (dbUser) {
+        if (dbUser.status === 'Inactive') {
+          setError('El usuario está inactivo. Contacte al administrador.');
+          setIsLoading(false);
+          return;
+        }
+        onLogin(dbUser);
+        setIsLoading(false);
+        return;
+      }
+
+      setError('Credenciales incorrectas o usuario no encontrado.');
+      setIsLoading(false);
+    }, 800);
   };
 
   return (
@@ -85,8 +94,9 @@ export function Login({ onLogin }: LoginProps) {
                   type="text"
                   required
                   value={email}
+                  disabled={isLoading}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm"
+                  className="block w-full pl-11 pr-4 py-3 bg-slate-950/60 border border-slate-500/70 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm"
                   placeholder="Correo electrónico o Nombre"
                 />
               </div>
@@ -99,8 +109,9 @@ export function Login({ onLogin }: LoginProps) {
                   type="password"
                   required
                   value={password}
+                  disabled={isLoading}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-11 pr-4 py-3 bg-slate-800/50 border border-slate-700/50 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm"
+                  className="block w-full pl-11 pr-4 py-3 bg-slate-950/60 border border-slate-500/70 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm"
                   placeholder="Contraseña o PIN"
                 />
               </div>
@@ -108,10 +119,23 @@ export function Login({ onLogin }: LoginProps) {
 
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-slate-900 transition-all group"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 focus:ring-offset-slate-900 transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Iniciar Sesión
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              {isLoading ? (
+                <>
+                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span>Cargando...</span>
+                </>
+              ) : (
+                <>
+                  Iniciar Sesión
+                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
             </button>
           </form>
 
