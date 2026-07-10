@@ -137,6 +137,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   ];
 
   const tables = tablesFromDB;
+  console.log("STORE_CONTEXT: tables in state:", tables.map(t => t.id));
 
   useEffect(() => {
     const initTables = async () => {
@@ -205,7 +206,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const removeTable = async (id: string) => {
+    console.log("STORE_CONTEXT: removeTable called for ID:", id);
     await db.salonTables.delete(id);
+    console.log("STORE_CONTEXT: removeTable complete for ID:", id);
   };
 
   const updateTable = async (id: string, updates: Partial<Table>) => {
