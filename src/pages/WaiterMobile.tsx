@@ -1,10 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useStore, OrderItem } from '../contexts/StoreContext';
-import { LogOut, ArrowLeft, Plus, Minus, Search, Layers } from 'lucide-react';
+import { LogOut, ArrowLeft, Plus, Minus, Search, Layers, Bell, Banknote, ShieldAlert, X } from 'lucide-react';
+import { cn } from '../lib/utils';
 
 export function WaiterMobile() {
-  const { tables, products, addComanda, updateTableOrder } = useStore();
+  const { tables, products, addComanda, updateTableOrder, notifications: systemNotifications, dismissNotification } = useStore();
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [lastNotifCount, setLastNotifCount] = useState(0);
+
+  // Audio alert for new system notifications
+  useEffect(() => {
+    if (systemNotifications.length > lastNotifCount) {
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+        gainNode.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.15);
+      } catch (err) {
+        console.error('Audio alert failed:', err);
+      }
+    }
+    setLastNotifCount(systemNotifications.length);
+  }, [systemNotifications, lastNotifCount]);
   
   // Waiter status filters
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -155,7 +179,48 @@ export function WaiterMobile() {
   return (
     <div className="flex flex-col min-h-screen bg-slate-900 text-slate-100 max-w-[430px] mx-auto border-x border-slate-800 shadow-2xl relative">
       
-      {/* Toast Notification */}
+      {/* System Notifications Toasts */}
+      <div className="fixed top-20 left-4 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
+        <AnimatePresence>
+          {systemNotifications.map((n) => (
+            <motion.div
+              key={n.id}
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
+              className={cn(
+                "pointer-events-auto p-4 rounded-2xl shadow-2xl border flex gap-3 items-start",
+                n.type === 'bill' ? "bg-rose-600 border-rose-500 text-white" :
+                n.type === 'success' ? "bg-emerald-600 border-emerald-500 text-white" :
+                n.type === 'warning' ? "bg-amber-500 border-amber-400 text-white" :
+                n.type === 'error' ? "bg-red-600 border-red-500 text-white" :
+                "bg-slate-900 border-slate-800 text-white"
+              )}
+            >
+              <div className={cn(
+                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                "bg-white/20"
+              )}>
+                {n.type === 'bill' ? <Banknote className="w-6 h-6" /> : 
+                 n.type === 'info' ? <Bell className="w-6 h-6" /> :
+                 <ShieldAlert className="w-6 h-6" />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <h4 className="font-black text-sm uppercase tracking-widest">{n.title}</h4>
+                <p className="text-xs font-bold mt-0.5 opacity-90 leading-relaxed">{n.message}</p>
+              </div>
+              <button 
+                onClick={() => dismissNotification(n.id)}
+                className="p-1 hover:bg-black/10 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Toast Notification (Legacy/Local) */}
       {toast && (
         <div className={`absolute top-4 left-4 right-4 z-50 p-4 rounded-xl border shadow-2xl transition-all duration-300 transform translate-y-0 flex items-center justify-between ${
           toast.type === 'success' 
@@ -240,18 +305,35 @@ export function WaiterMobile() {
                   ? table.order.reduce((sum, item) => sum + (item.price * item.qty), 0)
                   : 0;
 
+                const isRequestingBill = table.status === 'checkout';
+
                 return (
                   <button
                     key={table.id}
                     onClick={() => handleSelectTable(table.id)}
-                    className="flex flex-col justify-between p-4 bg-slate-950 border border-slate-800 rounded-2xl hover:border-indigo-600 text-left min-h-[110px] transition-all relative overflow-hidden active:scale-95 duration-100"
+                    className={cn(
+                      "flex flex-col justify-between p-4 bg-slate-950 border border-slate-800 rounded-2xl hover:border-indigo-600 text-left min-h-[110px] transition-all relative overflow-hidden active:scale-95 duration-100",
+                      isRequestingBill && "border-rose-500 ring-2 ring-rose-500/20"
+                    )}
                   >
-                    <div>
+                    {isRequestingBill && (
+                      <motion.div 
+                        animate={{ opacity: [0.1, 0.3, 0.1] }}
+                        transition={{ repeat: Infinity, duration: 1.5 }}
+                        className="absolute inset-0 bg-rose-500 pointer-events-none"
+                      />
+                    )}
+                    
+                    <div className="relative z-10">
                       <div className="flex items-center justify-between">
                         <span className="text-xl font-bold text-white">
                           #{table.id.replace('T-', '')}
                         </span>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase border ${STATUS_CLASSES[table.status]}`}>
+                        <span className={cn(
+                          "text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase border",
+                          STATUS_CLASSES[table.status],
+                          isRequestingBill && "animate-pulse"
+                        )}>
                           {STATUS_LABELS[table.status]}
                         </span>
                       </div>
@@ -260,7 +342,7 @@ export function WaiterMobile() {
                       )}
                     </div>
 
-                    <div className="mt-2 flex items-end justify-between">
+                    <div className="mt-2 flex items-end justify-between relative z-10">
                       <span className="text-xs text-slate-500">Cap: {table.capacity}</span>
                       {totalAccumulated > 0 && (
                         <span className="text-sm font-bold text-emerald-400">${totalAccumulated.toLocaleString()}</span>

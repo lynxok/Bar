@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, MonitorCheck, Package, Wallet, Terminal, HelpCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Users, MonitorCheck, Package, Wallet, Terminal, HelpCircle, ChevronUp, ChevronDown, CalendarDays } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface DockItem {
@@ -21,6 +21,7 @@ export function MagneticDock() {
     { label: "Dashboard", icon: LayoutDashboard, path: "/", color: "from-blue-500 to-indigo-600" },
     { label: "Salón", icon: Users, path: "/mapa", color: "from-indigo-500 to-purple-600" },
     { label: "Ventas POS", icon: MonitorCheck, path: "/pos", color: "from-emerald-500 to-teal-600" },
+    { label: "Reservas", icon: CalendarDays, path: "/reservas", color: "from-violet-500 to-purple-700" },
     { label: "Inventario", icon: Package, path: "/inventario", color: "from-amber-500 to-orange-600" },
     { label: "Finanzas", icon: Wallet, path: "/finanzas", color: "from-pink-500 to-rose-600" },
     { label: "Técnico", icon: Terminal, path: "/logs", color: "from-slate-700 to-slate-900" },

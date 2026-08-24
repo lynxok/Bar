@@ -1,7 +1,7 @@
-import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useEffect, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft } from '../db/database';
-export type { Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft };
+import { db, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft, Reservation } from '../db/database';
+export type { Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft, Reservation };
 
 export interface OrderItem {
   id: string;
@@ -27,6 +27,15 @@ export interface PaymentOrder {
   status: 'Pendiente' | 'Pagado';
 }
 
+export interface SystemNotification {
+  id: string;
+  type: 'info' | 'success' | 'warning' | 'error' | 'bill';
+  title: string;
+  message: string;
+  timestamp: string;
+  tableId?: string;
+}
+
 interface StoreContextType {
   products: Product[];
   tables: Table[];
@@ -45,6 +54,15 @@ interface StoreContextType {
   activeShift: Shift | null;
   clientOrders: ClientOrder[];
   billingDrafts: BillingDraft[];
+  reservations: Reservation[];
+  notifications: SystemNotification[];
+
+  addNotification: (notif: Omit<SystemNotification, 'id' | 'timestamp'>) => void;
+  dismissNotification: (id: string) => void;
+  addReservation: (reservation: Omit<Reservation, 'id' | 'timestamp'>) => Promise<void>;
+  updateReservation: (id: number, updates: Partial<Reservation>) => Promise<void>;
+  deleteReservation: (id: number) => Promise<void>;
+  requestBill: (tableId: string) => Promise<void>;
 
   submitClientOrder: (tableId: string, customerId: string, items: any[], total: number) => Promise<void>;
   approveClientOrder: (orderId: number) => Promise<void>;
@@ -114,6 +132,28 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const floorPlans = useLiveQuery(() => db.floorPlans.orderBy('timestamp').reverse().toArray()) || [];
   const clientOrders = useLiveQuery(() => db.clientOrders.orderBy('timestamp').reverse().toArray()) || [];
   const billingDrafts = useLiveQuery(() => db.billingDrafts.orderBy('date').reverse().toArray()) || [];
+  const reservations = useLiveQuery(() => db.reservations.orderBy('date').toArray()) || [];
+
+  const [notifications, setNotifications] = useState<SystemNotification[]>([]);
+
+  const addNotification = (notif: Omit<SystemNotification, 'id' | 'timestamp'>) => {
+    const id = Math.random().toString(36).substring(7);
+    const newNotif: SystemNotification = {
+      ...notif,
+      id,
+      timestamp: new Date().toISOString()
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+    
+    // Auto dismiss after 8 seconds
+    setTimeout(() => {
+      dismissNotification(id);
+    }, 8000);
+  };
+
+  const dismissNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
 
   // Persistent Loyalty Config & Transactions from IndexedDB
   const loyaltyConfigRaw = useLiveQuery(() => db.loyaltyConfig.get('global'));
@@ -317,7 +357,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  // Close order and deduct stock + add points and transaction logs
+  // Close order and add points and transaction logs
   const closeOrder = async (tableId: string, paymentMethod: string, customerId?: string) => {
     await db.transaction('rw', [db.salonTables, db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig, db.billingDrafts], async () => {
       const table = await db.salonTables.get(tableId);
@@ -385,15 +425,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             description: `Compra Mesa ${tableId.replace('T-', '')} - Pago ${paymentMethod}`,
             timestamp: new Date().toISOString(),
           });
-        }
-      }
-
-      // Deduct product stock
-      for (const item of table.order) {
-        const product = await db.products.where('name').equals(item.name).first();
-        if (product && product.id != null) {
-          const newStock = Math.max(0, (product.stock || 0) - (item.qty || 1));
-          await db.products.update(product.id, { stock: newStock });
         }
       }
 
@@ -472,24 +503,31 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Deduct product stock
-      for (const item of items) {
-        const product = await db.products.where('name').equals(item.name).first();
-        if (product && product.id != null) {
-          const newStock = Math.max(0, (product.stock || 0) - (item.qty || 1));
-          await db.products.update(product.id, { stock: newStock });
-        }
-      }
+      await deductStock(items);
     });
+  };
+
+  const deductStock = async (items: any[]) => {
+    for (const item of items) {
+      const product = await db.products.where('name').equals(item.name).first();
+      if (product && product.id != null) {
+        const newStock = Math.max(0, (product.stock || 0) - (item.qty || 1));
+        await db.products.update(product.id, { stock: newStock });
+      }
+    }
   };
 
   const addComanda = async (tableId: string, items: any[]) => {
     if (!items || items.length === 0) return;
-    await db.comandas.add({
-      tableId,
-      items,
-      status: 'pending',
-      timestamp: new Date().toISOString()
+    await db.transaction('rw', [db.comandas, db.products], async () => {
+      await db.comandas.add({
+        tableId,
+        items,
+        status: 'pending',
+        timestamp: new Date().toISOString()
+      });
+
+      await deductStock(items);
     });
   };
 
@@ -574,6 +612,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       status: 'pending',
       timestamp: new Date().toISOString()
     });
+
+    addNotification({
+      type: 'info',
+      title: 'Nuevo Pedido QR',
+      message: `La Mesa ${tableId.replace('T-', '')} envió un pedido de ${items.length} productos.`,
+      tableId
+    });
   };
 
   const approveClientOrder = async (orderId: number) => {
@@ -614,6 +659,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         status: 'pending',
         timestamp: new Date().toISOString()
       });
+
+      await deductStock(clientOrder.items);
 
       await db.clientOrders.update(orderId, { status: 'approved' });
     });
@@ -681,6 +728,42 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     await db.floorPlans.delete(id);
   };
 
+  const addReservation = async (res: Omit<Reservation, 'id' | 'timestamp'>) => {
+    await db.reservations.add({
+      ...res,
+      timestamp: new Date().toISOString()
+    });
+  };
+
+  const updateReservation = async (id: number, updates: Partial<Reservation>) => {
+    await db.reservations.update(id, updates);
+  };
+
+  const deleteReservation = async (id: number) => {
+    await db.reservations.delete(id);
+  };
+
+  const requestBill = async (tableId: string) => {
+    await db.salonTables.update(tableId, { status: 'checkout' });
+    
+    addNotification({
+      type: 'bill',
+      title: 'Cuenta Solicitada',
+      message: `La Mesa ${tableId.replace('T-', '')} ha pedido la cuenta.`,
+      tableId
+    });
+
+    // Add a system log or audit log if needed
+    await db.auditLogs.add({
+      action: `Solicitud de Cuenta`,
+      userId: 'qr_client',
+      userName: 'Cliente (QR)',
+      module: 'Ventas',
+      details: `La Mesa ${tableId} solicitó la cuenta desde el menú QR.`,
+      timestamp: new Date().toISOString()
+    });
+  };
+
   const setDefaultFloorPlan = async (id: number) => {
     await db.transaction('rw', db.floorPlans, async () => {
       const all = await db.floorPlans.toArray();
@@ -726,7 +809,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       products, tables, expenses, paymentOrders, orders, comandas,
       rewards, customers, shifts, users, messages, floorPlans,
       loyaltyConfig, loyaltyTransactions, activeShift, clientOrders,
-      billingDrafts,
+      billingDrafts, reservations, notifications,
+      addNotification, dismissNotification,
+      addReservation, updateReservation, deleteReservation,
       submitClientOrder, approveClientOrder, rejectClientOrder,
       saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan,
       sendMessage, markAsRead,

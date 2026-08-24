@@ -6,6 +6,7 @@ import { BusinessProvider } from './contexts/BusinessContext.tsx';
 import { AlertProvider } from './contexts/AlertContext.tsx';
 import { StoreProvider } from './contexts/StoreContext.tsx';
 import { LoggerService } from './lib/LoggerService';
+import { ThemeProvider } from './contexts/ThemeContext.tsx';
 import './index.css';
 
 // Global Error Catching
@@ -20,13 +21,15 @@ window.onunhandledrejection = (event) => {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <HashRouter>
-      <BusinessProvider>
-        <AlertProvider>
-          <StoreProvider>
-            <App />
-          </StoreProvider>
-        </AlertProvider>
-      </BusinessProvider>
+      <ThemeProvider>
+        <BusinessProvider>
+          <AlertProvider>
+            <StoreProvider>
+              <App />
+            </StoreProvider>
+          </AlertProvider>
+        </BusinessProvider>
+      </ThemeProvider>
     </HashRouter>
   </StrictMode>
 );

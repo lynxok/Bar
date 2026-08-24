@@ -9,9 +9,11 @@ import { cn } from '../lib/utils';
 
 export function ClientSummary() {
   const { tableId } = useParams<{ tableId: string }>();
-  const { tables, products, clientOrders, submitClientOrder } = useStore();
+  const { tables, products, clientOrders, submitClientOrder, requestBill } = useStore();
   
   const [activeTab, setActiveTab] = useState<'consumo' | 'pedir' | 'pedidos'>('pedir');
+  const [requestingBill, setRequestingBill] = useState(false);
+  const [billRequested, setBillRequested] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [cart, setCart] = useState<Record<number, { product: any; qty: number }>>({});
@@ -90,6 +92,20 @@ export function ClientSummary() {
   const cartItemCount = cartItems.reduce((acc: number, item) => acc + item.qty, 0);
 
   // Submit client order
+  const handleRequestBill = async () => {
+    if (!tableId) return;
+    setRequestingBill(true);
+    try {
+      await requestBill(tableId);
+      setBillRequested(true);
+      setTimeout(() => setBillRequested(false), 5000);
+    } catch (error) {
+      console.error("Error requesting bill:", error);
+    } finally {
+      setRequestingBill(false);
+    }
+  };
+
   const handleSendOrder = async () => {
     if (cartItems.length === 0) return;
     
@@ -323,10 +339,34 @@ export function ClientSummary() {
 
               {registeredOrder.length > 0 && (
                 <div className="p-6 bg-slate-900 text-white">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-6">
                     <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">Total Consumido</span>
                     <span className="text-2xl font-black text-white">${registeredTotal.toLocaleString()}</span>
                   </div>
+
+                  <button
+                    onClick={handleRequestBill}
+                    disabled={requestingBill || table?.status === 'checkout'}
+                    className={cn(
+                      "w-full h-14 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center justify-center gap-3",
+                      table?.status === 'checkout' 
+                        ? "bg-emerald-500 text-white opacity-100" 
+                        : "bg-white text-slate-900 hover:bg-indigo-50 active:scale-95"
+                    )}
+                  >
+                    {table?.status === 'checkout' ? (
+                      <>
+                        <CheckCircle className="w-5 h-5" /> Mozo Notificado
+                      </>
+                    ) : (
+                      <>
+                        <Receipt className="w-5 h-5" /> {requestingBill ? 'Procesando...' : 'Pedir la Cuenta'}
+                      </>
+                    )}
+                  </button>
+                  <p className="text-[9px] text-center text-slate-500 font-bold uppercase tracking-[0.15em] mt-3 px-2">
+                    Un mozo se acercará con el ticket para cobrar.
+                  </p>
                 </div>
               )}
             </div>

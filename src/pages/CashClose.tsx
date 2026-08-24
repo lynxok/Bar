@@ -1,4 +1,6 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'motion/react';
+import { cn } from '../lib/utils';
 import { useStore } from '../contexts/StoreContext';
 import {
   LockIcon,
@@ -102,32 +104,36 @@ export function CashClose() {
   // Render Opening View if there's no activeShift
   if (!activeShift) {
     return (
-      <div className="p-container-padding flex flex-col items-center justify-center max-w-xl mx-auto min-h-[calc(100vh-64px)] py-12">
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 w-full shadow-lg space-y-6 text-center">
-          <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2">
-            <PlayCircle className="w-8 h-8" />
+      <div className="p-6 lg:p-10 flex flex-col items-center justify-center max-w-xl mx-auto min-h-[calc(100vh-64px)] py-12">
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-100 dark:border-slate-800 p-10 w-full shadow-2xl space-y-8 text-center"
+        >
+          <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 rounded-[2rem] flex items-center justify-center mx-auto mb-2 border border-indigo-100 dark:border-indigo-900/30">
+            <PlayCircle className="w-10 h-10" />
           </div>
           <div>
-            <h1 className="font-bold text-2xl text-slate-900">Apertura de Caja</h1>
-            <p className="text-sm text-slate-500 mt-1">Declara el fondo inicial antes de iniciar las ventas del turno.</p>
+            <h1 className="font-black text-3xl text-slate-900 dark:text-white tracking-tight">Apertura de Caja</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mt-2">Declara el fondo inicial antes de iniciar las ventas del turno.</p>
           </div>
 
-          <form onSubmit={handleOpenShiftSubmit} className="space-y-4 text-left pt-4">
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Nombre del Operador (Cajero)</label>
+          <form onSubmit={handleOpenShiftSubmit} className="space-y-6 text-left pt-4">
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre del Operador (Cajero)</label>
               <input
                 required
                 type="text"
                 value={cashierNameInput}
                 onChange={(e) => setCashierNameInput(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                className="w-full h-14 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-2xl px-5 font-black text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-500 outline-none transition-all shadow-inner"
                 placeholder="Nombre del cajero..."
               />
             </div>
-            <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Fondo de Caja Inicial (Efectivo)</label>
+            <div className="space-y-2">
+              <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fondo de Caja Inicial (Efectivo)</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">$</span>
+                <span className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 font-black text-xl">$</span>
                 <input
                   required
                   type="number"
@@ -135,7 +141,7 @@ export function CashClose() {
                   min="0"
                   value={initialCashInput}
                   onChange={(e) => setInitialCashInput(e.target.value)}
-                  className="w-full h-12 pl-8 pr-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full h-14 pl-10 pr-5 bg-slate-50 dark:bg-slate-800 border-2 border-transparent rounded-2xl font-black text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-900 focus:border-indigo-500 outline-none transition-all shadow-inner"
                   placeholder="0.00"
                 />
               </div>
@@ -143,87 +149,79 @@ export function CashClose() {
 
             <button
               type="submit"
-              className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm uppercase tracking-wider shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 pt-1"
+              className="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-2xl shadow-indigo-100 dark:shadow-none transition-all flex items-center justify-center gap-3 active:scale-95"
             >
-              Iniciar Turno / Abrir Caja
+              Iniciar Turno / Abrir Caja <ChevronRight className="w-5 h-5" />
             </button>
           </form>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
   return (
-    <div className="p-container-padding flex flex-col md:flex-row gap-8 items-start justify-center max-w-7xl mx-auto min-h-[calc(100vh-64px)] py-12">
+    <div className="p-6 lg:p-10 flex flex-col md:flex-row gap-8 items-start justify-center max-w-7xl mx-auto min-h-[calc(100vh-64px)] py-12 transition-colors duration-500">
       
       {/* Configuration & Steps */}
       <div className="flex-1 w-full space-y-6">
         <div>
-          <h1 className="font-bold text-[32px] text-slate-900 mb-2">Cierre de Caja</h1>
-          <p className="text-body-md text-slate-500">
-            Turno actual (Desde {shiftStart?.toLocaleTimeString()} - {shiftStart?.toLocaleDateString()}) • Operador: <span className="font-bold text-slate-800">{activeShift.cashierName}</span>
+          <h1 className="font-black text-[40px] text-slate-900 dark:text-white tracking-tighter mb-2">Cierre de Caja</h1>
+          <p className="text-body-md text-slate-500 dark:text-slate-400 font-medium">
+            Turno actual (Desde {shiftStart?.toLocaleTimeString()} - {shiftStart?.toLocaleDateString()}) • Operador: <span className="font-bold text-indigo-600 dark:text-indigo-400">{activeShift.cashierName}</span>
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-slate-100 bg-slate-50">
-            <h3 className="font-bold text-lg text-slate-800 mb-1">Verificación de Totales</h3>
-            <p className="text-sm text-slate-500">Revise las cifras calculadas por el sistema frente al efectivo real ingresado.</p>
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-all">
+          <div className="p-8 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+            <h3 className="font-black text-xl text-slate-800 dark:text-white mb-1">Verificación de Totales</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Revise las cifras calculadas por el sistema frente al efectivo real ingresado.</p>
           </div>
           
-          <div className="p-6 space-y-6 bg-white">
-            <div className="flex justify-between items-center p-4 rounded-xl border border-indigo-100 bg-indigo-50/20">
+          <div className="p-8 space-y-8 bg-white dark:bg-slate-900">
+            <div className="flex flex-col sm:flex-row justify-between items-center p-6 rounded-[2rem] border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/20 dark:bg-indigo-950/20 gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
-                  <Banknote className="w-6 h-6" />
+                <div className="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/50 rounded-2xl flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                  <Banknote className="w-8 h-8" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-800">Efectivo Físico Contado</h4>
-                  <p className="text-sm text-slate-500">Entrada manual requerida</p>
+                  <h4 className="font-black text-slate-800 dark:text-white">Efectivo Físico Contado</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Entrada manual requerida</p>
                 </div>
               </div>
-              <div className="text-right flex items-center gap-2">
-                <span className="text-slate-400 font-bold text-xl">$</span>
+              <div className="text-right flex items-center gap-3 w-full sm:w-auto">
+                <span className="text-slate-400 font-black text-2xl">$</span>
                 <input 
                   type="number"
                   placeholder="0.00"
                   value={declaredCashInput}
                   onChange={(e) => setDeclaredCashInput(e.target.value)}
-                  className="font-bold text-[24px] text-slate-800 bg-white border-2 border-indigo-200 rounded-lg px-4 py-2 w-48 text-right outline-none focus:border-indigo-500 transition-all"
+                  className="font-black text-[32px] text-slate-900 dark:text-white bg-white dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-2xl px-6 py-3 w-full sm:w-48 text-right outline-none focus:border-indigo-500 transition-all shadow-inner"
                 />
               </div>
             </div>
 
-            <div className="space-y-3 px-2">
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
-                  <Banknote className="w-4 h-4 text-slate-400" /> Fondo de Caja Inicial
+            <div className="space-y-4 px-2">
+              {[
+                { icon: Banknote, label: 'Fondo de Caja Inicial', value: initialCash },
+                { icon: Banknote, label: 'Ventas Efectivo Turno', value: totals.cash },
+                { icon: CreditCard, label: 'Tarjetas (Visa, Master)', value: totals.card },
+                { icon: Landmark, label: 'Transferencias / Pago Móvil', value: totals.transfer },
+              ].map((item, idx) => (
+                <div key={idx} className="flex justify-between items-center py-3 border-b border-dashed border-slate-200 dark:border-slate-800">
+                  <span className="text-slate-600 dark:text-slate-400 font-bold flex items-center gap-3">
+                    <item.icon className="w-5 h-5 text-slate-400" /> {item.label}
+                  </span>
+                  <span className="font-black text-slate-800 dark:text-slate-200 text-xl">${item.value.toLocaleString()}</span>
+                </div>
+              ))}
+              <div className="flex justify-between items-center py-4">
+                <span className="text-slate-600 dark:text-slate-400 font-bold flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-slate-400" /> Mesas Activas / Abiertas
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${initialCash.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
-                  <Banknote className="w-4 h-4 text-slate-400" /> Ventas Efectivo Turno
-                </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.cash.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-slate-400" /> Tarjetas (Visa, Master)
-                </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.card.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
-                  <Landmark className="w-4 h-4 text-slate-400" /> Transferencias / Pago Móvil
-                </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.transfer.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-slate-400" /> Mesas Activas / Abiertas
-                </span>
-                <span className={`font-bold text-lg ${mesasPendientes > 0 ? 'text-rose-600 animate-pulse' : 'text-emerald-500'}`}>
+                <span className={cn(
+                  "font-black text-2xl px-4 py-1 rounded-full",
+                  mesasPendientes > 0 ? 'bg-rose-50 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 animate-pulse' : 'bg-emerald-50 text-emerald-500 dark:bg-emerald-950/20'
+                )}>
                   {mesasPendientes}
                 </span>
               </div>
@@ -234,61 +232,70 @@ export function CashClose() {
 
         {/* Warning card for Difference */}
         {difference !== 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-[2rem] p-6 flex gap-5"
+          >
+            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/50 rounded-xl flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
             <div>
-              <h4 className="font-bold text-amber-800 text-sm">Diferencia de Caja Detectada</h4>
-              <p className="text-sm text-amber-700 mt-1">
-                El sistema indica que deberían haber <b>${expectedCash.toLocaleString()}</b> en efectivo. Detectada una diferencia de <b>${difference > 0 ? '+' : ''}{difference.toLocaleString()}</b>. 
+              <h4 className="font-black text-amber-800 dark:text-amber-300 text-lg">Diferencia de Caja Detectada</h4>
+              <p className="text-sm text-amber-700 dark:text-amber-400 mt-1 font-medium leading-relaxed">
+                El sistema indica que deberían haber <b className="text-amber-900 dark:text-amber-200">${expectedCash.toLocaleString()}</b> en efectivo. Detectada una diferencia de <b className="text-amber-900 dark:text-amber-200">${difference > 0 ? '+' : ''}{difference.toLocaleString()}</b>. 
                 Deberá justificar esta diferencia antes de cerrar el turno.
               </p>
             </div>
-          </div>
+          </motion.div>
         )}
 
       </div>
 
       {/* Summary Card */}
-      <div className="w-full md:w-[400px] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden sticky top-8">
-        <div className="bg-slate-900 text-white p-6 text-center relative">
-          <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 relative z-10 mt-6">
-             <LockIcon className="w-8 h-8 text-white mt-1" />
+      <div className="w-full md:w-[420px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[3rem] shadow-2xl overflow-hidden sticky top-8 transition-all">
+        <div className="bg-slate-900 dark:bg-black text-white p-10 text-center relative">
+          <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-white/20 relative z-10 mt-4 backdrop-blur-md">
+             <LockIcon className="w-10 h-10 text-white" />
           </div>
-          <h2 className="text-[20px] font-bold text-center relative z-10">Resumen de Cierre</h2>
-          <p className="text-slate-400 text-sm mt-1 text-center mb-6 relative z-10">Turno #{shifts.length + 1}</p>
+          <h2 className="text-2xl font-black text-center relative z-10 tracking-tight">Resumen de Cierre</h2>
+          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2 text-center mb-8 relative z-10">Turno #{shifts.length + 1}</p>
           
           <svg className="absolute bottom-0 left-0 w-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-            <path fill="#ffffff" fillOpacity="1" d="M0,288L48,272C96,256,192,224,288,197.3C384,171,480,149,576,165.3C672,181,768,235,864,250.7C960,267,1056,245,1152,250.7C1248,256,1344,288,1392,304L1440,320L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            <path fill="currentColor" className="text-white dark:text-slate-900" fillOpacity="1" d="M0,288L48,272C96,256,192,224,288,197.3C384,171,480,149,576,165.3C672,181,768,235,864,250.7C960,267,1056,245,1152,250.7C1248,256,1344,288,1392,304L1440,320L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
           </svg>
         </div>
         
-        <div className="p-6 bg-white space-y-6">
+        <div className="p-10 bg-white dark:bg-slate-900 space-y-8">
           <div className="text-center">
-            <p className="text-slate-500 font-bold uppercase tracking-wider text-xs mb-1">TOTAL DECLARADO (TODOS LOS MÉTODOS)</p>
-            <h2 className="font-black text-[38px] leading-tight text-slate-800">${totalDeclaredAllMethods.toLocaleString()}</h2>
-            <p className={`text-sm font-bold mt-1 ${difference === 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-              Diferencia: ${difference > 0 ? '+' : ''}{difference.toLocaleString()}
-            </p>
+            <p className="text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest text-[10px] mb-2">TOTAL DECLARADO (TODOS LOS MÉTODOS)</p>
+            <h2 className="font-black text-[48px] leading-tight text-slate-900 dark:text-white tracking-tighter">${totalDeclaredAllMethods.toLocaleString()}</h2>
+            <div className={cn(
+              "inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase mt-3",
+              difference === 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/20' : 'bg-rose-50 text-rose-600 dark:bg-rose-950/20'
+            )}>
+              <AlertTriangle className="w-3.5 h-3.5" /> Diferencia: ${difference > 0 ? '+' : ''}{difference.toLocaleString()}
+            </div>
           </div>
           
-          <div className="pt-6 border-t border-slate-100">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Comentarios de Cierre (Obligatorio si hay dif.)</label>
+          <div className="pt-8 border-t border-slate-100 dark:border-slate-800">
+            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 ml-1">Comentarios de Cierre</label>
             <textarea 
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              className="w-full h-24 p-3 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all placeholder:text-slate-400 font-medium"
-              placeholder="Ej: Faltante de 7.50 por error en dar vuelto mesa 12."
+              className="w-full h-28 p-5 border-2 border-slate-50 dark:border-slate-800 rounded-3xl text-sm bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-white focus:bg-white dark:focus:bg-slate-800 focus:border-indigo-500 outline-none transition-all placeholder:text-slate-400 font-bold resize-none shadow-inner"
+              placeholder="Ej: Faltante por error en vuelto..."
             ></textarea>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 pt-4">
-             <button onClick={handlePrintZ} className="flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition-colors">
-               <Printer className="w-5 h-5" /> Imprimir Z
-             </button>
+          <div className="flex flex-col gap-3 pt-4">
              <button 
                 onClick={handleConfirmClose}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-rose-600 text-white font-bold hover:brightness-110 shadow-md transition-all active:scale-95 text-sm uppercase tracking-wider">
-               <FileCheck2 className="w-5 h-5" /> Confirmar Cierre
+                className="w-full h-16 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl shadow-rose-200 dark:shadow-none transition-all active:scale-95 flex items-center justify-center gap-3">
+               <FileCheck2 className="w-6 h-6" /> Confirmar Cierre de Turno
+             </button>
+             <button onClick={handlePrintZ} className="w-full h-14 border-2 border-slate-100 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-black text-xs uppercase tracking-widest rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-3">
+               <Printer className="w-5 h-5" /> Imprimir Reporte Z
              </button>
           </div>
         </div>

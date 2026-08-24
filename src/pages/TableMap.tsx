@@ -1,8 +1,10 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { motion } from "motion/react";
 import { 
   X, Plus, Minus, Save, Trash2, Layout, Users, RotateCw,
   ZoomIn, ZoomOut, Maximize2, Wallet, CreditCard, ArrowRightLeft,
-  User, ArrowRight, ChefHat, Smartphone, Star, Grid, Layers
+  User, ArrowRight, ChefHat, Smartphone, Star, Grid, Layers,
+  CalendarDays
 } from "lucide-react";
 import QRCode from 'qrcode';
 import { cn } from "../lib/utils";
@@ -26,19 +28,23 @@ const STATUS_LABELS = {
   occupied: 'Ocupada',
   waiting_food: 'Esperando',
   checkout: 'Cuenta',
-  dirty: 'Sucia'
+  dirty: 'Sucia',
+  occupied_no_order: 'Ocupada (Sin Pedido)',
+  consuming: 'Consumiendo'
 };
 
-const STATUS_CLASSES = {
-  available: "bg-emerald-500 border-emerald-400 text-white",
-  occupied: "bg-indigo-600 border-indigo-400 text-white",
-  waiting_food: "bg-amber-500 border-amber-400 text-white",
-  checkout: "bg-rose-500 border-rose-400 text-white",
-  dirty: "bg-slate-400 border-slate-300 text-white"
+const STATUS_CLASSES: Record<Table['status'], string> = {
+  available: "bg-gradient-to-br from-emerald-400 to-emerald-600 border-emerald-600/20 text-white shadow-emerald-100/50 shadow-md",
+  occupied_no_order: "bg-gradient-to-br from-sky-400 to-sky-600 border-sky-600/20 text-white shadow-sky-100/50 shadow-md",
+  waiting_food: "bg-gradient-to-br from-amber-400 to-orange-500 border-amber-600/20 text-white shadow-amber-100/50 shadow-md",
+  consuming: "bg-gradient-to-br from-indigo-500 to-violet-600 border-indigo-600/20 text-white shadow-indigo-100/50 shadow-md",
+  checkout: "bg-gradient-to-br from-rose-500 to-pink-600 border-rose-600/20 text-white shadow-rose-100/50 shadow-md animate-pulse",
+  dirty: "bg-gradient-to-br from-slate-400 to-slate-500 border-slate-500/20 text-white shadow-slate-100/50 shadow-md",
+  occupied: "bg-gradient-to-br from-rose-500 to-pink-600 border-rose-600/20 text-white shadow-rose-100/50 shadow-md animate-pulse",
 };
 
 export function TableMap() {
-  const { tables, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan } = useStore();
+  const { tables, reservations, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan } = useStore();
   const { taxRate } = useBusiness();
 
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
@@ -590,16 +596,6 @@ export function TableMap() {
     }
   };
 
-  const STATUS_CLASSES: Record<Table['status'], string> = {
-    available: "bg-gradient-to-br from-emerald-400 to-emerald-600 border-emerald-600/20 text-white shadow-emerald-100/50 shadow-md",
-    occupied_no_order: "bg-gradient-to-br from-sky-400 to-sky-600 border-sky-600/20 text-white shadow-sky-100/50 shadow-md",
-    waiting_food: "bg-gradient-to-br from-amber-400 to-orange-500 border-amber-600/20 text-white shadow-amber-100/50 shadow-md",
-    consuming: "bg-gradient-to-br from-indigo-500 to-violet-600 border-indigo-600/20 text-white shadow-indigo-100/50 shadow-md",
-    checkout: "bg-gradient-to-br from-rose-500 to-pink-600 border-rose-600/20 text-white shadow-rose-100/50 shadow-md animate-pulse",
-    dirty: "bg-gradient-to-br from-slate-400 to-slate-500 border-slate-500/20 text-white shadow-slate-100/50 shadow-md",
-    occupied: "bg-gradient-to-br from-rose-500 to-pink-600 border-rose-600/20 text-white shadow-rose-100/50 shadow-md animate-pulse",
-  };
-
   const ChairCircle = ({ cx, cy, status }: { cx: number, cy: number, status: string, key?: string | number }) => {
     const dotColors: Record<string, string> = {
       available: "bg-emerald-500",
@@ -693,6 +689,15 @@ export function TableMap() {
     const y = isDragging ? dragPos.y : table.y;
     const rotation = isRotating ? liveRotation : (table.rotation ?? 0);
     const isSelected = selectedTableIds.has(table.id) && (isEditingLayout || isMarqueeMode);
+    const isRequestingBill = table.status === 'checkout';
+
+    // Reservation check for today
+    const today = new Date().toISOString().split('T')[0];
+    const hasReservation = reservations.some(r => 
+      r.tableId === table.id && 
+      r.date === today && 
+      (r.status === 'confirmed' || r.status === 'pending')
+    );
 
     return (
       <div
@@ -781,6 +786,20 @@ export function TableMap() {
             (table.type === 'round' || table.type === 'stool') ? "rounded-full" : "rounded-2xl",
             STATUS_CLASSES[table.status] || "bg-white border-slate-100 text-slate-800"
           )}>
+            {isRequestingBill && (
+              <motion.div 
+                animate={{ opacity: [0.1, 0.4, 0.1], scale: [1, 1.15, 1] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="absolute inset-0 bg-rose-500 rounded-[inherit] -z-10 blur-sm"
+              />
+            )}
+            {/* Reservation Badge */}
+            {hasReservation && !isEditingLayout && (
+              <div className="absolute -top-3 -right-3 w-8 h-8 bg-amber-500 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white z-50 animate-bounce">
+                <CalendarDays className="w-4 h-4" />
+              </div>
+            )}
+            
             {/* Glass inner ring reflection */}
             <div className={cn(
               "absolute inset-1 border pointer-events-none opacity-25 z-0",
@@ -893,16 +912,67 @@ export function TableMap() {
             {editingTable ? (
               <div className="bg-slate-900 text-white p-6 rounded-[2rem] shadow-2xl space-y-5 border border-white/5">
                 <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Propiedades</h4>
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Nombre / ID</label>
-                  <input
-                    type="text"
-                    value={editingTable.id}
-                    onChange={(e) => updateTable(editingTable.id, { id: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 font-bold"
-                  />
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Nombre / ID</label>
+                    <input
+                      type="text"
+                      value={editingTable.id}
+                      onChange={(e) => updateTable(editingTable.id, { id: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 font-bold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">Capacidad</label>
+                      <input
+                        type="number"
+                        value={editingTable.capacity}
+                        onChange={(e) => updateTable(editingTable.id, { capacity: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-400 uppercase">Rotación</label>
+                      <input
+                        type="number"
+                        value={Math.round(editingTable.rotation || 0)}
+                        onChange={(e) => updateTable(editingTable.id, { rotation: parseInt(e.target.value) || 0 })}
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 font-bold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-400 uppercase">Mesero Asignado</label>
+                    <input
+                      type="text"
+                      placeholder="Nombre del mesero"
+                      value={editingTable.waiterName || ''}
+                      onChange={(e) => updateTable(editingTable.id, { waiterName: e.target.value })}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 font-bold"
+                    />
+                  </div>
+
+                  {editingTable.type !== 'round' && editingTable.type !== 'stool' && editingTable.type !== 'wall' && (
+                    <div className="space-y-3 pt-2">
+                      <label className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest block">Config. Sillas</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {(['top', 'bottom', 'left', 'right'] as const).map(side => (
+                          <div key={side} className="flex items-center justify-between bg-white/5 p-2 rounded-lg border border-white/10">
+                            <span className="text-[9px] uppercase font-black text-slate-400">{side}</span>
+                            <div className="flex items-center gap-2">
+                              <button onClick={() => adjustChair(editingTable, side, -1)} className="p-1 hover:text-indigo-400"><Minus className="w-3 h-3" /></button>
+                              <span className="text-xs font-bold w-4 text-center">{(editingTable.chairsConfig?.[side] || 0)}</span>
+                              <button onClick={() => adjustChair(editingTable, side, 1)} className="p-1 hover:text-indigo-400"><Plus className="w-3 h-3" /></button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {/* ... other properties simplified for mobile ... */}
                 <button
                   onClick={() => { if (confirm('¿Eliminar elemento?')) { removeTable(editingTable.id); setSelectedTableIds(new Set()); } }}
                   className="w-full py-4 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"

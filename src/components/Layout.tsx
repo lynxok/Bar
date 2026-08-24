@@ -3,6 +3,7 @@ import { useBusiness } from "../contexts/BusinessContext";
 import { useAlerts } from "../contexts/AlertContext";
 import { NotificationService } from "../lib/NotificationService";
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   LayoutDashboard,
   Grid,
@@ -10,9 +11,11 @@ import {
   Package,
   Wallet,
   Banknote,
+  CalendarDays,
   HelpCircle,
   LogOut,
   Search,
+  X,
   Bell,
   Settings,
   Utensils,
@@ -48,12 +51,14 @@ const NAV_ITEMS = [
   { path: "/mapa", label: "Mapa del Salón", icon: Grid },
   { path: "/pos", label: "Punto de Venta (POS)", icon: MonitorCheck },
   { path: "/inventario", label: "Inventario", icon: Package },
+  { path: "/reservas", label: "Reservas", icon: CalendarDays },
   { path: "/finanzas", label: "Finanzas", icon: Wallet },
   { path: "/cierre", label: "Cierre de Caja", icon: Banknote },
   { path: "/analitica", label: "Analítica", icon: BarChart },
   { path: "/fidelizacion", label: "Fidelización", icon: Award },
   { path: "/facturacion", label: "Borradores de Factura", icon: FileText },
-  { path: "/cocina", label: "Cocina", icon: ChefHat },
+  { path: "/kds", label: "Monitor Cocina (KDS)", icon: ChefHat },
+  { path: "/cocina", label: "Gestión Cocina", icon: ChefHat },
   { path: "/seguridad", label: "Auditoría y Seguridad", icon: ShieldAlert },
 ];
 
@@ -61,7 +66,7 @@ export function Layout() {
   const location = useLocation();
   const { businessName, logo } = useBusiness();
   const { lowStockCount } = useAlerts();
-  const { clientOrders, approveClientOrder, rejectClientOrder } = useStore();
+  const { clientOrders, approveClientOrder, rejectClientOrder, notifications: systemNotifications, dismissNotification } = useStore();
   const [prevPendingCount, setPrevPendingCount] = useState(0);
   const [syncConnected, setSyncConnected] = useState(true);
 
@@ -324,7 +329,7 @@ export function Layout() {
   }
 
   return (
-    <div className="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased overflow-x-hidden flex">
+    <div className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white min-h-screen font-sans antialiased overflow-x-hidden flex">
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div 
@@ -335,7 +340,7 @@ export function Layout() {
 
       {/* Sidebar (Soporte Colapsable) */}
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-slate-900 flex flex-col text-slate-300 shadow-xl z-[70] transition-all duration-300",
+        "fixed left-0 top-0 h-screen bg-slate-900 dark:bg-slate-950 flex flex-col text-slate-300 dark:text-slate-400 shadow-xl z-[70] transition-all duration-300",
         isSidebarCollapsed ? "w-20" : "w-64",
         "lg:translate-x-0",
         isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -450,20 +455,20 @@ export function Layout() {
         isSidebarCollapsed && "lg:ml-20"
       )}>
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-4 lg:px-8 justify-between sticky top-0 z-40">
+        <header className="h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center px-4 lg:px-8 justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
-              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all"
               title={isSidebarCollapsed ? "Expandir menú" : "Colapsar menú"}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600 dark:text-slate-400">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <line x1="3" y1="18" x2="21" y2="18"></line>
               </svg>
             </button>
-            <h2 className="text-lg font-semibold text-slate-800 hidden md:block">
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-white hidden md:block">
               Panel de Control
             </h2>
           </div>
@@ -481,10 +486,10 @@ export function Layout() {
             )}
             <button
               onClick={toggleDarkMode}
-              className="p-2 text-slate-400 hover:text-slate-600 transition-colors"
+              className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white transition-colors"
               title="Cambiar tema"
             >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDarkMode ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
             </button>
             {lowStockCount > 0 && (
               <div className="flex items-center gap-2 text-red-500 bg-red-50 px-3 py-1 rounded-full text-xs font-medium animate-pulse">
@@ -528,6 +533,52 @@ export function Layout() {
         <div className="p-4 lg:p-8 pb-24 lg:pb-8">
           <Outlet />
         </div>
+
+        {/* Global System Toasts */}
+        <div className="fixed top-20 right-4 z-[100] flex flex-col gap-3 pointer-events-none">
+          <AnimatePresence>
+            {systemNotifications.map((n) => (
+              <motion.div
+                key={n.id}
+                initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                animate={{ opacity: 1, x: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                className={cn(
+                  "pointer-events-auto w-80 p-4 rounded-2xl shadow-2xl border flex gap-3 items-start",
+                  n.type === 'bill' ? "bg-rose-600 border-rose-500 text-white" :
+                  n.type === 'success' ? "bg-emerald-600 border-emerald-500 text-white" :
+                  n.type === 'warning' ? "bg-amber-500 border-amber-400 text-white" :
+                  n.type === 'error' ? "bg-red-600 border-red-500 text-white" :
+                  "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                )}
+              >
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center shrink-0",
+                  n.type === 'bill' ? "bg-white/20" :
+                  n.type === 'success' ? "bg-white/20" :
+                  n.type === 'warning' ? "bg-white/20" :
+                  n.type === 'error' ? "bg-white/20" :
+                  "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400"
+                )}>
+                  {n.type === 'bill' ? <Banknote className="w-6 h-6" /> : 
+                   n.type === 'info' ? <Bell className="w-6 h-6" /> :
+                   <ShieldAlert className="w-6 h-6" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-black text-sm uppercase tracking-widest">{n.title}</h4>
+                  <p className="text-xs font-bold mt-0.5 opacity-90 leading-relaxed">{n.message}</p>
+                </div>
+                <button 
+                  onClick={() => dismissNotification(n.id)}
+                  className="p-1 hover:bg-black/10 rounded-lg transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
         <ChatWidget />
         <div className="hidden lg:block">
           <MagneticDock />

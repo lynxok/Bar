@@ -198,6 +198,19 @@ export interface ClientOrder {
   timestamp: string;
 }
 
+export interface Reservation {
+  id?: number;
+  customerName: string;
+  customerPhone?: string;
+  tableId: string;
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm
+  comensales: number;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'seated';
+  notes?: string;
+  timestamp: string;
+}
+
 export interface BillingDraft {
   id?: string;
   date: string;
@@ -240,10 +253,11 @@ export class BarDatabase extends Dexie {
   loyaltyTransactions!: Table<LoyaltyTransaction>;
   clientOrders!: Table<ClientOrder>;
   billingDrafts!: Table<BillingDraft>;
+  reservations!: Table<Reservation>;
 
   constructor() {
     super('BarDatabase');
-    this.version(10).stores({
+    this.version(11).stores({
       products: '++id, name, sku, category',
       orders: '++id, tableId, status, timestamp',
       expenses: '++id, provider, date, category',
@@ -262,7 +276,8 @@ export class BarDatabase extends Dexie {
       loyaltyConfig: 'id',
       loyaltyTransactions: '++id, customerDni, timestamp',
       clientOrders: '++id, tableId, status, timestamp',
-      billingDrafts: 'id, date, billed'
+      billingDrafts: 'id, date, billed',
+      reservations: '++id, date, tableId, status'
     });
   }
 }
@@ -394,7 +409,7 @@ if (!isHost) {
     'products', 'orders', 'expenses', 'salonTables', 'paymentOrders', 
     'systemLogs', 'auditLogs', 'comandas', 'rewards', 'customers', 
     'shifts', 'users', 'messages', 'floorPlans', 'loyaltyConfig', 
-    'loyaltyTransactions', 'clientOrders'
+    'loyaltyTransactions', 'clientOrders', 'reservations'
   ];
   
   tableNames.forEach(name => {

@@ -13,8 +13,10 @@ import { Settings } from './pages/Settings';
 import { ClientSummary } from './pages/ClientSummary';
 import { Security } from './pages/Security';
 import { Logs } from './pages/Logs';
+import { KDS } from './pages/KDS';
 import Kitchen from './pages/Kitchen';
 import Help from './pages/Help';
+import { Reservations } from './pages/Reservations';
 import { Login } from './pages/Login';
 import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
@@ -76,12 +78,14 @@ export default function App() {
             <Route path="inventario" element={<Inventory />} />
             <Route path="finanzas" element={<Finance />} />
             <Route path="cierre" element={<CashClose />} />
+            <Route path="reservas" element={<Reservations />} />
             <Route path="analitica" element={<Analytics />} />
             <Route path="fidelizacion" element={<Loyalty />} />
             <Route path="facturacion" element={<BillingDrafts />} />
             <Route path="configuracion" element={<Settings />} />
             <Route path="seguridad" element={<Security />} />
             <Route path="logs" element={<Logs />} />
+            <Route path="kds" element={<KDS />} />
             <Route path="cocina" element={<Kitchen />} />
             <Route path="ayuda" element={<Help />} />
             <Route path="mozo" element={<WaiterMobile />} />
