@@ -29,7 +29,7 @@ export function Settings() {
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
 
   const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
-  const ipc = isElectron ? (window as any).require('electron').ipcRenderer : null;
+  const ipc = isElectron && (window as any).require ? (window as any).require('electron').ipcRenderer : null;
   const CURRENT_VERSION = isElectron && ipc ? `v${ipc.sendSync('get-app-version')}` : "v1.1.0";
 
   // Estados de ngrok y sincronización

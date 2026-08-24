@@ -32,6 +32,7 @@ import { useStore } from "../contexts/StoreContext";
 import { isHost } from "../db/database";
 import { onSyncStateChange } from "../services/syncService";
 import { MagneticDock } from "./MagneticDock";
+import { MobileNav } from "./MobileNav";
 
 interface Notification {
   id: string;
@@ -74,6 +75,7 @@ export function Layout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
   });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([
     {
@@ -323,10 +325,20 @@ export function Layout() {
 
   return (
     <div className="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased overflow-x-hidden flex">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] lg:hidden animate-in fade-in duration-300"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* Sidebar (Soporte Colapsable) */}
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-slate-900 flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
-        isSidebarCollapsed ? "w-20" : "w-64"
+        "fixed left-0 top-0 h-screen bg-slate-900 flex flex-col text-slate-300 shadow-xl z-[70] transition-all duration-300",
+        isSidebarCollapsed ? "w-20" : "w-64",
+        "lg:translate-x-0",
+        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
         <div className="p-6 flex items-center gap-3 overflow-hidden">
           {logo ? (
@@ -434,10 +446,11 @@ export function Layout() {
       {/* Main Content Area */}
       <main className={cn(
         "flex-1 flex flex-col min-h-screen transition-all duration-300",
-        isSidebarCollapsed ? "ml-20" : "ml-64"
+        "ml-0 lg:ml-64",
+        isSidebarCollapsed && "lg:ml-20"
       )}>
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-8 justify-between sticky top-0 z-40">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-4 lg:px-8 justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
@@ -512,11 +525,14 @@ export function Layout() {
         </header>
 
         {/* Content Box */}
-        <div className="p-8">
+        <div className="p-4 lg:p-8 pb-24 lg:pb-8">
           <Outlet />
         </div>
         <ChatWidget />
-        <MagneticDock />
+        <div className="hidden lg:block">
+          <MagneticDock />
+        </div>
+        <MobileNav onMenuClick={() => setIsMobileMenuOpen(true)} />
       </main>
     </div>
   );

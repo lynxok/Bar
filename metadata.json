@@ -2,5 +2,7 @@
   "name": "GastroAnalytics: Bar & Kiosco",
   "description": "Plataforma SaaS para negocios gastronómicos que combinan servicio de mesa y venta de mostrador.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

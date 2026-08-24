@@ -270,53 +270,55 @@ export class BarDatabase extends Dexie {
 export const db = new BarDatabase();
 
 export const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
-// El host principal es la aplicación de Electron.
-export const isHost = isElectron;
+// In web-only mode (AI Studio), we assume the current browser instance is the host.
+export const isHost = true;
 
-// 1. ESCUCHADOR IPC EN EL HOST (ELECTRON)
-// Cuando Express recibe una llamada HTTP de un celular, la envía aquí vía IPC.
-// Este código consulta el IndexedDB real de la PC principal y devuelve el resultado.
-if (isElectron) {
-  const ipc = (window as any).require('electron').ipcRenderer;
-  ipc.on('db-request', async (_: any, { requestId, table, id, method, body, query }: any) => {
-    try {
-      const targetTable = (db as any)[table];
-      if (!targetTable) throw new Error(`Table ${table} not found`);
+// IPC listeners removed for web migration as Electron is not available.
+if (isElectron && (window as any).require) {
+  try {
+    const ipc = (window as any).require('electron').ipcRenderer;
+    ipc.on('db-request', async (_: any, { requestId, table, id, method, body, query }: any) => {
+      // Logic preserved for potential Electron use, but guarded
+      try {
+        const targetTable = (db as any)[table];
+        if (!targetTable) throw new Error(`Table ${table} not found`);
 
-      let data;
-      const key = id ? (isNaN(Number(id)) ? id : Number(id)) : null;
+        let data;
+        const key = id ? (isNaN(Number(id)) ? id : Number(id)) : null;
 
-      if (method === 'GET') {
-        if (key !== null) {
-          data = await targetTable.get(key);
-        } else {
-          // Filtrado básico para consultas comunes
-          if (query && query.where && query.equals) {
-            data = await targetTable.where(query.where).equals(query.equals).toArray();
-          } else if (query && query.orderBy) {
-            if (query.reverse === 'true') {
-              data = await targetTable.orderBy(query.orderBy).reverse().toArray();
-            } else {
-              data = await targetTable.orderBy(query.orderBy).toArray();
-            }
+        if (method === 'GET') {
+          if (key !== null) {
+            data = await targetTable.get(key);
           } else {
-            data = await targetTable.toArray();
+            if (query && query.where && query.equals) {
+              data = await targetTable.where(query.where).equals(query.equals).toArray();
+            } else if (query && query.orderBy) {
+              if (query.reverse === 'true') {
+                data = await targetTable.orderBy(query.orderBy).reverse().toArray();
+              } else {
+                data = await targetTable.orderBy(query.orderBy).toArray();
+              }
+            } else {
+              data = await targetTable.toArray();
+            }
           }
+        } else if (method === 'POST') {
+          data = await targetTable.add(body);
+        } else if (method === 'PUT') {
+          data = await targetTable.update(key, body);
+        } else if (method === 'DELETE') {
+          data = await targetTable.delete(key);
         }
-      } else if (method === 'POST') {
-        data = await targetTable.add(body);
-      } else if (method === 'PUT') {
-        data = await targetTable.update(key, body);
-      } else if (method === 'DELETE') {
-        data = await targetTable.delete(key);
-      }
 
-      ipc.send('db-response', { requestId, success: true, data });
-    } catch (err: any) {
-      console.error('Error procesando consulta remota de base de datos:', err);
-      ipc.send('db-response', { requestId, success: false, error: err.message });
-    }
-  });
+        ipc.send('db-response', { requestId, success: true, data });
+      } catch (err: any) {
+        console.error('Error procesando consulta remota de base de datos:', err);
+        ipc.send('db-response', { requestId, success: false, error: err.message });
+      }
+    });
+  } catch (e) {
+    console.warn('Electron not available, skipping IPC listeners');
+  }
 }
 
 // 2. INTERCEPTORES DE ESCRITURA EN EL CLIENTE (CELULARES/TABLETS)

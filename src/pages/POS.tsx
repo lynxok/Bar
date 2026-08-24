@@ -54,6 +54,7 @@ export function POS() {
   // Búsqueda y filtro de categoría funcionales
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>('Todo');
+  const [mobileTab, setMobileTab] = useState<'products' | 'cart'>('products');
 
   // Deriva las categorías dinámicamente desde los productos reales
   const categories = ['Todo', ...Array.from(new Set(products.map(p => p.category).filter(Boolean)))];
@@ -132,8 +133,39 @@ export function POS() {
   };
 
   return (
-    <div className="h-[calc(100vh-64px)] p-6 grid grid-cols-12 gap-6 overflow-hidden bg-surface-container-low text-on-surface">
-      <section className="col-span-12 xl:col-span-8 flex flex-col gap-4 overflow-hidden max-h-full">
+    <div className="h-[calc(100vh-64px)] flex flex-col xl:grid xl:grid-cols-12 gap-0 xl:gap-6 overflow-hidden bg-surface-container-low text-on-surface p-0 xl:p-6">
+      
+      {/* Mobile Tab Selector */}
+      <div className="xl:hidden flex bg-white border-b border-outline-variant p-2 sticky top-0 z-20 shadow-sm">
+        <button 
+          onClick={() => setMobileTab('products')}
+          className={cn(
+            "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2",
+            mobileTab === 'products' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface-variant"
+          )}
+        >
+          <Utensils className="w-4 h-4" /> Productos
+        </button>
+        <button 
+          onClick={() => setMobileTab('cart')}
+          className={cn(
+            "flex-1 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 relative",
+            mobileTab === 'cart' ? "bg-primary text-on-primary shadow-lg" : "text-on-surface-variant"
+          )}
+        >
+          <ShoppingBag className="w-4 h-4" /> Carrito
+          {cart.length > 0 && (
+            <span className="absolute top-2 right-1/4 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center text-[10px] font-black border-2 border-white">
+              {cart.reduce((acc, i) => acc + i.qty, 0)}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <section className={cn(
+        "xl:col-span-8 flex flex-col gap-4 overflow-hidden max-h-full p-4 xl:p-0",
+        mobileTab === 'products' ? "flex" : "hidden xl:flex"
+      )}>
         <div className="flex gap-3 items-center">
           <div className="flex-1 relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" />
@@ -243,7 +275,10 @@ export function POS() {
         </div>
       </section>
 
-      <section className="col-span-12 xl:col-span-4 bg-surface-container-lowest border border-outline rounded-2xl shadow-sm flex flex-col overflow-hidden max-h-full">
+      <section className={cn(
+        "xl:col-span-4 bg-surface-container-lowest border border-outline rounded-none xl:rounded-2xl shadow-sm flex flex-col overflow-hidden max-h-full",
+        mobileTab === 'cart' ? "flex" : "hidden xl:flex"
+      )}>
         <div className="p-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-low shrink-0">
           <div>
             <h3 className="font-bold text-xl text-on-surface">Pedido Actual</h3>

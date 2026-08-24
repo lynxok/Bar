@@ -101,7 +101,7 @@ export function BillingDrafts() {
       const savedSettingsRaw = localStorage.getItem('bar_arca_settings');
       const arcaSettings = savedSettingsRaw ? JSON.parse(savedSettingsRaw) : null;
 
-      if (isElectron && arcaSettings && arcaSettings.cuit) {
+      if (isElectron && arcaSettings && arcaSettings.cuit && (window as any).require) {
         const ipc = (window as any).require('electron').ipcRenderer;
         
         const totalAmount = selectedIds.reduce((sum, id) => {
@@ -185,7 +185,7 @@ export function BillingDrafts() {
 
   const handleOpenPDF = async (filePath: string) => {
     const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
-    if (isElectron) {
+    if (isElectron && (window as any).require) {
       const ipc = (window as any).require('electron').ipcRenderer;
       await ipc.invoke('open-file-path', filePath);
     } else {
@@ -199,7 +199,7 @@ export function BillingDrafts() {
       const savedSettingsRaw = localStorage.getItem('bar_arca_settings');
       const arcaSettings = savedSettingsRaw ? JSON.parse(savedSettingsRaw) : null;
 
-      if (isElectron && arcaSettings) {
+      if (isElectron && arcaSettings && (window as any).require) {
         const ipc = (window as any).require('electron').ipcRenderer;
         const res = await ipc.invoke('arca-regenerate-pdf', {
           draft,
