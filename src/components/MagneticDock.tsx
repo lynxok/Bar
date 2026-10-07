@@ -18,11 +18,11 @@ export function MagneticDock() {
   const location = useLocation();
 
   const items: DockItem[] = [
-    { label: "Dashboard", icon: LayoutDashboard, path: "/", color: "from-blue-500 to-indigo-600" },
-    { label: "Salón", icon: Users, path: "/mapa", color: "from-indigo-500 to-purple-600" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/", color: "from-[#0F6B41] to-[#1E4437]" },
+    { label: "Salón", icon: Users, path: "/mapa", color: "from-[#0F6B41] to-emerald-800" },
     { label: "Ventas POS", icon: MonitorCheck, path: "/pos", color: "from-emerald-500 to-teal-600" },
     { label: "Inventario", icon: Package, path: "/inventario", color: "from-amber-500 to-orange-600" },
-    { label: "Carta QR", icon: Utensils, path: "/carta", color: "from-indigo-600 to-indigo-800" },
+    { label: "Carta QR", icon: Utensils, path: "/carta", color: "from-[#0F6B41] to-[#094328]" },
     { label: "Finanzas", icon: Wallet, path: "/finanzas", color: "from-pink-500 to-rose-600" },
     { label: "Técnico", icon: Terminal, path: "/logs", color: "from-slate-700 to-slate-900" },
     { label: "Ayuda", icon: HelpCircle, path: "/ayuda", color: "from-cyan-500 to-sky-600" },
@@ -104,7 +104,7 @@ export function MagneticDock() {
                   className={cn(
                     "w-full h-full rounded-2xl flex items-center justify-center bg-gradient-to-b text-white shadow-lg border border-white/10 hover:border-white/20 transition-all",
                     item.color,
-                    isSelected && "ring-2 ring-indigo-400 ring-offset-2 ring-offset-slate-950"
+                    isSelected && "ring-2 ring-[#0F6B41] ring-offset-2 ring-offset-slate-950"
                   )}
                 >
                   <item.icon className="w-1/2 h-1/2" />

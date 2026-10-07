@@ -1,3 +1,4 @@
+import { useToast } from "../components/ui/Toast";
 import React, { useState, useEffect, useRef } from "react";
 import { computeTotals, taxLabel } from '../lib/pricing';
 import {
@@ -36,6 +37,7 @@ interface ContextMenuState {
 }
 
 export function Dashboard() {
+  const { showToast } = useToast();
   const { tables, orders, products, closeOrder, updateCustomerPoints } = useStore();
   const { taxRate, pricesIncludeTax } = useBusiness();
 
@@ -109,7 +111,7 @@ export function Dashboard() {
         awardPoints: !splitPoints,
       });
     } catch (err: any) {
-      alert(err?.message || 'No se pudo cobrar la mesa.');
+      showToast(err?.message || 'No se pudo cobrar la mesa.', 'error');
       return;
     }
     if (splitPoints) {
@@ -152,7 +154,7 @@ export function Dashboard() {
     available: "bg-emerald-50 border-emerald-200 text-emerald-700",
     occupied_no_order: "bg-sky-50 border-sky-200 text-sky-700",
     waiting_food: "bg-amber-50 border-amber-200 text-amber-700",
-    consuming: "bg-purple-50 border-purple-200 text-purple-700",
+    consuming: "bg-emerald-50 border-emerald-200 text-[#0F6B41]",
     checkout: "bg-rose-50 border-rose-200 text-rose-700",
     dirty: "bg-stone-50 border-stone-200 text-stone-700",
     occupied: "bg-rose-50 border-rose-200 text-rose-700",
@@ -236,38 +238,38 @@ export function Dashboard() {
 
       {/* Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
           <div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Ventas Hoy</div>
-            <div className="text-2xl font-bold text-slate-900">${totalSalesToday.toLocaleString()}</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Ventas Hoy</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{formatMoney(totalSalesToday)}</div>
             <div className="text-emerald-500 text-xs font-medium mt-2 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
               Sincronizado
             </div>
           </div>
-          <div className="bg-indigo-50 p-3 rounded-lg text-indigo-600">
+          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41]">
             <Receipt className="h-6 w-6" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
           <div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Ocupación</div>
-            <div className="text-2xl font-bold text-slate-900">{activeTablesCount} / {tables.length}</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Ocupación</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{activeTablesCount} / {tables.length}</div>
             <div className="text-slate-400 text-xs mt-2 flex items-center">
               <Users className="h-3 w-3 mr-1" />
               Mesas activas
             </div>
           </div>
-          <div className="bg-indigo-50 p-3 rounded-lg text-indigo-600">
+          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41]">
             <Users className="h-6 w-6" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
           <div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Comandas en Curso</div>
-            <div className="text-2xl font-bold text-slate-900">{pendingOrdersCount}</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Comandas en Curso</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{pendingOrdersCount}</div>
             <div className="text-amber-500 text-xs mt-2 flex items-center font-medium">
               <Clock className="h-3 w-3 mr-1" />
               En preparación
@@ -278,10 +280,10 @@ export function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
           <div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Alertas Stock</div>
-            <div className="text-2xl font-bold text-slate-900">{stockAlertsCount}</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Alertas Stock</div>
+            <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{stockAlertsCount}</div>
             <div className="text-red-500 text-xs mt-2 flex items-center font-medium">
               <AlertTriangle className="h-3 w-3 mr-1" />
               Revisar inventario
@@ -295,11 +297,11 @@ export function Dashboard() {
 
       <div className="grid grid-cols-12 gap-6">
         {/* Sales Chart */}
-        <div className="col-span-12 lg:col-span-8 bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div className="col-span-12 lg:col-span-8 bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="font-bold text-slate-800">Resumen Semanal de Ventas</h3>
-              <p className="text-sm font-medium text-slate-500">Histórico acumulado de ingresos</p>
+              <h3 className="font-bold text-slate-800 dark:text-zinc-100">Resumen Semanal de Ventas</h3>
+              <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Histórico acumulado de ingresos</p>
             </div>
           </div>
           <div className="flex-1 min-h-[300px] flex flex-col justify-center">
@@ -344,24 +346,24 @@ export function Dashboard() {
 
         {/* Quick Actions */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex-1">
-            <h3 className="font-bold text-slate-800 mb-6">Acciones Rápidas</h3>
+          <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex-1">
+            <h3 className="font-bold text-slate-800 dark:text-zinc-100 mb-6">Acciones Rápidas</h3>
             <div className="space-y-3">
-              <Link to="/pos" className="w-full flex items-center justify-between p-4 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all group active:scale-[0.98]">
+              <Link to="/pos" className="w-full flex items-center justify-between p-4 bg-[#0F6B41] text-white rounded-xl hover:bg-[#0C5734] transition-all group active:scale-[0.98]">
                 <div className="flex items-center gap-3">
                   <MonitorCheck className="h-5 w-5" />
                   <span className="font-semibold text-sm">Venta Rápida (POS)</span>
                 </div>
                 <ChevronRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              <Link to="/mapa" className="w-full flex items-center justify-between p-4 border border-slate-200 text-slate-800 rounded-xl hover:bg-slate-50 transition-all group active:scale-[0.98]">
+              <Link to="/mapa" className="w-full flex items-center justify-between p-4 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-zinc-200 rounded-xl hover:bg-slate-50 dark:hover:bg-[#1E342B] transition-all group active:scale-[0.98]">
                 <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-indigo-500" />
+                  <Users className="h-5 w-5 text-[#0F6B41]" />
                   <span className="font-semibold text-sm">Mapa de Mesas</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
               </Link>
-              <Link to="/finanzas" className="w-full flex items-center justify-between p-4 border border-slate-200 text-slate-800 rounded-xl hover:bg-slate-50 transition-all group active:scale-[0.98]">
+              <Link to="/finanzas" className="w-full flex items-center justify-between p-4 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-zinc-200 rounded-xl hover:bg-slate-50 dark:hover:bg-[#1E342B] transition-all group active:scale-[0.98]">
                 <div className="flex items-center gap-3">
                   <Receipt className="h-5 w-5 text-emerald-500" />
                   <span className="font-semibold text-sm">Ingresos/Gastos</span>
@@ -380,19 +382,19 @@ export function Dashboard() {
                 <p className="text-slate-400 text-xs">Vínculo con base de datos activo.</p>
               </div>
             </div>
-            <Zap className="absolute -right-4 -bottom-4 h-32 w-32 text-indigo-500/10" />
+            <Zap className="absolute -right-4 -bottom-4 h-32 w-32 text-[#0F6B41]/10" />
           </div>
         </div>
       </div>
 
       {/* Live Salon Tables Section */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm animate-in fade-in duration-500">
+      <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in duration-500">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="font-bold text-slate-800">Estado de Mesas en Vivo</h3>
-            <p className="text-sm font-medium text-slate-500">Clic derecho para cerrar mesa · Ocupación, tiempos y consumos actuales</p>
+            <h3 className="font-bold text-slate-800 dark:text-zinc-100">Estado de Mesas en Vivo</h3>
+            <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Clic derecho para cerrar mesa · Ocupación, tiempos y consumos actuales</p>
           </div>
-          <Link to="/mapa" className="text-indigo-600 text-xs font-black hover:text-indigo-800 uppercase tracking-wider flex items-center gap-1">
+          <Link to="/mapa" className="text-[#0F6B41] text-xs font-black hover:text-[#0C5734] uppercase tracking-wider flex items-center gap-1">
             Ver Mapa Completo <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -528,11 +530,11 @@ export function Dashboard() {
                       className={cn(
                         "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all active:scale-[0.98]",
                         paymentMethod === method.id
-                          ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100"
+                          ? "bg-[#0F6B41] border-[#0F6B41] text-white shadow-lg"
                           : "bg-slate-50 border-transparent text-slate-600 hover:border-slate-200"
                       )}
                     >
-                      <method.icon className={cn("h-5 w-5", paymentMethod === method.id ? "text-white" : "text-indigo-500")} />
+                      <method.icon className={cn("h-5 w-5", paymentMethod === method.id ? "text-white" : "text-[#0F6B41]")} />
                       <span className="text-xs font-black uppercase tracking-wider">{method.label}</span>
                     </button>
                   ))}
@@ -544,31 +546,31 @@ export function Dashboard() {
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 <div className="flex items-center justify-between">
                   <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <UserCheck className="w-4 h-4 text-indigo-400" />
+                    <UserCheck className="w-4 h-4 text-emerald-400" />
                     Dividir Cuenta
                   </label>
-                  <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded-full uppercase">
+                  <span className="text-[9px] font-black text-[#0F6B41] bg-emerald-50 dark:bg-white/10 px-2 py-1 rounded-full uppercase">
                     {comensales} {comensales === 1 ? "comensal" : "comensales"}
                   </span>
                 </div>
                 <div className="flex items-center gap-4 bg-slate-50 p-2 rounded-2xl border border-slate-200">
                   <button
                     onClick={() => changeComensales(Math.max(1, comensales - 1))}
-                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm"
+                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:bg-emerald-50 hover:border-emerald-300 transition-all shadow-sm"
                   >
                     <Minus className="w-4 h-4 text-slate-600" />
                   </button>
                   <span className="flex-1 text-center font-black text-2xl text-slate-900">{comensales}</span>
                   <button
                     onClick={() => changeComensales(comensales + 1)}
-                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:bg-indigo-50 hover:border-indigo-300 transition-all shadow-sm"
+                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:bg-emerald-50 hover:border-emerald-300 transition-all shadow-sm"
                   >
                     <Plus className="w-4 h-4 text-slate-600" />
                   </button>
                 </div>
 
                 {perPerson !== null && (
-                  <div className="bg-indigo-600 rounded-2xl p-4 text-white flex items-center justify-between">
+                  <div className="bg-[#0F6B41] rounded-2xl p-4 text-white flex items-center justify-between">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Paga cada uno</p>
                       <p className="text-3xl font-black">${Math.ceil(perPerson).toLocaleString()}</p>
@@ -597,7 +599,7 @@ export function Dashboard() {
                         type="text"
                         value={loyaltyIds[i] || ""}
                         onChange={e => setLoyaltyIdAt(i, e.target.value)}
-                        className="w-full h-11 pl-10 pr-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 text-sm focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                        className="w-full h-11 pl-10 pr-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 text-sm focus:bg-white focus:border-[#0F6B41] outline-none transition-all"
                         placeholder={`Comensal ${i + 1} — DNI o N° Socio (opcional)`}
                       />
                     </div>
@@ -621,7 +623,7 @@ export function Dashboard() {
                 <div className="h-px bg-slate-800 mx-1" />
                 <div className="flex justify-between items-center px-1">
                   <div>
-                    <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Total a Cobrar</div>
+                    <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Total a Cobrar</div>
                     <div className="text-3xl font-black">${total.toLocaleString()}</div>
                   </div>
                   {registeredDiners.length > 0 && (
@@ -635,7 +637,7 @@ export function Dashboard() {
 
               <button
                 onClick={handleCloseOrder}
-                className="w-full h-14 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                className="w-full h-14 bg-[#FA4515] text-white rounded-2xl font-black text-lg shadow-xl hover:bg-[#E03A0E] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
               >
                 FINALIZAR Y COBRAR <ArrowRight className="h-5 w-5" />
               </button>

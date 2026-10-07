@@ -92,11 +92,11 @@ export function BillingDrafts() {
 
   const handleProcessBilling = async () => {
     if (!isConsumidorFinal && (!identificador.trim() || !direccion.trim() || !razonSocial.trim())) {
-      alert("Por favor, ingresá el CUIT/DNI, Razón Social y la Dirección para la facturación nominada.");
+      showToast("Ingresá el CUIT/DNI, Razón Social y Dirección.", "warning");
       return;
     }
     if (!billingDate) {
-      alert("Por favor, seleccioná una fecha de facturación válida.");
+      showToast("Seleccioná una fecha de facturación válida.", "warning");
       return;
     }
 
@@ -148,7 +148,7 @@ export function BillingDrafts() {
             caeVto: res.caeVto,
             filePath: res.filePath
           });
-          alert(`¡Factura Nro ${res.invoiceNumber} generada y autorizada por AFIP/ARCA!`);
+          showToast(`Factura Nro ${res.invoiceNumber} generada y autorizada.`, "success");
         } else {
           throw new Error(res.error || 'Error desconocido al facturar con AFIP');
         }
@@ -168,9 +168,9 @@ export function BillingDrafts() {
         });
         
         if (isElectron) {
-          alert("Aviso: Configura los datos de ARCA/AFIP en Configuración para emitir facturas reales. Se generó un CAE de simulación offline.");
+          showToast("Configurá datos ARCA/AFIP en Configuración. CAE de simulación generado.", "info");
         } else {
-          alert("¡Borradores facturados correctamente (Simulación Web Offline)!");
+          showToast("Borradores facturados correctamente.", "success");
         }
       }
 
@@ -178,7 +178,7 @@ export function BillingDrafts() {
       setSelectedIds([]);
     } catch (err: any) {
       console.error(err);
-      alert(`Error al facturar comprobantes: ${err.message}`);
+      showToast(`Error al facturar: ${err.message}`, "error");
     } finally {
       setIsProcessing(false);
     }
@@ -195,7 +195,7 @@ export function BillingDrafts() {
       const ipc = getIpc()!;
       await ipc.invoke('open-file-path', filePath);
     } else {
-      alert("La apertura de archivos locales solo está disponible en la versión de escritorio.");
+      showToast("Apertura disponible solo en escritorio.", "info");
     }
   };
 
@@ -215,18 +215,18 @@ export function BillingDrafts() {
           }
         });
         if (res.success) {
-          alert("¡PDF generado correctamente!");
+          showToast("PDF generado correctamente.", "success");
           if (draft.billingData) {
             draft.billingData.filePath = res.filePath;
           }
         } else {
-          alert("Error: " + res.error);
+          showToast("Error: " + res.error, "error");
         }
       } else {
-        alert("Función disponible únicamente en el software de escritorio con configuración activa.");
+        showToast("Función disponible en versión de escritorio.", "info");
       }
     } catch (e: any) {
-      alert("Error regenerando PDF: " + e.message);
+      showToast("Error regenerando PDF: " + e.message, "error");
     }
   };
 
@@ -265,13 +265,13 @@ export function BillingDrafts() {
 
 
         <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-indigo-500/10 text-indigo-650 rounded-xl">
+          <div className="p-3 bg-emerald-500/10 text-[#0F6B41] dark:text-emerald-400 rounded-xl">
             <FileText className="w-6 h-6" />
           </div>
           <div>
             <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Total Registrados</span>
             <span className="text-2xl font-black text-on-surface">{billingDrafts.length}</span>
-            <span className="text-xs text-indigo-650 block mt-0.5 font-medium">Borradores + facturas</span>
+            <span className="text-xs text-[#0F6B41] dark:text-emerald-400 block mt-0.5 font-medium">Borradores + facturas</span>
           </div>
         </div>
       </div>

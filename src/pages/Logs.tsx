@@ -1,3 +1,4 @@
+import { useToast } from "../components/ui/Toast";
 import { useState, useEffect } from "react";
 import { db } from "../db/database";
 import { LoggerService } from "../lib/LoggerService";
@@ -5,6 +6,7 @@ import { Terminal, Trash2, AlertCircle, RefreshCw, Eye, ShieldAlert, CheckCircle
 import { cn } from "../lib/utils";
 
 export function Logs() {
+  const { showToast, confirm } = useToast();
   const [activeTab, setActiveTab] = useState<'system' | 'audit'>('system');
   const [systemLogs, setSystemLogs] = useState<any[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
@@ -31,13 +33,13 @@ export function Logs() {
   }, []);
 
   const handleClearLogs = async () => {
-    if (!confirm("¿Está seguro de que desea limpiar todos los registros?")) return;
+    const ok = await confirm({ title: "Limpiar registros", message: "¿Está seguro de que desea limpiar todos los registros?", isDestructive: true }); if (!ok) return;
     try {
       await db.systemLogs.clear();
       await db.auditLogs.clear();
       await fetchLogs();
     } catch (e) {
-      alert("Error al limpiar los logs");
+      showToast("Error al limpiar los logs", "error");
     }
   };
 

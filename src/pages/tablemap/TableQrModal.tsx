@@ -101,7 +101,7 @@ export function TableQrModal({ tableId, onClose }: Props) {
             Descargar
           </button>
           <button onClick={handlePrint} disabled={!qrUrl}
-            className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all disabled:opacity-50">
+            className="py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-bold text-sm transition-all disabled:opacity-50">
             Imprimir
           </button>
         </div>

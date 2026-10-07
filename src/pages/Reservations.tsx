@@ -14,7 +14,7 @@ const toLocalInput = (d: Date) => {
 
 const STATUS_STYLE: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
-  confirmed: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+  confirmed: 'bg-emerald-50 text-[#0F6B41] border-emerald-200',
   seated: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   cancelled: 'bg-slate-100 text-slate-500 border-slate-200 line-through',
   no_show: 'bg-rose-50 text-rose-700 border-rose-200',
@@ -90,7 +90,7 @@ export default function Reservations() {
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2"><CalendarDays className="w-6 h-6 text-indigo-600" /> Reservas</h1>
+          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2"><CalendarDays className="w-6 h-6 text-[#0F6B41]" /> Reservas</h1>
           <p className="text-sm text-slate-500">{dayList.length} reserva(s) · {covers} cubierto(s)</p>
         </div>
         <div className="flex items-center gap-2">
@@ -99,7 +99,7 @@ export default function Reservations() {
             className="h-10 px-3 rounded-xl border border-slate-200 font-bold text-sm" />
           <button onClick={() => shiftDay(1)} className="p-2 rounded-xl bg-white border border-slate-200"><ChevronRight className="w-4 h-4" /></button>
           <button onClick={() => setDay(new Date())} className="px-3 h-10 rounded-xl bg-slate-100 text-xs font-bold">Hoy</button>
-          <button onClick={openNew} className="px-4 h-10 rounded-xl bg-indigo-600 text-white text-sm font-bold flex items-center gap-1"><Plus className="w-4 h-4" /> Nueva</button>
+          <button onClick={openNew} className="px-4 h-10 rounded-xl bg-[#0F6B41] hover:bg-[#0C5734] text-white text-sm font-bold flex items-center gap-1"><Plus className="w-4 h-4" /> Nueva</button>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export default function Reservations() {
               </button>
               <span className={cn('px-2 py-1 rounded-lg border text-[10px] font-black uppercase', STATUS_STYLE[r.status])}>{STATUS_LABEL[r.status]}</span>
               <div className="flex gap-1">
-                {r.status === 'pending' && <button onClick={() => setStatus(r, 'confirmed')} title="Confirmar" className="p-2 rounded-lg bg-indigo-50 text-indigo-700"><Check className="w-4 h-4" /></button>}
+                {r.status === 'pending' && <button onClick={() => setStatus(r, 'confirmed')} title="Confirmar" className="p-2 rounded-lg bg-emerald-50 text-[#0F6B41]"><Check className="w-4 h-4" /></button>}
                 {(r.status === 'pending' || r.status === 'confirmed') && <>
                   <button onClick={() => setStatus(r, 'seated')} className="px-2 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold">Sentar</button>
                   <button onClick={() => setStatus(r, 'no_show')} title="No vino" className="p-2 rounded-lg bg-rose-50 text-rose-600"><UserX className="w-4 h-4" /></button>
@@ -181,7 +181,7 @@ export default function Reservations() {
             {error && <div className="text-xs font-bold text-rose-700">{error}</div>}
             <div className="flex justify-end gap-2">
               <button onClick={() => setForm(null)} className="px-4 h-11 rounded-xl bg-slate-100 font-bold text-sm">Cancelar</button>
-              <button onClick={save} className="px-5 h-11 rounded-xl bg-indigo-600 text-white font-bold text-sm">Guardar</button>
+              <button onClick={save} className="px-5 h-11 rounded-xl bg-[#0F6B41] hover:bg-[#0C5734] text-white font-bold text-sm">Guardar</button>
             </div>
           </div>
         </div>

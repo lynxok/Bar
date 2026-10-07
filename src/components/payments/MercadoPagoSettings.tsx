@@ -47,7 +47,7 @@ export function MercadoPagoSettings() {
       ) : (
         <div className="flex gap-2">
           <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="APP_USR-..."
-            className="flex-1 h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono outline-none focus:border-indigo-500" />
+            className="flex-1 h-11 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-mono outline-none focus:border-[#0F6B41] text-slate-900 dark:text-white" />
           <button onClick={save} disabled={busy || token.trim().length < 20}
             className="px-4 h-11 bg-sky-600 text-white rounded-xl font-bold text-sm disabled:opacity-50 flex items-center gap-2">
             {busy && <RefreshCw className="w-4 h-4 animate-spin" />} Conectar

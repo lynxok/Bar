@@ -19,6 +19,7 @@ import {
   Utensils,
   BarChart,
   Award,
+  Beer,
   Sun,
   Moon,
   ShieldAlert,
@@ -213,6 +214,7 @@ export function Layout() {
       { path: "/cierre", label: "Cierre de Caja", icon: Banknote },
       { path: "/analitica", label: "Analítica", icon: BarChart },
       { path: "/fidelizacion", label: "Fidelización", icon: Award },
+      { path: "/vasos", label: "Vasos y Lockers", icon: Beer },
       { path: "/facturacion", label: "Facturación", icon: FileText },
     ];
 
@@ -278,7 +280,7 @@ export function Layout() {
         ...prev
       ]);
     } else {
-      alert('Las notificaciones fueron denegadas o no están soportadas.');
+      console.warn('Las notificaciones fueron denegadas o no están soportadas.');
     }
   };
 
@@ -376,7 +378,7 @@ export function Layout() {
     <div className="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased overflow-x-hidden flex">
       {/* Sidebar (Soporte Colapsable) */}
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-slate-900 hidden md:flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
+        "fixed left-0 top-0 h-screen bg-[#1E4437] hidden md:flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
         isSidebarCollapsed ? "w-20" : "w-64"
       )}>
         <div className="p-5 flex items-center gap-3 overflow-hidden border-b border-white/10">
@@ -391,7 +393,7 @@ export function Layout() {
               <img
                 src="./brand/logo-full-dark.png"
                 alt="LYNX BarOS"
-                className="h-10 w-auto object-contain max-w-[170px]"
+                className="h-10 w-auto object-contain min-w-[130px] max-w-[170px]"
               />
             )}
           </Link>
@@ -538,7 +540,7 @@ export function Layout() {
                 onClick={() => setShowNotifications(!showNotifications)}
                 className={cn(
                   "relative p-2 rounded-full transition-all duration-300",
-                  showNotifications ? "bg-indigo-50 text-indigo-600" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                  showNotifications ? "bg-[#E7F3EC] text-[#0F6B41] dark:bg-white/10 dark:text-emerald-400" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10"
                 )}
                 title="Notificaciones"
               >

@@ -127,7 +127,7 @@ export function Analytics() {
              <select 
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-4 py-2.5 pr-10 hover:bg-slate-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-indigo-600"
+                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-4 py-2.5 pr-10 hover:bg-slate-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-[#0F6B41]"
               >
                <option value="Hoy">Hoy</option>
                <option value="Últimos 7 Días">Últimos 7 Días</option>
@@ -137,7 +137,7 @@ export function Analytics() {
           </div>
           <button 
             onClick={handleDownloadReport}
-            className="px-4 py-2.5 bg-indigo-600 text-white rounded-lg flex items-center gap-2 font-bold text-sm shadow-md hover:bg-indigo-700 transition-colors"
+            className="px-4 py-2.5 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-lg flex items-center gap-2 font-bold text-sm shadow-md transition-colors"
           >
             <Download className="w-4 h-4" /> Exportar a Excel
           </button>

@@ -1,3 +1,4 @@
+import { useToast } from "./ui/Toast";
 import React, { useState, useEffect } from "react";
 import { Image as ImageIcon, Upload, Save, Sliders, Palette, FileText, RefreshCw, FilePenLine } from "lucide-react";
 import { generateInvoicePDF } from "../utils/pdfGenerator";
@@ -16,6 +17,7 @@ const mockInvoice = {
 };
 
 export default function InvoiceDesignSettings() {
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'design' | 'logos' | 'spacing'>('design');
   const [saving, setSaving] = useState(false);
   const [pdfPreviewUrl, setPdfPreviewUrl] = useState<string>("");
@@ -153,9 +155,9 @@ export default function InvoiceDesignSettings() {
     setSaving(true);
     try {
       localStorage.setItem('bar_arca_settings', JSON.stringify(settings));
-      alert("Diseño y configuraciones de factura guardados exitosamente.");
+      showToast("Diseño guardado exitosamente.", "success");
     } catch (error: any) {
-      alert(`Error al guardar diseño: ${error.message}`);
+      showToast(`Error al guardar diseño: ${error.message}`, "error");
     }
     setSaving(false);
   };

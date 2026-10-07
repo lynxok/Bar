@@ -95,7 +95,7 @@ export function POS() {
       setBarcodeInput('');
       setIsScannerOpen(false);
     } else {
-      alert(`No se encontró ningún producto con código "${barcodeInput}".`);
+      showToast(`No se encontró producto con código "${barcodeInput}".`, "warning");
     }
   };
 
@@ -127,7 +127,7 @@ export function POS() {
       setTipInput('');
       setIsCheckoutModalOpen(false);
     } catch (err: any) {
-      alert(`Error al procesar el pago: ${err.message}`);
+      showToast(`Error al procesar el pago: ${err.message}`, "error");
     }
   };
 
@@ -137,9 +137,9 @@ export function POS() {
     if (!currentCustomer) return;
     try {
       await redeemPoints(currentCustomer.dni, prize.pointsCost, `Canje Recompensa POS: ${prize.name}`);
-      alert(`Recompensa "${prize.name}" canjeada con éxito!`);
+      showToast(`Recompensa "${prize.name}" canjeada con éxito.`, "success");
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message, "error");
     }
   };
 

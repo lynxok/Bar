@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { getIpc } from '../lib/ipc';
 import { useBusiness } from "../contexts/BusinessContext";
 import { useStore } from "../contexts/StoreContext";
+import { useToast } from "../components/ui/Toast";
 import { cn } from "../lib/utils";
 import { Store, Upload, Save, Image as ImageIcon, X, Users, Shield, Trash2, Key, Plus, CheckCircle, Circle, Edit2, Cloud, Database, RefreshCw, DownloadCloud, Wifi, Globe, Copy, Eye, EyeOff, QrCode, Network, Server, AlertCircle } from "lucide-react";
 import { LoggerService } from "../lib/LoggerService";
@@ -14,6 +15,7 @@ import { MercadoPagoSettings } from "../components/payments/MercadoPagoSettings"
 export function Settings() {
   const { businessName, setBusinessName, logo, setLogo, taxRate, setTaxRate, pricesIncludeTax, setPricesIncludeTax } = useBusiness();
   const { users, addUser, updateUser, deleteUser } = useStore();
+  const { showToast, confirm } = useToast();
   const [tempName, setTempName] = useState(businessName);
   const [tempTax, setTempTax] = useState(taxRate);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -100,7 +102,7 @@ export function Settings() {
 
   const handleToggleTunnel = async () => {
     if (!ipc) {
-      alert("Esta función solo está disponible en la versión de escritorio de la aplicación.");
+      showToast("Función disponible solo en la versión de escritorio.", "info");
       return;
     }
 
@@ -112,11 +114,11 @@ export function Settings() {
         setTunnelUrl('');
       } else {
         setTunnelStatus('active');
-        alert("Error al detener el túnel: " + res.error);
+        showToast("Error al detener el túnel: " + res.error, "error");
       }
     } else {
       if (!ngrokToken.trim()) {
-        alert("Por favor, ingresa tu ngrok Authtoken.");
+        showToast("Ingresá tu ngrok Authtoken.", "warning");
         return;
       }
       setTunnelStatus('starting');
@@ -151,7 +153,7 @@ export function Settings() {
     }
 
     await new Promise(r => setTimeout(r, 1000));
-    alert("Configuración de sincronización guardada correctamente.");
+    showToast("Configuración de sincronización guardada correctamente.", "success");
     setIsSavingSync(false);
   };
 
@@ -167,7 +169,7 @@ export function Settings() {
     const onNotAvailable = () => {
       setUpdateStatus('idle');
       setIsUpdating(false);
-      alert("No hay actualizaciones disponibles.");
+      showToast("No hay actualizaciones disponibles.", "info");
     };
 
     const onProgress = (_: any, progressObj: any) => {
@@ -182,7 +184,7 @@ export function Settings() {
     const onError = (_: any, message: string) => {
       setIsUpdating(false);
       setUpdateStatus('idle');
-      alert(`Error en la actualización: ${message}`);
+      showToast(`Error en la actualización: ${message}`, "error");
     };
 
     ipc.on('update-available', onAvailable);
@@ -204,13 +206,13 @@ export function Settings() {
     setIsMigrating(true);
     // Simulate migration delay
     await new Promise(resolve => setTimeout(resolve, 2000));
-    alert("Migración a Supabase iniciada. El sistema cambiará a modo híbrido.");
+    showToast("Migración iniciada. El sistema cambiará a modo híbrido.", "info");
     setIsMigrating(false);
   };
 
   const handleCheckUpdates = () => {
     if (!ipc) {
-      alert("Esta función solo está disponible en la aplicación de escritorio.");
+      showToast("Función disponible solo en la app de escritorio.", "info");
       return;
     }
     setIsUpdating(true);
@@ -245,11 +247,11 @@ export function Settings() {
     if (newUser.name) {
       const nameTaken = users.some(u => u.id !== editingUserId && String(u.name || '').toLowerCase().trim() === newUser.name.toLowerCase().trim());
       if (nameTaken) {
-        alert('Ya existe un usuario con ese nombre.');
+        showToast("Ya existe un usuario con ese nombre.", "warning");
         return;
       }
       if (!editingUserId && !newUser.pin) {
-        alert('Definí una contraseña para el nuevo usuario.');
+        showToast("Definí una contraseña para el nuevo usuario.", "warning");
         return;
       }
       if (editingUserId) {
@@ -313,19 +315,19 @@ export function Settings() {
     <div className="max-w-4xl space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-800 tracking-tight">Configuración del Negocio</h1>
-        <p className="text-slate-500 mt-2">Personaliza la apariencia, gestiona usuarios y administra el sistema.</p>
+        <h1 className="text-3xl font-bold text-slate-800 dark:text-zinc-100 tracking-tight">Configuración del Negocio</h1>
+        <p className="text-slate-500 dark:text-zinc-400 mt-2">Personaliza la apariencia, gestiona usuarios y administra el sistema.</p>
       </div>
 
       {/* Tabs Nav */}
-      <div className="flex border-b border-slate-200">
+      <div className="flex border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => setActiveTab('general')}
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all",
             activeTab === 'general'
-              ? "border-indigo-600 text-indigo-650"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-[#0F6B41] text-[#0F6B41]"
+              : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
           Información General
@@ -335,8 +337,8 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all",
             activeTab === 'users'
-              ? "border-indigo-600 text-indigo-650"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-[#0F6B41] text-[#0F6B41]"
+              : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
           Usuarios y Permisos
@@ -347,8 +349,8 @@ export function Settings() {
             className={cn(
               "px-6 py-3 font-bold text-sm border-b-2 transition-all",
               activeTab === 'printers'
-                ? "border-indigo-600 text-indigo-650"
-                : "border-transparent text-slate-500 hover:text-slate-700"
+                ? "border-[#0F6B41] text-[#0F6B41]"
+                : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
             )}
           >
             Impresoras
@@ -359,8 +361,8 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all",
             activeTab === 'updates'
-              ? "border-indigo-600 text-indigo-650"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-[#0F6B41] text-[#0F6B41]"
+              : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
           Actualizaciones y Base de Datos
@@ -370,8 +372,8 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all",
             activeTab === 'network'
-              ? "border-indigo-600 text-indigo-650"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-[#0F6B41] text-[#0F6B41]"
+              : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
           Acceso Remoto y Red
@@ -381,8 +383,8 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all",
             activeTab === 'arca'
-              ? "border-indigo-600 text-indigo-650"
-              : "border-transparent text-slate-500 hover:text-slate-700"
+              ? "border-[#0F6B41] text-[#0F6B41]"
+              : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
           Facturación (ARCA)
@@ -390,17 +392,17 @@ export function Settings() {
       </div>
 
       {activeTab === 'general' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
-            <Store className="w-5 h-5 text-indigo-600" />
-            <h2 className="font-bold text-lg text-slate-800">Información General</h2>
+        <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
+            <Store className="w-5 h-5 text-[#0F6B41]" />
+            <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Información General</h2>
           </div>
 
           <div className="p-8 space-y-8">
             
             {/* Logo Section */}
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-4">Logotipo del Negocio</label>
+              <label className="block text-sm font-bold text-slate-700 dark:text-zinc-200 mb-4">Logotipo del Negocio</label>
               <div className="flex items-start gap-6">
                 <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden relative group">
                   {logo ? (
@@ -435,7 +437,7 @@ export function Settings() {
                     />
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-indigo-600 transition-colors font-semibold text-sm shadow-sm"
+                      className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 hover:text-[#0F6B41] transition-colors font-semibold text-sm shadow-sm"
                     >
                       <Upload className="w-4 h-4" />
                       Seleccionar Archivo
@@ -455,7 +457,7 @@ export function Settings() {
                   value={tempName}
                   onChange={(e) => setTempName(e.target.value)}
                   placeholder="Ej. Mi Restaurante" 
-                  className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium shadow-sm"
+                  className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-3 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm"
                 />
                 <p className="text-xs text-slate-500 mt-2">
                   Se utilizará en el panel superior y en los tickets de impresión.
@@ -471,7 +473,7 @@ export function Settings() {
                     value={tempTax}
                     onChange={(e) => setTempTax(Number(e.target.value))}
                     placeholder="21" 
-                    className="w-full bg-white border border-slate-300 text-slate-800 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium shadow-sm"
+                    className="w-full bg-white border border-slate-300 text-slate-800 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg">%</span>
                 </div>
@@ -480,7 +482,7 @@ export function Settings() {
                     type="checkbox"
                     checked={pricesIncludeTax}
                     onChange={(e) => setPricesIncludeTax(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 accent-indigo-600"
+                    className="mt-0.5 w-4 h-4 accent-[#0F6B41]"
                   />
                   <span className="text-xs text-slate-600">
                     <b>Los precios de la carta ya incluyen el impuesto</b> (precio final al consumidor).
@@ -496,7 +498,7 @@ export function Settings() {
             <button 
               onClick={handleSave}
               disabled={tempName.trim() === ''}
-              className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-200 hover:bg-indigo-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-6 py-2.5 bg-[#0F6B41] text-white rounded-xl font-bold text-sm shadow-lg shadow-sm hover:bg-[#0C5734] active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Save className="w-4 h-4" />
               Guardar Configuración
@@ -511,12 +513,12 @@ export function Settings() {
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
             <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-indigo-600" />
+              <Users className="w-5 h-5 text-[#0F6B41]" />
               <h2 className="font-bold text-lg text-slate-800">Gestión de Usuarios</h2>
             </div>
             <button 
               onClick={() => setIsUserModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs shadow-md hover:bg-indigo-700 transition-all active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 bg-[#0F6B41] text-white rounded-xl font-bold text-xs shadow-md hover:bg-[#0C5734] transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
               Nuevo Usuario
@@ -538,7 +540,7 @@ export function Settings() {
                   <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-8 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-[#0F6B41] font-bold text-xs">
                           {user.name.charAt(0)}
                         </div>
                         <span className="font-bold text-sm text-slate-700">{user.name}</span>
@@ -557,7 +559,7 @@ export function Settings() {
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => handleEditUser(user)}
-                          className="p-2 text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                          className="p-2 text-slate-300 hover:text-[#0F6B41] hover:bg-emerald-50 rounded-lg transition-all"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -656,7 +658,7 @@ export function Settings() {
                 ) : updateStatus === 'available' ? (
                   <button 
                     onClick={handleStartDownload}
-                    className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-[#0F6B41] text-white rounded-xl font-bold text-sm shadow-md hover:bg-[#0C5734] transition-all flex items-center justify-center gap-2"
                   >
                     <DownloadCloud className="w-4 h-4" />
                     Descargar Versión {latestVersion}
@@ -669,7 +671,7 @@ export function Settings() {
                     </div>
                     <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-indigo-500 transition-all duration-300" 
+                        className="h-full bg-[#0F6B41] transition-all duration-300" 
                         style={{ width: `${downloadProgress}%` }}
                       />
                     </div>
@@ -698,20 +700,27 @@ export function Settings() {
                 <h3 className="font-bold text-red-900 mb-1">Borrar Base de Datos Local</h3>
                 <p className="text-sm text-red-700">Esta acción eliminará de forma permanente todas las comandas, mesas, facturas y configuración guardada. La aplicación volverá a su estado inicial de fábrica. <strong>No se puede deshacer.</strong></p>
               </div>
-              <button 
-                onClick={() => {
-                  if (window.confirm("⚠️ ADVERTENCIA DE SEGURIDAD ⚠️\n\n¿Estás absolutamente seguro de que quieres BORRAR TODA LA BASE DE DATOS?\nEsto eliminará todas las ventas, comandas, empleados y configuración local.\n\nEsta acción NO se puede deshacer.")) {
+                            <button 
+                onClick={async () => {
+                  const ok = await confirm({
+                    title: "⚠️ Advertencia de seguridad",
+                    message: "¿Estás absolutamente seguro de que querés borrar toda la base de datos? Esto eliminará ventas, comandas, usuarios y configuración. No se puede deshacer.",
+                    isDestructive: true,
+                    confirmText: "Borrar todo",
+                    cancelText: "Cancelar"
+                  });
+                  if (ok) {
                     import('../db/database').then(({ db }) => {
                       db.delete().then(() => {
                         sessionStorage.clear();
                         window.location.href = "/";
                       }).catch(err => {
-                        alert('Error al borrar la base de datos: ' + err);
+                        showToast('Error al borrar la base de datos: ' + err, 'error');
                       });
                     });
                   }
                 }}
-                className="px-6 py-3 bg-red-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-red-700 transition-all whitespace-nowrap shrink-0"
+                className="px-6 py-3 bg-red-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-red-700 transition-all whitespace-nowrap shrink-0 cursor-pointer"
               >
                 Restablecer de Fábrica
               </button>
@@ -727,7 +736,7 @@ export function Settings() {
             {/* ngrok Control Card */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
               <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
-                <Network className="w-5 h-5 text-indigo-650" />
+                <Network className="w-5 h-5 text-[#0F6B41]" />
                 <h2 className="font-bold text-lg text-slate-800">Túnel de Acceso Remoto (ngrok)</h2>
               </div>
               
@@ -747,7 +756,7 @@ export function Settings() {
                         onChange={(e) => setNgrokToken(e.target.value)}
                         placeholder="Pegar authtoken de ngrok.com" 
                         disabled={tunnelStatus === 'active' || tunnelStatus === 'starting'}
-                        className="w-full bg-white border border-slate-300 text-slate-800 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium shadow-sm disabled:opacity-60"
+                        className="w-full bg-white border border-slate-300 text-slate-800 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm disabled:opacity-60"
                       />
                       <button
                         type="button"
@@ -759,7 +768,7 @@ export function Settings() {
                       </button>
                     </div>
                     <p className="text-[10px] text-slate-400">
-                      Consigue tu token gratuito registrándote en <a href="https://dashboard.ngrok.com/get-started/your-authtoken" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">ngrok.com</a>.
+                      Consigue tu token gratuito registrándote en <a href="https://dashboard.ngrok.com/get-started/your-authtoken" target="_blank" rel="noopener noreferrer" className="text-[#0F6B41] hover:underline">ngrok.com</a>.
                     </p>
                   </div>
 
@@ -772,7 +781,7 @@ export function Settings() {
                         value={tunnelPort}
                         onChange={(e) => setTunnelPort(Number(e.target.value))}
                         disabled={tunnelStatus === 'active' || tunnelStatus === 'starting'}
-                        className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium shadow-sm disabled:opacity-60"
+                        className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm disabled:opacity-60"
                       />
                     </div>
                     <div>
@@ -806,7 +815,7 @@ export function Settings() {
                     "w-full py-3.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2",
                     tunnelStatus === 'active'
                       ? "bg-rose-650 hover:bg-rose-700 text-white"
-                      : "bg-indigo-600 hover:bg-indigo-700 text-white"
+                      : "bg-[#0F6B41] hover:bg-[#0C5734] text-white"
                   )}
                 >
                   {tunnelStatus === 'starting' ? (
@@ -829,7 +838,7 @@ export function Settings() {
             {/* QR and URL display card */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between">
               <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
-                <QrCode className="w-5 h-5 text-indigo-650" />
+                <QrCode className="w-5 h-5 text-[#0F6B41]" />
                 <h2 className="font-bold text-lg text-slate-800">Conexión QR de Mesa y Mozo</h2>
               </div>
 
@@ -843,19 +852,19 @@ export function Settings() {
                       <img src={qrCodeUrl} alt="Conexión QR" className="w-[180px] h-[180px] rounded-2xl" />
                     </div>
                     <div className="w-full space-y-2">
-                      <div className="flex items-center gap-2 bg-indigo-50/50 border border-indigo-100 p-3 rounded-xl">
+                      <div className="flex items-center gap-2 bg-emerald-50/50 border border-emerald-100 p-3 rounded-xl">
                         <input 
                           type="text" 
                           readOnly 
                           value={tunnelUrl} 
-                          className="bg-transparent text-indigo-950 font-bold text-xs flex-1 outline-none truncate text-center" 
+                          className="bg-transparent text-slate-900 font-bold text-xs flex-1 outline-none truncate text-center" 
                         />
                         <button 
                           onClick={() => {
                             navigator.clipboard.writeText(tunnelUrl);
-                            alert("Enlace copiado al portapapeles.");
+                            showToast("Enlace copiado al portapapeles.", "success");
                           }}
-                          className="p-1.5 hover:bg-indigo-100 text-indigo-600 rounded-lg transition-colors"
+                          className="p-1.5 hover:bg-emerald-100 text-[#0F6B41] rounded-lg transition-colors"
                           title="Copiar"
                         >
                           <Copy className="w-3.5 h-3.5" />
@@ -881,7 +890,7 @@ export function Settings() {
           {/* Sync Mode Switch Card */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
-              <Server className="w-5 h-5 text-indigo-650" />
+              <Server className="w-5 h-5 text-[#0F6B41]" />
               <h2 className="font-bold text-lg text-slate-800">Modo de Base de Datos y Sincronización</h2>
             </div>
             
@@ -894,13 +903,13 @@ export function Settings() {
                   className={cn(
                     "flex-1 p-6 rounded-2xl border-2 text-left transition-all flex items-start gap-4",
                     syncMode === 'local'
-                      ? "border-indigo-600 bg-indigo-50/20"
+                      ? "border-[#0F6B41] bg-emerald-50/20"
                       : "border-slate-200 hover:border-slate-300 bg-white"
                   )}
                 >
                   <div className={cn(
                     "p-3 rounded-xl shrink-0",
-                    syncMode === 'local' ? "bg-indigo-150 text-indigo-650" : "bg-slate-100 text-slate-500"
+                    syncMode === 'local' ? "bg-emerald-100 text-[#0F6B41]" : "bg-slate-100 text-slate-500"
                   )}>
                     <Server className="w-6 h-6" />
                   </div>
@@ -918,13 +927,13 @@ export function Settings() {
                   className={cn(
                     "flex-1 p-6 rounded-2xl border-2 text-left transition-all flex items-start gap-4",
                     syncMode === 'supabase'
-                      ? "border-indigo-600 bg-indigo-50/20"
+                      ? "border-[#0F6B41] bg-emerald-50/20"
                       : "border-slate-200 hover:border-slate-300 bg-white"
                   )}
                 >
                   <div className={cn(
                     "p-3 rounded-xl shrink-0",
-                    syncMode === 'supabase' ? "bg-indigo-150 text-indigo-650" : "bg-slate-100 text-slate-500"
+                    syncMode === 'supabase' ? "bg-emerald-100 text-[#0F6B41]" : "bg-slate-100 text-slate-500"
                   )}>
                     <Cloud className="w-6 h-6" />
                   </div>
@@ -946,7 +955,7 @@ export function Settings() {
                       value={supabaseUrl}
                       onChange={(e) => setSupabaseUrl(e.target.value)}
                       placeholder="https://xyzabc.supabase.co" 
-                      className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium shadow-sm"
+                      className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm"
                     />
                   </div>
                   <div className="space-y-2">
@@ -956,7 +965,7 @@ export function Settings() {
                       value={supabaseAnonKey}
                       onChange={(e) => setSupabaseAnonKey(e.target.value)}
                       placeholder="eyJhbGciOi..." 
-                      className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none font-medium shadow-sm"
+                      className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm"
                     />
                   </div>
                 </div>
@@ -1000,7 +1009,7 @@ export function Settings() {
                     type="text" 
                     value={newUser.name}
                     onChange={e => setNewUser({...newUser, name: e.target.value})}
-                    className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-[#0F6B41] outline-none transition-all"
                     placeholder="Ej: lgonzalez o laura.g"
                   />
                 </div>
@@ -1014,7 +1023,7 @@ export function Settings() {
                         onClick={() => setNewUser({...newUser, role})}
                         className={`py-2 px-3 rounded-xl border-2 font-black text-[9px] uppercase tracking-widest transition-all ${
                           newUser.role === role 
-                            ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100' 
+                            ? 'bg-[#0F6B41] border-[#0F6B41] text-white shadow-lg shadow-sm' 
                             : 'bg-slate-50 border-transparent text-slate-600 hover:border-slate-200'
                         }`}
                       >
@@ -1030,7 +1039,7 @@ export function Settings() {
                     type="password" 
                     value={newUser.pin}
                     onChange={e => setNewUser({...newUser, pin: e.target.value})}
-                    className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
+                    className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-[#0F6B41] outline-none transition-all"
                     placeholder={editingUserId ? "Dejar vacío para no cambiarla" : "••••••••"}
                   />
                 </div>
@@ -1038,7 +1047,7 @@ export function Settings() {
                 <button 
                   onClick={handleAddUser}
                   disabled={!newUser.name}
-                  className="w-full h-14 bg-indigo-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="w-full h-14 bg-[#0F6B41] text-white rounded-2xl font-black text-sm shadow-xl shadow-sm hover:bg-[#0C5734] transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {editingUserId ? 'GUARDAR CAMBIOS' : 'CREAR USUARIO'}
                 </button>
@@ -1055,13 +1064,13 @@ export function Settings() {
                       className={cn(
                         "w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all",
                         newUser.permissions.includes(module.id)
-                          ? "bg-indigo-50 border-indigo-200 text-indigo-700"
+                          ? "bg-emerald-50 border-emerald-200 text-[#0F6B41]"
                           : "bg-white border-slate-100 text-slate-500 hover:border-slate-200"
                       )}
                     >
                       <span className="text-xs font-bold uppercase tracking-wider">{module.label}</span>
                       {newUser.permissions.includes(module.id) 
-                        ? <CheckCircle className="w-5 h-5 text-indigo-600" /> 
+                        ? <CheckCircle className="w-5 h-5 text-[#0F6B41]" /> 
                         : <Circle className="w-5 h-5 text-slate-200" />}
                     </button>
                   ))}
@@ -1082,7 +1091,7 @@ export function Settings() {
               </div>
               <button
                 onClick={() => setShowHelpModal(true)}
-                className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#0F6B41] dark:bg-[#142E25] dark:text-emerald-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 ¿CÓMO CONFIGURAR?
               </button>
@@ -1096,7 +1105,7 @@ export function Settings() {
                   placeholder="Ej: 20-38472938-9"
                   value={arcaSettings.cuit}
                   onChange={e => setArcaSettings({...arcaSettings, cuit: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1107,7 +1116,7 @@ export function Settings() {
                   placeholder="Ej: Ignacio Valente"
                   value={arcaSettings.nombreEmisor}
                   onChange={e => setArcaSettings({...arcaSettings, nombreEmisor: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1118,7 +1127,7 @@ export function Settings() {
                   placeholder="Ej: Av. Siempre Viva 123, CABA"
                   value={arcaSettings.domicilioComercial}
                   onChange={e => setArcaSettings({...arcaSettings, domicilioComercial: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1128,7 +1137,7 @@ export function Settings() {
                   type="date"
                   value={arcaSettings.monotributoStartDate}
                   onChange={e => setArcaSettings({...arcaSettings, monotributoStartDate: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1139,7 +1148,7 @@ export function Settings() {
                   placeholder="Ej: 2"
                   value={arcaSettings.puntoVenta}
                   onChange={e => setArcaSettings({...arcaSettings, puntoVenta: Number(e.target.value)})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1151,7 +1160,7 @@ export function Settings() {
                       type="checkbox"
                       checked={arcaSettings.productionMode}
                       onChange={e => setArcaSettings({...arcaSettings, productionMode: e.target.checked})}
-                      className="w-4 h-4 rounded text-indigo-600 border-slate-300 focus:ring-indigo-500"
+                      className="w-4 h-4 rounded text-[#0F6B41] border-slate-300 focus:ring-[#0F6B41]"
                     />
                     Modo Producción (Real)
                   </label>
@@ -1166,7 +1175,7 @@ export function Settings() {
                   placeholder="Haga clic en 'Generar' o coloque la ruta absoluta al archivo .crt"
                   value={arcaSettings.certPath}
                   onChange={e => setArcaSettings({...arcaSettings, certPath: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1177,7 +1186,7 @@ export function Settings() {
                   placeholder="Haga clic en 'Generar' o coloque la ruta absoluta al archivo .key"
                   value={arcaSettings.keyPath}
                   onChange={e => setArcaSettings({...arcaSettings, keyPath: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1188,7 +1197,7 @@ export function Settings() {
                   placeholder="Ruta absoluta para guardar PDFs (Dejar vacío para usar predeterminada)"
                   value={arcaSettings.invoicePath || ''}
                   onChange={e => setArcaSettings({...arcaSettings, invoicePath: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
             </div>
@@ -1197,9 +1206,9 @@ export function Settings() {
               <button
                 onClick={() => {
                   localStorage.setItem('bar_arca_settings', JSON.stringify(arcaSettings));
-                  alert("¡Configuración de ARCA guardada con éxito!");
+                  showToast("¡Configuración de ARCA guardada con éxito!", "success");
                 }}
-                className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-xs shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2.5 bg-[#0F6B41] text-white rounded-xl font-bold text-xs shadow-lg shadow-sm hover:bg-[#0C5734] transition-all cursor-pointer"
               >
                 <Save className="w-4 h-4" /> Guardar Configuración
               </button>
@@ -1207,11 +1216,11 @@ export function Settings() {
               <button
                 onClick={async () => {
                   if (!ipc) {
-                    alert("El diagnóstico solo está disponible en el software de escritorio.");
+                    showToast("Diagnóstico disponible solo en software de escritorio.", "info");
                     return;
                   }
                   if (!arcaSettings.cuit) {
-                    alert("Completa el CUIT para realizar la prueba.");
+                    showToast("Completá el CUIT para realizar la prueba.", "warning");
                     return;
                   }
                   setTestingArca(true);
@@ -1234,11 +1243,11 @@ export function Settings() {
               <button
                 onClick={async () => {
                   if (!ipc) {
-                    alert("Esta función requiere la aplicación de escritorio.");
+                    showToast("Esta función requiere la aplicación de escritorio.", "info");
                     return;
                   }
                   if (!arcaSettings.cuit) {
-                    alert("Por favor, ingresa el CUIT antes de generar la solicitud.");
+                    showToast("Ingresá el CUIT antes de generar la solicitud.", "warning");
                     return;
                   }
                   const name = arcaSettings.nombreEmisor || "LYNX BarOS";
@@ -1249,9 +1258,9 @@ export function Settings() {
                       certPath: arcaSettings.certPath || `${res.folder}\\certificado.crt (Esperando archivo)`,
                       keyPath: res.keyPath
                     });
-                    alert(`¡Llave privada y archivo CSR generados con éxito!\n\nSe guardaron en:\n${res.folder}\n\nUsa el archivo 'pedido.csr' para obtener tu certificado (.crt) en la web de AFIP.`);
+                    showToast("Llave privada y archivo CSR generados con éxito.", "success");
                   } else {
-                    alert("Error: " + res.error);
+                    showToast("Error: " + res.error, "error");
                   }
                 }}
                 className="flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-bold text-xs transition-all cursor-pointer"
@@ -1307,7 +1316,7 @@ export function Settings() {
         <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 text-slate-800 dark:text-slate-105">
           <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto space-y-6">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="text-lg font-black text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+              <h3 className="text-lg font-black text-[#0F6B41] dark:text-emerald-400 flex items-center gap-2">
                 Guía de Configuración ARCA (AFIP)
               </h3>
               <button 
@@ -1320,7 +1329,7 @@ export function Settings() {
 
             <div className="space-y-6 text-sm leading-relaxed">
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-indigo-600">Paso 1: Generar Archivos Técnicos</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 1: Generar Archivos Técnicos</h4>
                 <p>Haz clic en el botón <span className="font-bold">"Generar KEY y CSR"</span> en esta configuración. Selecciona una carpeta segura en tu PC. La app creará dos archivos:</p>
                 <ul className="list-disc list-inside ml-3 mt-1.5 space-y-1">
                   <li><span className="font-bold">privada.key:</span> Tu clave criptográfica privada. Manténla segura en tu computadora.</li>
@@ -1329,7 +1338,7 @@ export function Settings() {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-indigo-600">Paso 2: Obtener el Certificado en AFIP</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 2: Obtener el Certificado en AFIP</h4>
                 <ol className="list-decimal list-inside ml-3 mt-1.5 space-y-1">
                   <li>Ingresa al portal de AFIP con tu clave fiscal.</li>
                   <li>Busca y abre el servicio <span className="font-bold">"Administración de Certificados Digitales"</span>.</li>
@@ -1339,7 +1348,7 @@ export function Settings() {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-indigo-650">Paso 3: Alta del Punto de Venta</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 3: Alta del Punto de Venta</h4>
                 <ol className="list-decimal list-inside ml-3 mt-1.5 space-y-1">
                   <li>Busca el servicio <span className="font-bold">"Regcom" &gt; "Puntos de venta"</span> en AFIP.</li>
                   <li>Crea un nuevo punto de venta electrónico.</li>
@@ -1348,7 +1357,7 @@ export function Settings() {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-indigo-650">Paso 4: Relación de Clave Fiscal</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 4: Relación de Clave Fiscal</h4>
                 <ol className="list-decimal list-inside ml-3 mt-1.5 space-y-1">
                   <li>Entra a <span className="font-bold">"Administrador de Relaciones de Clave Fiscal"</span>.</li>
                   <li>Selecciona <span className="font-bold">"Nueva Relación"</span> &gt; <span className="font-bold">"Buscar"</span> &gt; <span className="font-bold">"AFIP"</span> &gt; <span className="font-bold">"WebServices"</span>.</li>

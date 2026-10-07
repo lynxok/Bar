@@ -79,8 +79,8 @@ const HELP_SECTIONS = [
     id: 'loyalty',
     title: 'Fidelización y Premios',
     icon: Gift,
-    color: 'text-purple-500',
-    bg: 'bg-purple-50',
+    color: 'text-[#0F6B41]',
+    bg: 'bg-[#0F6B41]/10',
     description: 'Atrae clientes regalándoles puntos por sus compras.',
     items: [
       {
@@ -133,8 +133,8 @@ export default function Help() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-4">
       <div className="text-center space-y-4 pt-8 pb-4">
-        <div className="mx-auto w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-          <HelpCircle className="w-8 h-8 text-indigo-600" />
+        <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
+          <HelpCircle className="w-8 h-8 text-[#0F6B41]" />
         </div>
         <h1 className="text-4xl font-black text-slate-800 tracking-tight">Centro de Ayuda</h1>
         <p className="text-lg text-slate-500 max-w-2xl mx-auto">
@@ -149,7 +149,7 @@ export default function Help() {
           placeholder="Buscar un tema, ejemplo: 'Cobrar', 'Puntos', 'Mesas'..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-slate-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20 transition-all text-lg font-medium outline-none shadow-sm"
+          className="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-slate-200 focus:border-[#0F6B41] focus:ring-4 focus:ring-[#0F6B41]/20 transition-all text-lg font-medium outline-none shadow-sm"
         />
       </div>
 
@@ -176,7 +176,7 @@ export default function Help() {
                     key={idx} 
                     className={cn(
                       "border rounded-2xl transition-all overflow-hidden",
-                      isOpen ? "border-indigo-200 bg-indigo-50/30" : "border-slate-200 hover:border-slate-300 bg-white"
+                      isOpen ? "border-[#0F6B41]/30 bg-emerald-50/30" : "border-slate-200 hover:border-slate-300 bg-white"
                     )}
                   >
                     <button
@@ -185,7 +185,7 @@ export default function Help() {
                     >
                       <span className="font-bold text-slate-800">{item.q}</span>
                       {isOpen ? (
-                        <ChevronUp className="w-5 h-5 text-indigo-500 shrink-0" />
+                        <ChevronUp className="w-5 h-5 text-[#0F6B41] shrink-0" />
                       ) : (
                         <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
                       )}

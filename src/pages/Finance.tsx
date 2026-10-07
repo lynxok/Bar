@@ -147,7 +147,7 @@ export function Finance() {
         <div className="flex gap-4">
           <button 
             onClick={() => setIsExpenseModalOpen(true)}
-            className="px-6 py-3 bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase tracking-wide shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2"
+            className="px-6 py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl text-xs font-bold uppercase tracking-wide shadow-md transition-all flex items-center gap-2"
           >
             <Plus className="w-5 h-5" /> Registrar Gasto
           </button>
@@ -158,7 +158,7 @@ export function Finance() {
         {/* KPI Cards */}
         <div 
           onClick={() => setIsSalesModalOpen(true)}
-          className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer group"
+          className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-[#0F6B41] hover:shadow-md transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-start">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 group-hover:text-emerald-700 transition-colors">Ventas Totales</p>
@@ -209,13 +209,13 @@ export function Finance() {
           <div className="flex bg-slate-100 p-1 rounded-xl w-fit">
             <button 
               onClick={() => setActiveTab('payables')}
-              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'payables' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500")}
+              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'payables' ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-500")}
             >
               Cuentas x Pagar
             </button>
             <button 
               onClick={() => setActiveTab('receivables')}
-              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'receivables' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500")}
+              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'receivables' ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-500")}
             >
               Cuentas x Cobrar
             </button>
@@ -276,16 +276,16 @@ export function Finance() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Proveedor</label>
-                <input type="text" value={expenseProvider} onChange={e => setExpenseProvider(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-600" placeholder="Nombre del proveedor..." />
+                <input type="text" value={expenseProvider} onChange={e => setExpenseProvider(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#0F6B41]" placeholder="Nombre del proveedor..." />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Descripción</label>
-                <input type="text" value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-600" placeholder="¿Qué se compró?" />
+                <input type="text" value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#0F6B41]" placeholder="¿Qué se compró?" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Monto</label>
-                  <input type="number" value={expenseAmount} onChange={e => setExpenseAmount(Number(e.target.value))} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-600" placeholder="0.00" />
+                  <input type="number" value={expenseAmount} onChange={e => setExpenseAmount(Number(e.target.value))} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#0F6B41]" placeholder="0.00" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Categoría</label>
@@ -297,7 +297,7 @@ export function Finance() {
             </div>
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
               <button type="button" onClick={() => setIsExpenseModalOpen(false)} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-600">Cancelar</button>
-              <button type="submit" className="flex-1 py-3 bg-indigo-600 text-white rounded-xl font-bold shadow-lg shadow-indigo-200">Guardar Gasto</button>
+              <button type="submit" className="flex-1 py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-bold shadow-md transition-colors">Guardar Gasto</button>
             </div>
           </form>
         </div>
@@ -323,11 +323,11 @@ export function Finance() {
             <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 shrink-0 gap-4">
               <div className="flex flex-col gap-3 w-full sm:w-auto">
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setSalesPeriod('all')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'all' ? "bg-indigo-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Todo</button>
-                  <button onClick={() => setSalesPeriod('day')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'day' ? "bg-indigo-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Hoy</button>
-                  <button onClick={() => setSalesPeriod('week')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'week' ? "bg-indigo-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Esta Semana</button>
-                  <button onClick={() => setSalesPeriod('month')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'month' ? "bg-indigo-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Este Mes</button>
-                  <button onClick={() => setSalesPeriod('custom')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'custom' ? "bg-indigo-600 text-white" : "bg-white text-slate-600 border border-slate-200")}>Personalizado</button>
+                  <button onClick={() => setSalesPeriod('all')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'all' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200")}>Todo</button>
+                  <button onClick={() => setSalesPeriod('day')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'day' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200")}>Hoy</button>
+                  <button onClick={() => setSalesPeriod('week')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'week' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200")}>Esta Semana</button>
+                  <button onClick={() => setSalesPeriod('month')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'month' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200")}>Este Mes</button>
+                  <button onClick={() => setSalesPeriod('custom')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'custom' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200")}>Personalizado</button>
                 </div>
                 
                 {salesPeriod === 'custom' && (
@@ -336,14 +336,14 @@ export function Finance() {
                       type="date" 
                       value={customDateRange.start}
                       onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-600"
+                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#0F6B41]"
                     />
                     <span className="text-slate-400 text-sm">a</span>
                     <input 
                       type="date" 
                       value={customDateRange.end}
                       onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-600"
+                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#0F6B41]"
                     />
                   </div>
                 )}

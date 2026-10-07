@@ -128,8 +128,8 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
           <div>
             <h3 className="font-black text-2xl text-slate-900">Cobrar Mesa {tableId}</h3>
             <div className="flex gap-2 mt-2">
-              <button onClick={() => setMode('single')} className={cn('px-3 py-1 rounded-full text-xs font-black', mode === 'single' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600')}>Una cuenta</button>
-              <button onClick={() => { setMode('split'); setShowMpQr(false); }} className={cn('px-3 py-1 rounded-full text-xs font-black flex items-center gap-1', mode === 'split' ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600')}>
+              <button onClick={() => setMode('single')} className={cn('px-3 py-1 rounded-full text-xs font-black', mode === 'single' ? 'bg-[#0F6B41] text-white' : 'bg-slate-100 text-slate-600')}>Una cuenta</button>
+              <button onClick={() => { setMode('split'); setShowMpQr(false); }} className={cn('px-3 py-1 rounded-full text-xs font-black flex items-center gap-1', mode === 'split' ? 'bg-[#0F6B41] text-white' : 'bg-slate-100 text-slate-600')}>
                 <SplitSquareHorizontal className="w-3.5 h-3.5" /> Dividir cuenta
               </button>
             </div>
@@ -149,7 +149,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
             <div className="h-px bg-slate-800" />
             <div className="flex justify-between items-end">
               <div>
-                <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Total a cobrar</div>
+                <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Total a cobrar</div>
                 <div className="text-4xl font-black">{money(toPay)}</div>
               </div>
               {mode === 'single' && tipValue > 0 && (
@@ -162,14 +162,14 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
             <label className="space-y-1">
               <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Descuento (%)</span>
               <input type="number" min={0} max={100} value={discount} onChange={e => setDiscount(e.target.value)} placeholder="0"
-                className="w-full h-11 px-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold focus:border-indigo-500 outline-none" />
+                className="w-full h-11 px-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold focus:border-[#0F6B41] outline-none" />
             </label>
             {mode === 'single' && (
               <label className="space-y-1">
                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Propina ($)</span>
                 <div className="flex gap-1">
                   <input type="number" min={0} value={tip} onChange={e => setTip(e.target.value)} placeholder="0"
-                    className="w-full h-11 px-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold focus:border-indigo-500 outline-none" />
+                    className="w-full h-11 px-3 bg-slate-50 border-2 border-transparent rounded-xl font-bold focus:border-[#0F6B41] outline-none" />
                   {[10, 15].map(p => (
                     <button key={p} onClick={() => setTip(String(Math.round(toPay * p) / 100))} className="px-2 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-black">{p}%</button>
                   ))}
@@ -184,8 +184,8 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
                 {[...METHODS, ...(mpEnabled ? [{ id: MP, icon: QrCode, label: 'Mercado Pago QR' }] : [])].map(m => (
                   <button key={m.id} onClick={() => setMethod(m.id)}
                     className={cn('flex items-center gap-2 p-3 rounded-2xl border-2 transition-all',
-                      method === m.id ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-slate-50 border-transparent text-slate-600 hover:border-slate-200')}>
-                    <m.icon className={cn('h-5 w-5', method === m.id ? 'text-white' : 'text-indigo-500')} />
+                      method === m.id ? 'bg-[#0F6B41] border-[#0F6B41] text-white' : 'bg-slate-50 border-transparent text-slate-600 hover:border-slate-200')}>
+                    <m.icon className={cn('h-5 w-5', method === m.id ? 'text-white' : 'text-[#0F6B41]')} />
                     <span className="text-xs font-black uppercase tracking-wider">{m.label}</span>
                   </button>
                 ))}
@@ -193,7 +193,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
               <div className="relative">
                 <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
                 <input id="global-scanner-focus" type="text" value={dni} onChange={e => setDni(e.target.value)}
-                  className="w-full h-12 pl-12 pr-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-indigo-500 outline-none"
+                  className="w-full h-12 pl-12 pr-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold focus:border-[#0F6B41] outline-none"
                   placeholder="DNI para sumar puntos (opcional)" />
               </div>
             </>
@@ -227,7 +227,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
                 <div key={i} className="border border-slate-200 rounded-2xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="font-black text-slate-900">Parte {i + 1}</span>
-                    <span className="font-black text-indigo-600">{money(partAmounts[i] || 0)}</span>
+                    <span className="font-black text-[#0F6B41]">{money(partAmounts[i] || 0)}</span>
                   </div>
                   {splitKind === 'items' && (
                     <div className="space-y-1">
@@ -275,7 +275,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
                 if (method === MP) return setShowMpQr(true);
                 return paySingle();
               }}
-              className="w-full h-14 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-indigo-700 transition-all disabled:opacity-50 flex items-center justify-center gap-3">
+              className="w-full h-14 bg-[#FA4515] hover:bg-[#E03A0E] text-white rounded-2xl font-black text-lg shadow-xl transition-all disabled:opacity-50 flex items-center justify-center gap-3 cursor-pointer">
               {busy ? 'Cobrando…' : mode === 'split' ? `COBRAR ${parts.length} PARTES` : method === MP ? 'GENERAR QR DE COBRO' : 'FINALIZAR Y COBRAR'}
               <ArrowRight className="h-6 w-6" />
             </button>

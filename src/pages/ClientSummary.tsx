@@ -1,3 +1,4 @@
+import { useToast } from "../components/ui/Toast";
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useStore } from '../contexts/StoreContext';
@@ -11,6 +12,7 @@ import { cn } from '../lib/utils';
 
 
 export function ClientSummary() {
+  const { showToast } = useToast();
   const { tableId } = useParams<{ tableId: string }>();
   const { tables, products, clientOrders, submitClientOrder } = useStore();
   const { businessName, logo } = useBusiness();
@@ -111,7 +113,7 @@ export function ClientSummary() {
       setActiveTab('pedidos');
     } catch (err) {
       console.error(err);
-      alert('Hubo un error al enviar tu pedido. Reintenta por favor.');
+      showToast('Hubo un error al enviar tu pedido. Reintenta por favor.', 'error');
     }
   };
 
@@ -192,7 +194,7 @@ export function ClientSummary() {
                 placeholder="Buscar platos, bebidas..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-sm"
+                className="w-full bg-white dark:bg-[#182C24] border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold outline-none focus:border-[#0F6B41] focus:ring-1 focus:ring-[#0F6B41] text-slate-900 dark:text-white shadow-sm"
               />
             </div>
 

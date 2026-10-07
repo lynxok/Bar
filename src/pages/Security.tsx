@@ -1,3 +1,4 @@
+import { useToast } from "../components/ui/Toast";
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
@@ -17,6 +18,7 @@ import {
 import { cn } from '../lib/utils';
 
 export function Security() {
+  const { showToast, confirm } = useToast();
   const [activeTab, setActiveTab] = useState<'audit' | 'logs'>('audit');
   const [searchTerm, setSearchTerm] = useState('');
   const [levelFilter, setLevelFilter] = useState<'all' | 'error' | 'warning' | 'info'>('all');
@@ -64,7 +66,8 @@ export function Security() {
   };
 
   const clearLogs = async () => {
-    if (confirm('¿Estás seguro de que deseas vaciar todos los registros? Esta acción no se puede deshacer.')) {
+    const ok = await confirm({ title: 'Vaciar registros', message: '¿Estás seguro de que deseas vaciar todos los registros? Esta acción no se puede deshacer.', isDestructive: true });
+    if (ok) {
       if (activeTab === 'audit') await db.auditLogs.clear();
       else await db.systemLogs.clear();
     }
@@ -75,7 +78,7 @@ export function Security() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-            <ShieldAlert className="w-8 h-8 text-indigo-600" />
+            <ShieldAlert className="w-8 h-8 text-[#0F6B41]" />
             Seguridad y Auditoría
           </h1>
           <p className="text-slate-500 mt-1 font-medium">Monitoreo de actividad y registros críticos del sistema.</p>
@@ -97,7 +100,7 @@ export function Security() {
           className={cn(
             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
             activeTab === 'audit' 
-              ? "bg-white text-indigo-600 shadow-sm" 
+              ? "bg-[#0F6B41] text-white shadow-sm" 
               : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
           )}
         >
@@ -109,7 +112,7 @@ export function Security() {
           className={cn(
             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
             activeTab === 'logs' 
-              ? "bg-white text-indigo-600 shadow-sm" 
+              ? "bg-[#0F6B41] text-white shadow-sm" 
               : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
           )}
         >
@@ -127,7 +130,7 @@ export function Security() {
             placeholder={activeTab === 'audit' ? "Buscar por usuario, acción o módulo..." : "Buscar en mensajes o contexto..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium"
           />
         </div>
         
@@ -137,7 +140,7 @@ export function Security() {
             <select 
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value as any)}
-              className="bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-[#0F6B41] outline-none"
             >
               <option value="all">Todos los Niveles</option>
               <option value="error">Solo Errores</option>

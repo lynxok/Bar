@@ -188,7 +188,7 @@ export function TableTile({
             {reservation && (
               <span
                 title={`Reserva: ${reservation.customerName} (${reservation.partySize} pers.)`}
-                className="text-[9px] font-semibold bg-violet-700 text-white px-1.5 py-0.5 rounded shrink-0 shadow-xs"
+                className="text-[9px] font-semibold bg-[#1E4437] text-white px-1.5 py-0.5 rounded shrink-0 shadow-xs"
               >
                 📅 {timeLabel(reservation.date)}
               </span>

@@ -63,7 +63,7 @@ export function ChatWidget() {
   return (
     <div className={cn(
       "fixed z-50 transition-all duration-300",
-      isMapRoute ? "bottom-6 left-6 md:left-28" : "bottom-6 right-6"
+      isMapRoute ? "bottom-6 left-6 md:left-28" : location.pathname.startsWith('/cierre') ? "bottom-24 right-6" : "bottom-6 right-6"
     )}>
       
       {/* Toast Notification Popup */}
@@ -103,7 +103,7 @@ export function ChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 bg-[#0F6B41] hover:bg-emerald-700 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all relative group border-4 border-white dark:border-[#1E4437] cursor-pointer"
+          className="w-14 h-14 bg-[#0F6B41] hover:bg-[#0C5734] rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all relative group border-4 border-white dark:border-[#1E4437] cursor-pointer"
         >
           <MessageSquare className="w-6 h-6 text-white" />
           {unreadCount > 0 && (
@@ -125,12 +125,12 @@ export function ChatWidget() {
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-white w-[350px] h-[500px] rounded-2xl shadow-2xl border border-slate-200 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
+        <div className="bg-white dark:bg-[#182C24] w-[350px] h-[500px] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
           
           {/* Header */}
-          <div className="bg-slate-900 p-4 text-white flex items-center justify-between">
+          <div className="bg-[#1E4437] p-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-indigo-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-[#0F6B41] rounded-full flex items-center justify-center">
                 <MessageSquare className="w-4 h-4 text-white" />
               </div>
               <div>
@@ -160,7 +160,7 @@ export function ChatWidget() {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 bg-slate-50 p-4 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
+          <div className="flex-1 bg-slate-50 dark:bg-[#14261F] p-4 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
             {messages.length === 0 ? (
               <div className="m-auto text-center">
                 <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -177,8 +177,8 @@ export function ChatWidget() {
                     <div className={cn(
                       "px-4 py-2 rounded-2xl text-sm relative group",
                       isMe 
-                        ? "bg-indigo-600 text-white rounded-tr-sm" 
-                        : "bg-white text-slate-700 border border-slate-200 rounded-tl-sm"
+                        ? "bg-[#0F6B41] text-white rounded-tr-sm" 
+                        : "bg-white dark:bg-[#1E4437] text-slate-700 dark:text-slate-100 border border-slate-200 dark:border-white/10 rounded-tl-sm"
                     )}>
                       {msg.text}
                       
@@ -212,18 +212,18 @@ export function ChatWidget() {
           </div>
 
           {/* Input Area */}
-          <form onSubmit={handleSend} className="p-3 bg-white border-t border-slate-100 flex gap-2">
+          <form onSubmit={handleSend} className="p-3 bg-white dark:bg-[#182C24] border-t border-slate-100 dark:border-white/10 flex gap-2">
             <input 
               type="text" 
               value={text}
               onChange={e => setText(e.target.value)}
               placeholder="Escribe un mensaje..."
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm outline-none focus:border-indigo-500 transition-colors"
+              className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 text-sm outline-none focus:border-[#0F6B41] text-slate-900 dark:text-white transition-colors"
             />
             <button 
-              type="submit"
+              type="submit" 
               disabled={!text.trim()}
-              className="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:hover:bg-indigo-600"
+              className="w-10 h-10 bg-[#0F6B41] text-white rounded-xl flex items-center justify-center hover:bg-[#0C5734] transition-colors disabled:opacity-50"
             >
               <Send className="w-4 h-4 ml-0.5" />
             </button>

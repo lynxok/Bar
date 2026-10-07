@@ -388,7 +388,7 @@ export function WaiterMobile() {
                 placeholder="Buscar mesa (ej: T-01)..." 
                 value={tableSearch}
                 onChange={(e) => setTableSearch(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 transition-all font-semibold"
+                className="w-full bg-slate-900 border border-slate-800 rounded-2xl pl-10 pr-4 py-3 text-xs outline-none focus:border-[#0F6B41] focus:ring-1 focus:ring-[#0F6B41] transition-all font-semibold"
               />
             </div>
 
@@ -425,7 +425,7 @@ export function WaiterMobile() {
                             table.status === 'available' ? "bg-emerald-600" :
                             table.status === 'dirty' ? "bg-slate-700" :
                             table.status === 'checkout' ? "bg-rose-600 animate-pulse" :
-                            "bg-indigo-650"
+                            "bg-[#0F6B41]"
                           )}>
                             {table.id}
                           </div>
@@ -447,7 +447,7 @@ export function WaiterMobile() {
                               <div className="text-[8px] text-slate-500 font-bold uppercase">{table.waiterName}</div>
                             )}
                           </div>
-                          <ChevronDown className={cn("w-4 h-4 text-slate-500 transition-transform duration-200", isExpanded ? "rotate-180 text-indigo-500" : "")} />
+                          <ChevronDown className={cn("w-4 h-4 text-slate-500 transition-transform duration-200", isExpanded ? "rotate-180 text-emerald-400" : "")} />
                         </div>
                       </div>
 
@@ -604,7 +604,7 @@ export function WaiterMobile() {
                     <div 
                       key={product.id}
                       onClick={() => handleAddProduct(product)}
-                      className="p-3 bg-slate-900 border border-slate-850 hover:border-indigo-500/50 rounded-2xl flex justify-between items-center cursor-pointer active:scale-[0.99] transition-all"
+                      className="p-3 bg-slate-900 border border-slate-850 hover:border-emerald-500/50 rounded-2xl flex justify-between items-center cursor-pointer active:scale-[0.99] transition-all"
                     >
                       <div>
                         <div className="font-bold text-xs uppercase text-white">{product.name}</div>
@@ -612,7 +612,7 @@ export function WaiterMobile() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-amber-500 text-xs font-mono tabular-nums">{formatMoney(product.price)}</span>
-                        <span className="p-1 bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 rounded-lg text-xs"><Plus className="w-3.5 h-3.5" /></span>
+                        <span className="p-1 bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-xs"><Plus className="w-3.5 h-3.5" /></span>
                       </div>
                     </div>
                   ))}
@@ -630,7 +630,7 @@ export function WaiterMobile() {
               placeholder="Buscar platos o bebidas en el menú..."
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-850 rounded-2xl px-4 py-3 text-xs outline-none focus:border-indigo-600 transition-all font-semibold"
+              className="w-full bg-slate-900 border border-slate-850 rounded-2xl px-4 py-3 text-xs outline-none focus:border-[#0F6B41] transition-all font-semibold"
             />
             
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
@@ -641,7 +641,7 @@ export function WaiterMobile() {
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-black text-xs uppercase text-white">{product.name}</h4>
-                        <span className="text-[8.5px] font-black text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20 mt-1 inline-block uppercase">
+                        <span className="text-[8.5px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20 mt-1 inline-block uppercase">
                           {product.category}
                         </span>
                       </div>
@@ -673,7 +673,7 @@ export function WaiterMobile() {
                 <div id={qrReaderId} className="w-full h-full min-h-[220px] overflow-hidden rounded-2xl" />
               ) : (
                 <div className="flex flex-col items-center gap-4 py-8 text-center">
-                  <div className="p-4 bg-indigo-500/10 rounded-full border border-indigo-500/20 text-indigo-400">
+                  <div className="p-4 bg-emerald-500/10 rounded-full border border-emerald-500/20 text-emerald-400">
                     <QrCode className="w-10 h-10 animate-pulse" />
                   </div>
                   <div className="space-y-1">
@@ -687,7 +687,7 @@ export function WaiterMobile() {
                   )}
                   <button 
                     onClick={startScanning}
-                    className="mt-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-650 text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-md active:scale-95"
+                    className="mt-2 px-5 py-2.5 bg-[#0F6B41] hover:bg-[#0F6B41] text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-md active:scale-95"
                   >
                     <Smartphone className="w-4 h-4" /> ACTIVAR CÁMARA
                   </button>
@@ -719,7 +719,7 @@ export function WaiterMobile() {
                     placeholder="Mesa (ej: 01, T-01)"
                     value={scanInput}
                     onChange={(e) => setScanInput(e.target.value)}
-                    className="flex-1 bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs font-bold outline-none uppercase focus:border-indigo-600"
+                    className="flex-1 bg-slate-950 border border-slate-850 rounded-xl px-4 py-2.5 text-xs font-bold outline-none uppercase focus:border-[#0F6B41]"
                   />
                   <button 
                     onClick={() => {
@@ -733,7 +733,7 @@ export function WaiterMobile() {
                       }
                     }}
                     disabled={!scanInput.trim()}
-                    className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-650 disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95"
+                    className="px-4 py-2.5 bg-[#0F6B41] hover:bg-[#0F6B41] disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95"
                   >
                     Buscar
                   </button>
@@ -749,10 +749,10 @@ export function WaiterMobile() {
               const elapsedMinutes = table.lastUpdate ? Math.floor((Date.now() - new Date(table.lastUpdate).getTime()) / 60000) : null;
 
               return (
-                <div className="bg-slate-900 border border-indigo-500/20 shadow-xl rounded-3xl p-5 space-y-4">
+                <div className="bg-slate-900 border border-emerald-500/20 shadow-xl rounded-3xl p-5 space-y-4">
                   <div className="flex justify-between items-start border-b border-slate-800 pb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-xs text-white">
+                      <div className="w-10 h-10 bg-[#0F6B41] rounded-xl flex items-center justify-center font-black text-xs text-white">
                         {table.id}
                       </div>
                       <div>

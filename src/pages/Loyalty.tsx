@@ -1,3 +1,4 @@
+import { useToast } from "../components/ui/Toast";
 import React, { useMemo, useState, useRef, useEffect } from "react";
 import { db } from "../db/database";
 import {
@@ -49,13 +50,14 @@ const getTierStyle = (tierName: string, index: number = 0) => {
     'bg-orange-50 border-orange-100 text-orange-800',
     'bg-slate-100 border-slate-200 text-slate-700',
     'bg-amber-100 border-amber-200 text-amber-800',
-    'bg-indigo-50 border-indigo-200 text-indigo-700',
+    'bg-emerald-50 border-emerald-200 text-[#0F6B41]',
     'bg-emerald-50 border-emerald-200 text-emerald-700',
   ];
   return styles[index % styles.length];
 };
 
 export function Loyalty() {
+  const { showToast } = useToast();
   const {
     orders,
     customers: customersData,
@@ -146,9 +148,9 @@ export function Loyalty() {
     try {
       await redeemPoints(redeemingCustomer.dni, prize.pointsCost, `Canje de Premio: ${prize.name}`);
       setRedeemingCustomer(null);
-      alert("Canje realizado con éxito");
+      showToast("Canje realizado con éxito.", "success");
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message, "error");
     }
   };
 
@@ -237,9 +239,9 @@ export function Loyalty() {
       const pointsToAdd = 100;
       await updateCustomerPoints(customer.dni, pointsToAdd, "Ajuste / Check-in de Escáner");
       setScanQuery('');
-      alert(`Se agregaron ${pointsToAdd} puntos a ${customer.name}`);
+      showToast(`Se agregaron ${pointsToAdd} puntos a ${customer.name}.`, "success");
     } else {
-      alert('Cliente no encontrado');
+      showToast("Cliente no encontrado.", "warning");
     }
   };
 
@@ -270,7 +272,7 @@ export function Loyalty() {
             onClick={() => setIsTiersModalOpen(true)}
             className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider"
           >
-            <Award className="w-4 h-4 text-indigo-500" /> Configurar Niveles
+            <Award className="w-4 h-4 text-[#0F6B41]" /> Configurar Niveles
           </button>
           <button 
             onClick={() => setIsPromotionsModalOpen(true)}
@@ -286,7 +288,7 @@ export function Loyalty() {
           </button>
           <button 
             onClick={() => setIsNewCustomerModalOpen(true)}
-            className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl flex items-center gap-2 font-bold text-xs shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-colors uppercase tracking-wider"
+            className="px-5 py-2.5 bg-[#0F6B41] text-white rounded-xl flex items-center gap-2 font-bold text-xs shadow-md hover:bg-[#0C5734] transition-colors uppercase tracking-wider"
           >
             <Plus className="w-4 h-4" /> Nuevo Cliente
           </button>
@@ -304,7 +306,7 @@ export function Loyalty() {
               Sincronizado
             </div>
           </div>
-          <div className="bg-indigo-50 p-4 rounded-xl text-indigo-600">
+          <div className="bg-emerald-50 p-4 rounded-xl text-[#0F6B41]">
             <Users className="h-6 w-6" />
           </div>
         </div>
@@ -339,9 +341,9 @@ export function Loyalty() {
                     min="0"
                     value={pointValue} 
                     onChange={(e) => updateLoyaltyConfig({ pointValue: Number(e.target.value) })}
-                    className="w-20 px-2 py-1 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-medium bg-slate-50" 
+                    className="w-20 px-2 py-1 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-[#0F6B41] font-medium bg-slate-50" 
                   />
-                  <button onClick={() => setIsEditingPointValue(false)} className="px-2 py-1 bg-indigo-600 text-white rounded text-[10px] font-bold hover:bg-indigo-700 transition-colors uppercase tracking-wider">Guardar</button>
+                  <button onClick={() => setIsEditingPointValue(false)} className="px-2 py-1 bg-[#0F6B41] text-white rounded text-[10px] font-bold hover:bg-[#0C5734] transition-colors uppercase tracking-wider">Guardar</button>
                 </div>
               </div>
             ) : (
@@ -356,7 +358,7 @@ export function Loyalty() {
           </div>
           <button 
             onClick={() => setIsEditingPointValue(!isEditingPointValue)} 
-            className="bg-slate-50 p-3 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-colors shrink-0"
+            className="bg-slate-50 p-3 rounded-xl text-slate-500 hover:text-[#0F6B41] hover:bg-emerald-50 transition-colors shrink-0"
             title="Configurar equivalencia de puntos"
           >
             {isEditingPointValue ? <X className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
@@ -378,7 +380,7 @@ export function Loyalty() {
             <History className="h-6 w-6" />
           </div>
           {/* Decorative background glow */}
-          <div className="absolute -right-8 -top-8 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl"></div>
+          <div className="absolute -right-8 -top-8 w-32 h-32 bg-emerald-500/20 rounded-full blur-2xl"></div>
         </div>
       </div>
 
@@ -396,7 +398,7 @@ export function Loyalty() {
                     placeholder="Buscar por DNI, nombre o teléfono..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-400"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all placeholder:text-slate-400"
                   />
                 </div>
              </div>
@@ -417,7 +419,7 @@ export function Loyalty() {
                   <tr key={c.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-[#0F6B41] flex items-center justify-center font-bold text-sm shrink-0">
                           {c.name.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
@@ -477,10 +479,10 @@ export function Loyalty() {
 
         <div className="xl:col-span-1 flex flex-col gap-6">
           {/* Quick Scanner Check-in */}
-          <div className="bg-indigo-600 rounded-2xl shadow-lg border border-indigo-500 p-6 relative overflow-hidden">
+          <div className="bg-[#0F6B41] rounded-2xl shadow-lg border border-[#0F6B41] p-6 relative overflow-hidden">
             <div className="relative z-10">
               <h3 className="font-bold text-white text-lg mb-2">Escáner de Cliente</h3>
-              <p className="text-indigo-200 text-xs mb-6 max-w-[80%]">Ingresa el ID o DNI para sumar puntos a un cliente.</p>
+              <p className="text-emerald-200 text-xs mb-6 max-w-[80%]">Ingresa el ID o DNI para sumar puntos a un cliente.</p>
               
               <div className="flex gap-2 relative">
                 <input 
@@ -490,11 +492,11 @@ export function Loyalty() {
                   value={scanQuery}
                   onChange={(e) => setScanQuery(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleScan()}
-                  className="w-full bg-white/10 border border-indigo-400 text-white placeholder:text-indigo-300 px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-white transition-all text-sm font-medium"
+                  className="w-full bg-white/10 border border-emerald-400 text-white placeholder:text-emerald-300 px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-white transition-all text-sm font-medium"
                 />
                 <button 
                   onClick={handleScan}
-                  className="bg-white text-indigo-600 px-4 py-3 rounded-xl font-bold shadow-md hover:bg-slate-50 transition-colors"
+                  className="bg-white text-[#0F6B41] px-4 py-3 rounded-xl font-bold shadow-md hover:bg-slate-50 transition-colors"
                 >
                   <Search className="w-5 h-5" />
                 </button>
@@ -551,7 +553,7 @@ export function Loyalty() {
                 <h2 className="text-xl font-bold text-slate-800">Canjear Premios</h2>
                 <p className="text-sm text-slate-500 mt-1">
                   Cliente: <span className="font-bold text-slate-700">{redeemingCustomer.name}</span> • 
-                  Puntos Disponibles: <span className="font-bold text-indigo-600">{redeemingCustomer.points}</span>
+                  Puntos Disponibles: <span className="font-bold text-[#0F6B41]">{redeemingCustomer.points}</span>
                 </p>
               </div>
               <button 
@@ -581,7 +583,7 @@ export function Loyalty() {
                       </div>
                     </div>
                     <div className="flex items-end justify-between mt-4">
-                      <span className={cn("text-lg font-bold", canAfford ? "text-indigo-600" : "text-slate-500")}>
+                      <span className={cn("text-lg font-bold", canAfford ? "text-[#0F6B41]" : "text-slate-500")}>
                         {prize.pointsCost} <span className="text-xs font-medium">pts</span>
                       </span>
                       <button
@@ -629,14 +631,14 @@ export function Loyalty() {
                 <div className="flex gap-6 items-start">
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 hover:border-indigo-400 hover:bg-indigo-50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden shrink-0 group"
+                    className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden shrink-0 group"
                   >
                     {newPrizeImage ? (
                       <img src={newPrizeImage} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center p-4">
-                        <Upload className="w-6 h-6 text-slate-300 group-hover:text-indigo-400 mx-auto mb-2" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-indigo-500">Subir Imagen</span>
+                        <Upload className="w-6 h-6 text-slate-300 group-hover:text-emerald-400 mx-auto mb-2" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-[#0F6B41]">Subir Imagen</span>
                       </div>
                     )}
                     <input 
@@ -655,7 +657,7 @@ export function Loyalty() {
                         type="text" 
                         value={newPrizeName} 
                         onChange={(e) => setNewPrizeName(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
                         placeholder="Ej. Postre Helado, Cena para 2..."
                       />
                     </div>
@@ -665,7 +667,7 @@ export function Loyalty() {
                         type="number" 
                         value={newPrizePoints} 
                         onChange={(e) => setNewPrizePoints(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
                         placeholder="200"
                       />
                     </div>
@@ -682,7 +684,7 @@ export function Loyalty() {
                       <button 
                         onClick={handleAddPrize}
                         disabled={!newPrizeName || !newPrizePoints}
-                        className="px-8 py-2.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-100 flex items-center gap-2"
+                        className="px-8 py-2.5 bg-[#0F6B41] text-white font-bold rounded-xl hover:bg-[#0C5734] disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-sm flex items-center gap-2"
                       >
                         <Plus className="w-4 h-4" /> Guardar en Catálogo
                       </button>
@@ -695,7 +697,7 @@ export function Loyalty() {
                 {catalogData.map(prize => (
                   <div 
                     key={prize.id} 
-                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-indigo-300 transition-all"
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-emerald-300 transition-all"
                   >
                     <div className="h-32 bg-slate-100 relative overflow-hidden">
                       {prize.image ? (
@@ -715,8 +717,8 @@ export function Loyalty() {
                     <div className="p-4">
                       <h3 className="font-bold text-slate-800 leading-tight mb-2">{prize.name}</h3>
                       <div className="flex items-center justify-between">
-                        <div className="text-indigo-600 font-bold bg-indigo-50 inline-block px-2.5 py-1 rounded-lg text-sm">
-                          {prize.pointsCost} <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">pts</span>
+                        <div className="text-[#0F6B41] font-bold bg-emerald-50 inline-block px-2.5 py-1 rounded-lg text-sm">
+                          {prize.pointsCost} <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">pts</span>
                         </div>
                       </div>
                     </div>
@@ -783,7 +785,7 @@ export function Loyalty() {
                           min="0"
                           value={tier.minPoints}
                           onChange={(e) => handleUpdateTierThreshold(idx, Number(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41]"
                         />
                         <span className="text-xs font-bold text-slate-400 uppercase">pts</span>
                       </div>
@@ -794,7 +796,7 @@ export function Loyalty() {
               
               <button 
                 onClick={handleAddTier}
-                className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-wider hover:border-indigo-400 hover:text-indigo-500 hover:bg-indigo-50 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-wider hover:border-emerald-400 hover:text-[#0F6B41] hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" /> Agregar Nuevo Nivel
               </button>
@@ -803,7 +805,7 @@ export function Loyalty() {
             <div className="p-6 bg-white border-t border-slate-100">
               <button 
                 onClick={() => setIsTiersModalOpen(false)}
-                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 text-sm uppercase tracking-wide"
+                className="w-full py-3 bg-[#0F6B41] text-white rounded-xl font-bold hover:bg-[#0C5734] transition-colors shadow-lg shadow-sm text-sm uppercase tracking-wide"
               >
                 Guardar Configuración
               </button>
@@ -839,7 +841,7 @@ export function Loyalty() {
                 <div className="lg:col-span-5 space-y-6">
                   <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
                     <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <Plus className="w-4 h-4 text-indigo-500" /> Nueva Promoción
+                      <Plus className="w-4 h-4 text-[#0F6B41]" /> Nueva Promoción
                     </h3>
                     <div className="space-y-4">
                       <div>
@@ -849,7 +851,7 @@ export function Loyalty() {
                           value={newPromoName}
                           onChange={(e) => setNewPromoName(e.target.value)}
                           placeholder="Ej: Happy Hour 2x1"
-                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#0F6B41] transition-all"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -858,7 +860,7 @@ export function Loyalty() {
                           <select 
                             value={newPromoMultiplier}
                             onChange={(e) => setNewPromoMultiplier(e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41] cursor-pointer"
                           >
                             <option value="1.5">1.5x</option>
                             <option value="2">2.0x</option>
@@ -870,7 +872,7 @@ export function Loyalty() {
                           <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Categoría</label>
                           <select 
                             onChange={(e) => setSelectedTargets([e.target.value])}
-                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41] cursor-pointer"
                           >
                             <option value="Todas">Todas</option>
                             <option value="Cafetería">Cafetería</option>
@@ -908,8 +910,8 @@ export function Loyalty() {
                     </div>
                   </div>
 
-                  <div className="p-6 bg-indigo-50 rounded-2xl border border-indigo-100">
-                    <h4 className="text-xs font-bold text-indigo-400 uppercase tracking-widest mb-4">Impacto Estimado</h4>
+                  <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
+                    <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-4">Impacto Estimado</h4>
                     <div className="h-[150px] w-full">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData}>
@@ -931,7 +933,7 @@ export function Loyalty() {
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
-                    <p className="text-[10px] text-indigo-400 font-medium text-center mt-2 italic">Proyección de puntos emitidos con promos activas.</p>
+                    <p className="text-[10px] text-emerald-400 font-medium text-center mt-2 italic">Proyección de puntos emitidos con promos activas.</p>
                   </div>
                 </div>
 
@@ -941,7 +943,7 @@ export function Loyalty() {
                   </h3>
                   <div className="space-y-4 flex-1">
                     {promotionsData.map((promo) => (
-                      <div key={promo.id} className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-indigo-200 transition-all group relative overflow-hidden">
+                      <div key={promo.id} className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-emerald-200 transition-all group relative overflow-hidden">
                         <div className="flex items-center justify-between mb-3 relative z-10">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
@@ -969,7 +971,7 @@ export function Loyalty() {
                             Activa
                           </span>
                         </div>
-                        <span className="absolute -right-2 -bottom-4 text-6xl font-black text-slate-50 pointer-events-none group-hover:text-indigo-50 transition-colors">
+                        <span className="absolute -right-2 -bottom-4 text-6xl font-black text-slate-50 pointer-events-none group-hover:text-emerald-50 transition-colors">
                           {promo.multiplier}X
                         </span>
                       </div>
@@ -988,7 +990,7 @@ export function Loyalty() {
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-indigo-100">
+                <div className="w-14 h-14 rounded-2xl bg-[#0F6B41] text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-sm">
                   {selectedCustomer.name.split(' ').map((n: string) => n[0]).join('')}
                 </div>
                 <div>
@@ -1009,7 +1011,7 @@ export function Loyalty() {
                 onClick={() => setProfileTab('info')}
                 className={cn(
                   "flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all",
-                  profileTab === 'info' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  profileTab === 'info' ? "bg-white text-[#0F6B41] shadow-sm" : "text-slate-500 hover:text-slate-700"
                 )}
               >
                 Información
@@ -1018,7 +1020,7 @@ export function Loyalty() {
                 onClick={() => setProfileTab('history')}
                 className={cn(
                   "flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2",
-                  profileTab === 'history' ? "bg-white text-indigo-600 shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  profileTab === 'history' ? "bg-white text-[#0F6B41] shadow-sm" : "text-slate-500 hover:text-slate-700"
                 )}
               >
                 <History className="w-3.5 h-3.5" /> Historial de Puntos
@@ -1044,9 +1046,9 @@ export function Loyalty() {
                         );
                       })()}
                     </div>
-                    <div className="p-4 bg-indigo-50 rounded-xl border border-indigo-100">
-                      <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Balance Total</p>
-                      <p className="text-xl font-bold text-indigo-700">{selectedCustomer.points.toLocaleString()} pts</p>
+                    <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
+                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Balance Total</p>
+                      <p className="text-xl font-bold text-[#0F6B41]">{selectedCustomer.points.toLocaleString()} pts</p>
                     </div>
                   </div>
 
@@ -1116,7 +1118,7 @@ export function Loyalty() {
                   setRedeemingCustomer(selectedCustomer);
                   setSelectedCustomer(null);
                 }}
-                className="flex-1 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition-colors"
+                className="flex-1 py-2.5 bg-[#0F6B41] text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-lg shadow-sm hover:bg-[#0C5734] transition-colors"
               >
                 Canjear Puntos
               </button>
@@ -1146,7 +1148,7 @@ export function Loyalty() {
                 setIsNewCustomerModalOpen(false);
                 setNewCustomer({ name: '', email: '', phone: '', id: '', tier: 'Bronze', points: 0 });
               } catch (err: any) {
-                alert(err.message);
+                showToast(err.message, "error");
               }
             }} className="p-8 space-y-5">
               <div className="space-y-2">
@@ -1156,7 +1158,7 @@ export function Loyalty() {
                   type="text" 
                   value={newCustomer.name}
                   onChange={e => setNewCustomer({...newCustomer, name: e.target.value})}
-                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
                   placeholder="Ej: Juan Pérez"
                 />
               </div>
@@ -1169,7 +1171,7 @@ export function Loyalty() {
                     type="text" 
                     value={newCustomer.id}
                     onChange={e => setNewCustomer({...newCustomer, id: e.target.value})}
-                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
                     placeholder="20456789"
                   />
                 </div>
@@ -1180,7 +1182,7 @@ export function Loyalty() {
                     type="tel" 
                     value={newCustomer.phone}
                     onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})}
-                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
                     placeholder="3511234567"
                   />
                 </div>
@@ -1193,7 +1195,7 @@ export function Loyalty() {
                   type="email" 
                   value={newCustomer.email}
                   onChange={e => setNewCustomer({...newCustomer, email: e.target.value})}
-                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
                   placeholder="juan@ejemplo.com"
                 />
               </div>
@@ -1208,7 +1210,7 @@ export function Loyalty() {
                 </button>
                 <button 
                   type="submit"
-                  className="flex-[2] h-14 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all active:scale-[0.98]"
+                  className="flex-[2] h-14 bg-[#0F6B41] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-sm hover:bg-[#0C5734] transition-all active:scale-[0.98]"
                 >
                   Confirmar Registro
                 </button>

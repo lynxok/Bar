@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
 @font-face {
   font-family: 'Archivo';
@@ -82,6 +83,17 @@
   --text-main: #1C1C1C;
   --text-muted: #575757;
   --border-main: #E5E5E2;
+
+  /* Material / Legacy Compatibility Variables */
+  --color-surface-container-lowest: #FFFFFF;
+  --color-surface-container-low: #F9F9F8;
+  --color-surface-container: #F2F2F0;
+  --color-surface-container-high: #EAEAE7;
+  --color-surface-elevated: #FFFFFF;
+  --color-on-surface: #1C1C1C;
+  --color-on-surface-variant: #575757;
+  --color-outline: #E5E5E2;
+  --color-outline-variant: #E5E5E2;
 }
 
 /* ==========================================================================
@@ -93,7 +105,7 @@ html.dark {
   --bg-app: #121E19;
   --bg-surface: #182C24;
   --bg-surface-elevated: #203A30;
-  --bg-sidebar: #0F231B;
+  --bg-sidebar: #1E4437;
   --text-main: #F4F6F5;
   --text-muted: #B2C0B9;
   --border-main: #2A483D;
@@ -111,6 +123,17 @@ html.dark {
   --color-danger-bg: #381616;
   --color-warning-bg: #382B10;
   --color-success-bg: #143522;
+
+  /* Material / Legacy Compatibility Dark Variables */
+  --color-surface-container-lowest: #14261F;
+  --color-surface-container-low: #182C24;
+  --color-surface-container: #1E342B;
+  --color-surface-container-high: #243E33;
+  --color-surface-elevated: #203A30;
+  --color-on-surface: #F4F6F5;
+  --color-on-surface-variant: #B2C0B9;
+  --color-outline: #2A483D;
+  --color-outline-variant: #2A483D;
 }
 
 @theme {
@@ -148,9 +171,15 @@ html.dark {
   --color-primary-container: var(--color-brand-light);
   --color-on-primary-container: var(--color-brand-dark);
   --color-surface: var(--bg-surface);
-  --color-on-surface: var(--text-main);
-  --color-outline: var(--border-main);
-  --color-outline-variant: var(--border-main);
+  --color-surface-container-lowest: var(--color-surface-container-lowest);
+  --color-surface-container-low: var(--color-surface-container-low);
+  --color-surface-container: var(--color-surface-container);
+  --color-surface-container-high: var(--color-surface-container-high);
+  --color-surface-elevated: var(--color-surface-elevated);
+  --color-on-surface: var(--color-on-surface);
+  --color-on-surface-variant: var(--color-on-surface-variant);
+  --color-outline: var(--color-outline);
+  --color-outline-variant: var(--color-outline-variant);
 
   /* Radii */
   --radius-sm: 6px;

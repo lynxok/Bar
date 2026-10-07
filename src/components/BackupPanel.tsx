@@ -49,20 +49,20 @@ export function BackupPanel() {
     <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-5 mt-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h3 className="font-black text-slate-900 flex items-center gap-2"><History className="w-5 h-5 text-indigo-600" /> Copias de seguridad</h3>
-          <p className="text-xs text-slate-500 mt-1 max-w-xl">
+          <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><History className="w-5 h-5 text-[#0F6B41]" /> Copias de seguridad</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
             Se hace una copia automática por día y se guardan las últimas 30 en esta PC.
             Exportá una copia a un pendrive o a OneDrive cada tanto: si la PC se rompe, es lo único que salva los datos.
           </p>
         </div>
-        <button onClick={() => openBackupFolder()} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200">
+        <button onClick={() => openBackupFolder()} className="flex items-center gap-2 px-3 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-white/10 rounded-xl hover:bg-slate-200 dark:hover:bg-white/15">
           <FolderOpen className="w-4 h-4" /> Abrir carpeta
         </button>
       </div>
 
       <div className="flex flex-wrap gap-3">
         <button disabled={!!busy} onClick={() => run('create', async () => { await createBackup('manual'); return 'Copia creada.'; })}
-          className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm hover:bg-indigo-700 disabled:opacity-50">
+          className="flex items-center gap-2 px-4 py-2.5 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
           {busy === 'create' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Crear copia ahora
         </button>
         <button disabled={!!busy} onClick={() => run('export', async () => { const r = await exportBackup(); return r.canceled ? null : `Copia exportada a ${r.path}`; })}
