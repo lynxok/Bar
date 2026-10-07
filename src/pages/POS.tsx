@@ -169,7 +169,7 @@ export function POS() {
           </button>
           <button
             onClick={() => setIsMugFillOpen(true)}
-            className="h-5 w-5"
+            className="h-12 px-4 bg-surface-container-lowest text-on-surface hover:bg-surface-container border border-outline-variant rounded-xl flex items-center gap-2 font-bold whitespace-nowrap shrink-0 transition-all active:scale-95"
           >
             <Beer className="h-5 w-5" />
             Recarga de vaso
