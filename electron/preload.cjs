@@ -8,6 +8,7 @@ const INVOKE = [
   'arca-generate-invoice', 'arca-regenerate-pdf', 'arca-test-connection', 'arca-generate-csr',
   'open-file-path', 'start-ngrok', 'stop-ngrok', 'get-ngrok-status',
   'auth-login', 'auth-me', 'auth-logout', 'auth-needs-setup', 'auth-setup-superadmin', 'auth-hash-password', 'auth-user-changed',
+  'get-public-base-url',
   'backup-write', 'backup-list', 'backup-read', 'backup-export', 'backup-import-dialog', 'backup-open-folder',
 ];
 const ON = ['db-request', 'update-available', 'update-not-available', 'download-progress', 'update-downloaded', 'update-error'];

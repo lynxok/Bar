@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { computeTotals, taxLabel } from '../lib/pricing';
 import {
   Search,
   Barcode,
@@ -42,7 +43,7 @@ export function POS() {
     return Math.round(maxPrep + queueDelay);
   };
 
-  const { taxRate } = useBusiness();
+  const { taxRate, pricesIncludeTax } = useBusiness();
   const [cart, setCart] = useState<{ id: string; name: string; price: number; qty: number }[]>([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('Efectivo');
   const [loyaltyId, setLoyaltyId] = useState('');
@@ -103,8 +104,7 @@ export function POS() {
   };
 
   const subtotal = cart.reduce((acc, i) => acc + i.price * i.qty, 0);
-  const taxes = subtotal * (taxRate / 100);
-  const total = subtotal + taxes;
+  const { tax: taxes, total } = computeTotals(subtotal, { taxRate, pricesIncludeTax });
 
   const handleProcessPayment = async () => {
     if (cart.length === 0) return;
@@ -295,7 +295,7 @@ export function POS() {
               <span>Subtotal</span><span>${subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm text-on-surface-variant">
-              <span>Impuestos ({taxRate}%)</span><span>${taxes.toFixed(2)}</span>
+              <span>{taxLabel({ taxRate, pricesIncludeTax })}</span><span>${taxes.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-xl font-bold text-on-surface pt-2 border-t border-outline-variant">
               <span>Total</span><span>${total.toFixed(2)}</span>
@@ -409,7 +409,7 @@ export function POS() {
                   <span>Subtotal</span><span>${subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-on-surface-variant font-bold text-xs uppercase tracking-widest px-2">
-                  <span>Impuesto ({taxRate}%)</span><span>${taxes.toLocaleString()}</span>
+                  <span>{taxLabel({ taxRate, pricesIncludeTax })}</span><span>${taxes.toLocaleString()}</span>
                 </div>
                 <div className="h-px bg-outline-variant mx-2" />
                 <div className="flex justify-between items-center px-2">

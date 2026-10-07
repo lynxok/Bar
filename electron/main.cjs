@@ -60,7 +60,10 @@ function rendererQuery({ table, id, method, body, query }) {
 }
 
 function sendError(res, err) {
-  res.status(err.status || 500).json({ error: err.message || 'Error interno' });
+  const msg = err.message || 'Error interno';
+  // Clave duplicada en IndexedDB: es un conflicto de datos, no un error del servidor
+  const status = err.status || (/ConstraintError|Key already exists|already exists/i.test(msg) ? 409 : 500);
+  res.status(status).json({ error: msg });
 }
 
 function getBearer(req) {
@@ -1137,4 +1140,25 @@ ipcMain.handle('backup-import-dialog', async (event) => {
 ipcMain.handle('backup-open-folder', async (event) => {
   assertMainWindow(event);
   return shell.openPath(ensureBackupDir());
+});
+
+// ---------- URL accesible desde otros dispositivos (QR de mesas, conexión de mozos) ----------
+// Prioridad: túnel ngrok activo > IP de la red local. Nunca "localhost", que en el
+// celular del cliente apunta al propio celular.
+ipcMain.handle('get-public-base-url', async (event) => {
+  assertMainWindow(event);
+  if (currentTunnelUrl) return { url: currentTunnelUrl.replace(/\/$/, ''), source: 'ngrok' };
+  const os = require('os');
+  const candidates = [];
+  for (const [name, addrs] of Object.entries(os.networkInterfaces())) {
+    for (const a of addrs || []) {
+      if (a.family === 'IPv4' && !a.internal) candidates.push({ name, address: a.address });
+    }
+  }
+  const isPrivate = (ip) => /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(ip);
+  const virtual = /vEthernet|VirtualBox|VMware|WSL|Hyper-V|docker|vbox|Loopback/i;
+  const pick = candidates.find(c => isPrivate(c.address) && !virtual.test(c.name)) || candidates.find(c => isPrivate(c.address)) || candidates[0];
+  if (!pick) return { url: null, source: 'none' };
+  const port = app.isPackaged ? SERVER_PORT : 3000;
+  return { url: `http://${pick.address}:${port}`, source: 'lan' };
 });

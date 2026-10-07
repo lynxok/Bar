@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+
 import { logout } from '../lib/auth';
 import { SyncStatusBadge } from '../components/SyncStatusBadge';
+import { computeTotals } from '../lib/pricing';
 import { useStore, OrderItem, type Table } from '../contexts/StoreContext';
 import { 
   LogOut, 
@@ -267,7 +269,9 @@ export function WaiterMobile() {
     if (!checkoutTableId) return;
     try {
       const discount = Number(discountInput) || 0;
-      await closeOrder(checkoutTableId, paymentMethod, { customerDni: dniInput, discountPct: discount });
+      // Se registra con el mismo nombre que usan la caja y el mapa de mesas
+      const methodLabel = paymentMethod === 'cash' ? 'Efectivo' : paymentMethod === 'card' ? 'Tarjeta' : 'QR';
+      await closeOrder(checkoutTableId, methodLabel, { customerDni: dniInput, discountPct: discount });
       await updateTable(checkoutTableId, { status: 'dirty', waiterName: '', order: [] });
       
       setCheckoutTableId(null);
@@ -790,7 +794,8 @@ export function WaiterMobile() {
       {checkoutTableId && (() => {
         const table = tables.find(t => t.id === checkoutTableId);
         if (!table) return null;
-        const totalItemsPrice = table.order.reduce((acc, i) => acc + (i.price * i.qty), 0);
+        // Mismo cálculo que se registra al cobrar (impuestos según configuración)
+        const totalItemsPrice = computeTotals(table.order.reduce((acc, i) => acc + (i.price * i.qty), 0)).total;
 
         return (
           <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">

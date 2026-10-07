@@ -25,7 +25,7 @@ export function MenuConfig() {
     return matchesSearch && matchesCategory;
   });
 
-  const toggleMenuAvailability = async (productId: number, currentStatus?: 'active' | 'inactive') => {
+  const toggleMenuAvailability = async (productId: number, currentStatus?: string) => {
     const nextStatus = currentStatus === 'inactive' ? 'active' : 'inactive';
     try {
       await db.products.update(productId, { status: nextStatus });

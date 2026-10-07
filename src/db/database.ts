@@ -12,7 +12,7 @@ export interface Product {
   unit: string;
   price: number;
   takeawayPrice: number;
-  popular: boolean;
+  popular?: boolean;
   status: string;
   cost?: number;
   recipe?: { ingredientId: number; name: string; quantity: number; unit: string }[];
@@ -21,6 +21,9 @@ export interface Product {
   variants?: any[];
   description?: string;
   image?: string;
+  /** Marca de tiempo del último cambio (la asigna la PC principal) */
+  updatedAt?: string;
+  priceHistory?: { date: string; oldPrice: number; newPrice: number; oldTakeaway?: number; newTakeaway?: number }[];
 }
 
 export interface Order {
@@ -531,7 +534,14 @@ export function flushOutbox(): Promise<void> {
             await db.outbox.delete(entry.id!);
             continue;
           }
-          await db.outbox.update(entry.id!, { attempts: (entry.attempts || 0) + 1, lastError: String(err?.message || err) });
+          const attempts = (entry.attempts || 0) + 1;
+          if (status && status >= 500 && attempts >= 10) {
+            // El host responde pero falla siempre con este cambio: se descarta para no trabar la cola
+            console.error(`Cambio descartado tras ${attempts} errores del host (${entry.method} ${entry.table}):`, err.message);
+            await db.outbox.delete(entry.id!);
+            continue;
+          }
+          await db.outbox.update(entry.id!, { attempts, lastError: String(err?.message || err) });
           break; // sin conexión: se reintenta en el próximo ciclo
         }
       }

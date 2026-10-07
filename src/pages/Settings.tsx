@@ -10,7 +10,7 @@ import InvoiceDesignSettings from "../components/InvoiceDesignSettings";
 import { BackupPanel } from "../components/BackupPanel";
 
 export function Settings() {
-  const { businessName, setBusinessName, logo, setLogo, taxRate, setTaxRate } = useBusiness();
+  const { businessName, setBusinessName, logo, setLogo, taxRate, setTaxRate, pricesIncludeTax, setPricesIncludeTax } = useBusiness();
   const { users, addUser, updateUser, deleteUser } = useStore();
   const [tempName, setTempName] = useState(businessName);
   const [tempTax, setTempTax] = useState(taxRate);
@@ -460,9 +460,18 @@ export function Settings() {
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg">%</span>
                 </div>
-                <p className="text-xs text-slate-500 mt-2">
-                  Porcentaje aplicado al subtotal en las ventas del POS y consumos.
-                </p>
+                <label className="flex items-start gap-3 mt-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={pricesIncludeTax}
+                    onChange={(e) => setPricesIncludeTax(e.target.checked)}
+                    className="mt-0.5 w-4 h-4 accent-indigo-600"
+                  />
+                  <span className="text-xs text-slate-600">
+                    <b>Los precios de la carta ya incluyen el impuesto</b> (precio final al consumidor).
+                    Si lo desactivás, el {tempTax}% se suma al cobrar en mesas, caja rápida y app de mozos.
+                  </span>
+                </label>
               </div>
             </div>
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { computeTotals, taxLabel } from '../lib/pricing';
 import {
   TrendingUp,
   Users,
@@ -34,7 +35,7 @@ interface ContextMenuState {
 
 export function Dashboard() {
   const { tables, orders, products, closeOrder, updateCustomerPoints } = useStore();
-  const { taxRate } = useBusiness();
+  const { taxRate, pricesIncludeTax } = useBusiness();
 
   // Context menu state
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null);
@@ -75,8 +76,7 @@ export function Dashboard() {
   const checkoutTable = tables.find(t => t.id === checkoutTableId);
   const orderItems = checkoutTable?.order || [];
   const subtotal = orderItems.reduce((acc: number, item: any) => acc + item.price * item.qty, 0);
-  const taxes = subtotal * (taxRate / 100);
-  const total = subtotal + taxes;
+  const { tax: taxes, total } = computeTotals(subtotal, { taxRate, pricesIncludeTax });
   const perPerson = comensales > 1 ? total / comensales : null;
   const registeredDiners = loyaltyIds.filter(id => id.trim().length > 0);
   const totalPoints = Math.floor(total / 10);
@@ -590,7 +590,7 @@ export function Dashboard() {
                   <span>${subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest px-1">
-                  <span>Impuesto ({taxRate}%)</span>
+                  <span>{taxLabel({ taxRate, pricesIncludeTax })}</span>
                   <span>${taxes.toLocaleString()}</span>
                 </div>
                 <div className="h-px bg-slate-800 mx-1" />

@@ -1,28 +1,16 @@
-import { createContext, useContext, ReactNode, useEffect } from 'react';
+import { createContext, useContext, ReactNode, useEffect, useLayoutEffect, useState } from 'react';
+import { sumByPaymentBucket } from '../lib/payments';
+import { createTrackedStore, useTrackedStore, type TrackedStore } from './trackedStore';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft } from '../db/database';
+import { db, isHost, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft } from '../db/database';
 import { getIpc } from '../lib/ipc';
 import { getStoredUser } from '../lib/auth';
 import { LoggerService } from '../lib/LoggerService';
 export type { Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft };
 
-export interface OrderItem {
-  id: string;
-  /** id numérico del producto en inventario (para descontar stock aunque se renombre) */
-  productId?: number;
-  name: string;
-  price: number;
-  qty: number;
-}
-
-export interface CloseOrderOptions {
-  /** DNI del cliente para el programa de fidelidad */
-  customerDni?: string;
-  /** Descuento en porcentaje (0-100) aplicado al total */
-  discountPct?: number;
-  /** false si los puntos ya se repartieron por otra vía (p. ej. cuenta dividida) */
-  awardPoints?: boolean;
-}
+export type { OrderItem, CloseOrderOptions } from '../services/sales';
+import type { OrderItem, CloseOrderOptions } from '../services/sales';
+import { closeOrder, closePOSOrder, findProductForItem } from '../services/sales';
 
 export interface Expense {
   id?: number;
@@ -104,7 +92,7 @@ interface StoreContextType {
   markDraftsAsBilled: (ids: string[], billingData: any) => Promise<void>;
 }
 
-const StoreContext = createContext<StoreContextType | undefined>(undefined);
+const StoreContext = createContext<TrackedStore<StoreContextType> | undefined>(undefined);
 
 const INITIAL_TIERS = [
   { name: 'Bronze', minPoints: 0, color: 'orange' },
@@ -151,9 +139,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   ];
 
   const tables = tablesFromDB;
-  console.log("STORE_CONTEXT: tables in state:", tables.map(t => t.id));
+
+  // Auditoría de acciones sensibles (anulaciones y borrados), con el usuario de la sesión
+  const audit = (action: string, module: string, details: string) => {
+    const u = getStoredUser();
+    LoggerService.audit(action, module, details, String(u?.id ?? 'system'), u?.name ?? 'Sistema')
+      .catch(err => console.error('No se pudo registrar la auditoría', err));
+  };
 
   useEffect(() => {
+    // Los datos iniciales solo se cargan en la PC principal: en celulares/tablets las tablas
+    // arrancan vacías hasta la primera sync y no deben sembrar datos de ejemplo en el host.
+    if (!isHost) return;
     const initTables = async () => {
       const tableCount = await db.salonTables.count();
       if (tableCount === 0) {
@@ -184,17 +181,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           promotions: [],
         });
       }
-
-      const carlosExists = await db.users.where('name').equals('Carlos').first();
-      if (!carlosExists) {
-        await db.users.add({
-          name: 'Carlos',
-          role: 'Mozo',
-          pin: '1234',
-          permissions: ['tables', 'pos'],
-          status: 'Active'
-        });
-      }
     };
     initTables().catch(console.error);
   }, []);
@@ -220,9 +206,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const removeTable = async (id: string) => {
-    console.log("STORE_CONTEXT: removeTable called for ID:", id);
+    const table = await db.salonTables.get(id);
     await db.salonTables.delete(id);
-    console.log("STORE_CONTEXT: removeTable complete for ID:", id);
+    if (table && table.order?.length) {
+      audit('DELETE', 'MESAS', `Mesa ${id} eliminada con ${table.order.length} ítem(s) cargados`);
+    }
   };
 
   const updateTable = async (id: string, updates: Partial<Table>) => {
@@ -265,10 +253,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteProduct = async (id: number) => {
+    const product = await db.products.get(id);
     await db.products.delete(id);
+    audit('DELETE', 'INVENTARIO', `Producto eliminado: ${product?.name ?? id} (stock ${product?.stock ?? '?'})`);
   };
 
   const updateTableOrder = async (tableId: string, items: OrderItem[]) => {
+    // Anulaciones: ítems quitados (o con menor cantidad) de una mesa
+    const prev = (await db.salonTables.get(tableId))?.order || [];
+    const removed = prev
+      .map((p: any) => {
+        const now = items.find(i => i.id === p.id);
+        return { name: p.name, qty: (p.qty || 1) - (now ? (now.qty || 1) : 0), price: p.price };
+      })
+      .filter(r => r.qty > 0);
+    if (removed.length) {
+      const detail = removed.map(r => `${r.qty}x ${r.name} ($${(r.qty * r.price).toFixed(2)})`).join(', ');
+      audit('VOID', 'MESAS', `Anulado en mesa ${tableId.replace('T-', '')}: ${detail}`);
+    }
     await db.salonTables.update(tableId, {
       order: items,
       status: items.length > 0 ? 'occupied_no_order' : 'available',
@@ -307,14 +309,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       .filter(o => new Date(o.timestamp) >= shiftStart && o.status === 'closed')
       .toArray();
 
-    const totals = shiftOrders.reduce((acc, order) => {
-      const method = order.paymentMethod?.toLowerCase() || '';
-      if (method.includes('efectivo')) acc.cash += order.total;
-      else if (method.includes('tarjeta')) acc.card += order.total;
-      else if (method.includes('transferencia') || method.includes('mercado')) acc.transfer += order.total;
-      else acc.cash += order.total;
-      return acc;
-    }, { cash: 0, card: 0, transfer: 0 });
+    const totals = sumByPaymentBucket(shiftOrders);
 
     const expectedCash = active.initialCash + totals.cash;
     const difference = declaredCash - expectedCash;
@@ -332,173 +327,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   // Close order and deduct stock + add points and transaction logs
-  // ---------- Cierre de ventas (mesa y POS rápido) ----------
-  // Busca el producto de un ítem por id (estable) y, solo para pedidos viejos, por nombre.
-  const findProductForItem = async (item: any): Promise<Product | undefined> => {
-    const rawId = item?.productId ?? item?.id;
-    const pid = typeof rawId === 'number' ? rawId : (/^\d+$/.test(String(rawId ?? '')) ? Number(rawId) : undefined);
-    if (pid != null) {
-      const byId = await db.products.get(pid);
-      if (byId) return byId;
-    }
-    return item?.name ? db.products.where('name').equals(item.name).first() : undefined;
-  };
-
-  const deductStockForItem = async (item: any) => {
-    const qty = item.qty || 1;
-    const product = await findProductForItem(item);
-    if (!product || product.id == null) return;
-    if (product.recipe && product.recipe.length > 0) {
-      for (const ing of product.recipe) {
-        const ingProduct = ing.ingredientId
-          ? await db.products.get(ing.ingredientId)
-          : await db.products.where('name').equals(ing.name).first();
-        if (ingProduct && ingProduct.id != null) {
-          await db.products.update(ingProduct.id, { stock: Math.max(0, (ingProduct.stock || 0) - (ing.quantity * qty)) });
-        }
-      }
-    } else {
-      await db.products.update(product.id, { stock: Math.max(0, (product.stock || 0) - qty) });
-    }
-  };
-
-  const normalizeCloseOptions = (options?: string | CloseOrderOptions): Required<Omit<CloseOrderOptions, 'customerDni'>> & { customerDni?: string } => {
-    const o: CloseOrderOptions = typeof options === 'string' ? { customerDni: options } : (options || {});
-    const pct = Number(o.discountPct) || 0;
-    return {
-      customerDni: o.customerDni ? String(o.customerDni).trim() || undefined : undefined,
-      discountPct: Math.min(100, Math.max(0, pct)),
-      awardPoints: o.awardPoints !== false,
-    };
-  };
-
-  const requireActiveShift = async () => {
-    const shift = await db.shifts.where('status').equals('active').first();
-    if (!shift) {
-      throw new Error('No hay un turno de caja abierto. Abrí el turno en "Cierre de Caja" antes de cobrar.');
-    }
-    return shift;
-  };
-
-  const roundMoney = (n: number) => Math.round(n * 100) / 100;
-
-  /** Registra la venta: orden inmutable, borrador de factura, puntos y stock. Devuelve el total cobrado. */
-  const registerSale = async (params: {
-    tableId: string; items: any[]; grossTotal: number; paymentMethod: string;
-    opts: ReturnType<typeof normalizeCloseOptions>; defaultClientName: string; loyaltyLabel: string;
-  }) => {
-    const { tableId, items, grossTotal, paymentMethod, opts, defaultClientName, loyaltyLabel } = params;
-    const subtotal = items.reduce((acc: number, i: any) => acc + (i.price * (i.qty || 1)), 0);
-    const discountAmount = roundMoney(grossTotal * opts.discountPct / 100);
-    const total = roundMoney(grossTotal - discountAmount);
-    const user = getStoredUser();
-    const now = new Date().toISOString();
-
-    await db.orders.add({
-      tableId,
-      items,
-      subtotal,
-      discountPct: opts.discountPct,
-      discountAmount,
-      total,
-      paymentMethod,
-      customerId: opts.customerDni,
-      closedBy: user?.name,
-      status: 'closed',
-      timestamp: now
-    });
-
-    const customer = opts.customerDni
-      ? await db.customers.where('dni').equals(opts.customerDni).first()
-      : undefined;
-
-    await db.billingDrafts.add({
-      id: Math.random().toString(36).substring(2, 10) + Date.now().toString(36),
-      date: now,
-      clientName: customer?.name || defaultClientName,
-      concept: items.map((i: any) => `${i.qty}x ${i.name}`).join(', '),
-      paymentMethod,
-      amount: total,
-      billed: false
-    });
-
-    if (customer && opts.awardPoints) {
-      const config = await db.loyaltyConfig.get('global');
-      const basePoints = Math.floor(total / 100);
-      let multiplier = 1;
-      const nowStr = now.split('T')[0];
-      (config?.promotions || []).forEach(p => {
-        if (p.active) {
-          const startOk = !p.startDate || nowStr >= p.startDate;
-          const endOk = !p.endDate || nowStr <= p.endDate;
-          if (startOk && endOk) multiplier = Math.max(multiplier, p.multiplier);
-        }
-      });
-      const earnedPoints = Math.floor(basePoints * multiplier);
-      await db.customers.update(customer.id!, { points: (customer.points || 0) + earnedPoints });
-      await db.loyaltyTransactions.add({
-        customerDni: customer.dni,
-        customerName: customer.name,
-        type: 'purchase',
-        points: earnedPoints,
-        description: `${loyaltyLabel} - Pago ${paymentMethod}`,
-        timestamp: now,
-      });
-    }
-
-    for (const item of items) {
-      await deductStockForItem(item);
-    }
-    return { total, discountAmount };
-  };
-
-  const auditDiscount = async (where: string, opts: ReturnType<typeof normalizeCloseOptions>, discountAmount: number, total: number) => {
-    if (opts.discountPct <= 0) return;
-    const user = getStoredUser();
-    try {
-      await LoggerService.audit('DISCOUNT', 'VENTAS',
-        `${where}: descuento ${opts.discountPct}% (-$${discountAmount.toFixed(2)}), total $${total.toFixed(2)}`,
-        String(user?.id ?? 'system'), user?.name ?? 'Sistema');
-    } catch (e) { console.error('No se pudo auditar el descuento', e); }
-  };
-
-  const closeOrder = async (tableId: string, paymentMethod: string, options?: string | CloseOrderOptions) => {
-    const opts = normalizeCloseOptions(options);
-    await requireActiveShift();
-    let result: { total: number; discountAmount: number } | null = null;
-    await db.transaction('rw', [db.salonTables, db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig, db.billingDrafts], async () => {
-      const table = await db.salonTables.get(tableId);
-      if (!table || table.order.length === 0) return;
-      const grossTotal = table.order.reduce((acc: number, i: any) => acc + (i.price * (i.qty || 1)), 0);
-      result = await registerSale({
-        tableId, items: table.order, grossTotal, paymentMethod, opts,
-        defaultClientName: 'Mesa ' + tableId.replace('T-', ''),
-        loyaltyLabel: `Compra Mesa ${tableId.replace('T-', '')}`,
-      });
-      await db.salonTables.update(tableId, {
-        order: [],
-        status: 'available',
-        lastUpdate: new Date().toISOString()
-      });
-    });
-    if (result) await auditDiscount(`Mesa ${tableId.replace('T-', '')}`, opts, (result as any).discountAmount, (result as any).total);
-  };
-
-  const closePOSOrder = async (items: OrderItem[], total: number, paymentMethod: string, options?: string | CloseOrderOptions) => {
-    if (items.length === 0) return;
-    const opts = normalizeCloseOptions(options);
-    await requireActiveShift();
-    let result: { total: number; discountAmount: number } | null = null;
-    await db.transaction('rw', [db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig, db.billingDrafts], async () => {
-      result = await registerSale({
-        tableId: 'POS_FAST', items, grossTotal: total, paymentMethod, opts,
-        defaultClientName: 'Consumidor Final',
-        loyaltyLabel: 'Venta POS Rápida',
-      });
-    });
-    if (result) await auditDiscount('POS Rápido', opts, (result as any).discountAmount, (result as any).total);
-  };
-
   const addComanda = async (tableId: string, items: any[]) => {
     if (!items || items.length === 0) return;
     await db.comandas.add({
@@ -638,6 +466,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const rejectClientOrder = async (orderId: number) => {
     await db.clientOrders.update(orderId, { status: 'rejected' });
+    audit('REJECT', 'PEDIDOS QR', `Pedido QR #${orderId} rechazado`);
   };
 
   // En la PC principal la contraseña se hashea acá; en dispositivos remotos la hashea el servidor.
@@ -712,7 +541,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteFloorPlan = async (id: number) => {
+    const plan = await db.floorPlans.get(id);
     await db.floorPlans.delete(id);
+    audit('DELETE', 'MESAS', `Plano eliminado: ${plan?.name ?? id}`);
   };
 
   const setDefaultFloorPlan = async (id: number) => {
@@ -755,8 +586,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  return (
-    <StoreContext.Provider value={{
+  const value: StoreContextType = {
       products, tables, expenses, paymentOrders, orders, comandas,
       rewards, customers, shifts, users, messages, floorPlans,
       loyaltyConfig, loyaltyTransactions, activeShift, clientOrders,
@@ -774,14 +604,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       moveTable, addTable, removeTable, updateTable,
       updateLoyaltyConfig,
       createBillingDraft, markDraftsAsBilled
-    }}>
+    };
+
+  // El contexto entrega un store estable; los consumidores se suscriben solo a lo que leen
+  const [store] = useState(() => createTrackedStore(value));
+  useLayoutEffect(() => { store.publish(value); });
+
+  return (
+    <StoreContext.Provider value={store}>
       {children}
     </StoreContext.Provider>
   );
 }
 
-export function useStore() {
-  const context = useContext(StoreContext);
-  if (!context) throw new Error('useStore must be used within a StoreProvider');
-  return context;
+export function useStore(): StoreContextType {
+  const store = useContext(StoreContext);
+  if (!store) throw new Error('useStore must be used within a StoreProvider');
+  return useTrackedStore<StoreContextType>(store);
 }

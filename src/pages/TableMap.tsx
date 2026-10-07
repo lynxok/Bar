@@ -1,10 +1,11 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { computeTotals, taxLabel } from '../lib/pricing';
+import { TableQrModal } from './tablemap/TableQrModal';
 import { 
   X, Plus, Minus, Save, Trash2, Layout, Users, RotateCw,
   ZoomIn, ZoomOut, Maximize2, Wallet, CreditCard, ArrowRightLeft,
   User, ArrowRight, ChefHat, Smartphone, Star, ChevronDown
 } from "lucide-react";
-import QRCode from 'qrcode';
 import { cn } from "../lib/utils";
 import { useStore, Table } from "../contexts/StoreContext";
 import { useBusiness } from "../contexts/BusinessContext";
@@ -15,7 +16,7 @@ const isRotatable = (type: Table['type']) => type !== 'round' && type !== 'stool
 
 export function TableMap() {
   const { tables, products, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan, clientOrders, approveClientOrder, rejectClientOrder, comandas } = useStore();
-  const { taxRate } = useBusiness();
+  const { taxRate, pricesIncludeTax } = useBusiness();
 
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
   const [isMobileOrdersOpen, setIsMobileOrdersOpen] = useState(false);
@@ -58,18 +59,6 @@ export function TableMap() {
   const [mergeTargetId, setMergeTargetId] = useState<string | null>(null);
   const [mergeSourceId, setMergeSourceId] = useState<string | null>(null);
   const [qrModalTableId, setQrModalTableId] = useState<string | null>(null);
-  const [qrUrl, setQrUrl] = useState<string>('');
-
-  useEffect(() => {
-    if (qrModalTableId) {
-      const url = `${window.location.origin}/#/cliente/${qrModalTableId}`;
-      QRCode.toDataURL(url, { width: 300, margin: 2 })
-        .then(url => setQrUrl(url))
-        .catch(err => console.error(err));
-    } else {
-      setQrUrl('');
-    }
-  }, [qrModalTableId]);
 
   const dragStartPointer = useRef({ x: 0, y: 0 });
   const initialPositions = useRef<Record<string, { x: number, y: number }>>({});
@@ -399,8 +388,7 @@ export function TableMap() {
   };
 
   const subtotal = orderItems.reduce((acc, item) => acc + (item.price * item.qty), 0);
-  const taxes = subtotal * (taxRate / 100);
-  const total = subtotal + taxes;
+  const { tax: taxes, total } = computeTotals(subtotal, { taxRate, pricesIncludeTax });
 
   // ---------- DRAG & MARQUEE SELECTION ----------
   const onMouseDown = (e: React.MouseEvent, table: Table) => {
@@ -1935,7 +1923,7 @@ export function TableMap() {
                   <span>${subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest px-2">
-                  <span>Impuesto ({taxRate}%)</span>
+                  <span>{taxLabel({ taxRate, pricesIncludeTax })}</span>
                   <span>${taxes.toLocaleString()}</span>
                 </div>
                 <div className="h-px bg-slate-800 mx-2" />
@@ -1974,75 +1962,7 @@ export function TableMap() {
       )}
 
       {qrModalTableId && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[200] flex items-center justify-center p-6" onClick={() => setQrModalTableId(null)}>
-          <div className="bg-white rounded-[2.5rem] shadow-2xl p-10 max-w-sm w-full text-center space-y-6" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center">
-              <h4 className="font-black text-xl text-slate-900">Código QR - Mesa {qrModalTableId}</h4>
-              <button onClick={() => setQrModalTableId(null)} className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg"><X className="w-6 h-6" /></button>
-            </div>
-            
-            <div className="bg-slate-50 p-6 rounded-3xl flex justify-center border border-slate-100 shadow-inner">
-              {qrUrl ? (
-                <img src={qrUrl} alt={`QR Mesa ${qrModalTableId}`} className="w-64 h-64 mix-blend-multiply" />
-              ) : (
-                <div className="w-64 h-64 flex items-center justify-center text-slate-400 text-sm">Generando...</div>
-              )}
-            </div>
-            
-            <p className="text-xs text-slate-500 font-medium">
-              Enlace: <span className="font-mono text-[10px] break-all">{`${window.location.origin}/#/cliente/${qrModalTableId}`}</span>
-            </p>
-
-            <div className="grid grid-cols-2 gap-4 pt-2">
-              <button 
-                onClick={() => {
-                  const link = document.createElement('a');
-                  link.href = qrUrl;
-                  link.download = `QR_Mesa_${qrModalTableId}.png`;
-                  link.click();
-                }}
-                className="py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl font-bold text-sm transition-all"
-              >
-                Descargar
-              </button>
-              <button 
-                onClick={() => {
-                  const printWindow = window.open('', '_blank');
-                  if (printWindow) {
-                    printWindow.document.write(`
-                      <html>
-                        <head>
-                          <title>QR Mesa ${qrModalTableId}</title>
-                          <style>
-                            body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; margin: 0; }
-                            img { width: 300px; height: 300px; }
-                            h1 { margin-top: 20px; font-size: 24px; color: #1e293b; }
-                            p { font-size: 14px; color: #64748b; margin-top: 5px; }
-                          </style>
-                        </head>
-                        <body>
-                          <img src="${qrUrl}" />
-                          <h1>MESA ${qrModalTableId}</h1>
-                          <p>Escanea para ver la carta y pedir</p>
-                          <script>
-                            window.onload = function() {
-                              window.print();
-                              setTimeout(() => window.close(), 500);
-                            }
-                          </script>
-                        </body>
-                      </html>
-                    `);
-                    printWindow.document.close();
-                  }
-                }}
-                className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all"
-              >
-                Imprimir
-              </button>
-            </div>
-          </div>
-        </div>
+        <TableQrModal tableId={qrModalTableId} onClose={() => setQrModalTableId(null)} />
       )}
       {isMobileOrdersOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">

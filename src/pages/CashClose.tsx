@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { sumByPaymentBucket } from '../lib/payments';
 import { useStore } from '../contexts/StoreContext';
 import {
   LockIcon,
@@ -40,14 +41,8 @@ export function CashClose() {
 
   // Calculate totals
   const totals = useMemo(() => {
-    return currentShiftOrders.reduce((acc, order) => {
-      const method = order.paymentMethod?.toLowerCase() || '';
-      if (method.includes('efectivo')) acc.cash += order.total;
-      else if (method.includes('tarjeta')) acc.card += order.total;
-      else if (method.includes('transferencia') || method.includes('mercado')) acc.transfer += order.total;
-      else acc.cash += order.total; // Default to cash if not specified
-      return acc;
-    }, { cash: 0, card: 0, transfer: 0 });
+    // QR, billetera y Mercado Pago cuentan como digitales (no como efectivo)
+    return sumByPaymentBucket(currentShiftOrders);
   }, [currentShiftOrders]);
 
   const mesasPendientes = tables.filter(t => t.status !== 'available' && t.status !== 'dirty').length;
