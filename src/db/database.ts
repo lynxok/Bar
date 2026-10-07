@@ -21,6 +21,8 @@ export interface Product {
   variants?: any[];
   description?: string;
   image?: string;
+  /** Stock mínimo para alertas y lista de compra (si falta, se usa el umbral general) */
+  minStock?: number;
   /** Marca de tiempo del último cambio (la asigna la PC principal) */
   updatedAt?: string;
   priceHistory?: { date: string; oldPrice: number; newPrice: number; oldTakeaway?: number; newTakeaway?: number }[];
@@ -249,6 +251,24 @@ export interface BillingDraft {
   };
 }
 
+export type ReservationStatus = 'pending' | 'confirmed' | 'seated' | 'cancelled' | 'no_show';
+
+export interface Reservation {
+  id?: number;
+  customerName: string;
+  phone?: string;
+  partySize: number;
+  /** Fecha y hora de inicio (ISO) */
+  date: string;
+  /** Duración estimada en minutos */
+  durationMin: number;
+  tableId?: string;
+  notes?: string;
+  status: ReservationStatus;
+  createdBy?: string;
+  updatedAt?: string;
+}
+
 /** Registro de un borrado en el host, para que los dispositivos lo repliquen */
 export interface Tombstone {
   id?: number;
@@ -270,6 +290,7 @@ export interface OutboxEntry {
 }
 
 export class BarDatabase extends Dexie {
+  reservations!: Table<Reservation>;
   tombstones!: Table<Tombstone>;
   outbox!: Table<OutboxEntry>;
   products!: Table<Product>;
@@ -349,6 +370,11 @@ export class BarDatabase extends Dexie {
         await tx.table(name).toCollection().modify((r: any) => { if (!r.updatedAt) r.updatedAt = epoch; });
       }
     });
+
+    // v12: reservas
+    this.version(12).stores({
+      reservations: '++id, date, status, tableId, updatedAt'
+    });
   }
 }
 
@@ -366,7 +392,8 @@ export const isHost = !!getIpc();
 export const SYNCED_TABLES = [
   'products', 'orders', 'expenses', 'salonTables', 'paymentOrders',
   'comandas', 'rewards', 'customers', 'shifts', 'users', 'messages',
-  'floorPlans', 'loyaltyConfig', 'loyaltyTransactions', 'clientOrders', 'billingDrafts'
+  'floorPlans', 'loyaltyConfig', 'loyaltyTransactions', 'clientOrders', 'billingDrafts',
+  'reservations'
 ] as const;
 
 // Tablas que los dispositivos remotos escriben en el host (incluye logs, que no se descargan)
@@ -396,7 +423,18 @@ if (isHost) {
     const t = (db as any)[name] as Table<any>;
     t.hook('creating', function (this: any, _pk: any, obj: any) {
       obj.updatedAt = new Date().toISOString();
-      this.onsuccess = () => notifyChange(name);
+      this.onsuccess = () => {
+        notifyChange(name);
+        // Comandas nuevas (de esta PC o de los celulares): impresión automática por estación
+        if (name === 'comandas') {
+          const comanda = { tableId: obj.tableId, items: obj.items };
+          setTimeout(() => {
+            import('../lib/printing')
+              .then(m => m.printComanda(comanda, { onlyIfAuto: true }))
+              .catch(err => console.error('No se pudo imprimir la comanda', err));
+          }, 0);
+        }
+      };
     });
     t.hook('updating', function (this: any) {
       this.onsuccess = () => notifyChange(name);

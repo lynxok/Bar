@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { computeTotals, taxLabel } from '../lib/pricing';
+import { maybeAutoPrintTicket } from '../lib/printing';
 import {
   Search,
   Barcode,
@@ -111,6 +112,11 @@ export function POS() {
     if (cart.length === 0) return;
     try {
       await closePOSOrder(cart, total, selectedPaymentMethod, { customerDni: loyaltyId || undefined, tip: Number(tipInput) || 0 });
+      maybeAutoPrintTicket({
+        title: 'Mostrador', items: cart.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
+        subtotal, taxLabel: taxLabel({ taxRate, pricesIncludeTax }), tax: taxes, total,
+        tip: Number(tipInput) || 0, paymentMethod: selectedPaymentMethod,
+      }).catch(() => {});
       await LoggerService.audit('SALE', 'POS', `Venta rápida: $${total.toFixed(2)} (${selectedPaymentMethod})`);
       setCart([]);
       setLoyaltyId('');

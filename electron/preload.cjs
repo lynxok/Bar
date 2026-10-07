@@ -9,6 +9,7 @@ const INVOKE = [
   'open-file-path', 'start-ngrok', 'stop-ngrok', 'get-ngrok-status',
   'auth-login', 'auth-me', 'auth-logout', 'auth-needs-setup', 'auth-setup-superadmin', 'auth-hash-password', 'auth-user-changed',
   'get-public-base-url',
+  'printer-config-get', 'printer-config-set', 'printers-list', 'print-lines',
   'mp-status', 'mp-set-token', 'mp-clear', 'mp-create-qr', 'mp-check',
   'backup-write', 'backup-list', 'backup-read', 'backup-export', 'backup-import-dialog', 'backup-open-folder',
 ];

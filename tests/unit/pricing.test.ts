@@ -31,3 +31,22 @@ describe('medios de pago en el cierre de caja', () => {
     expect(t).toEqual({ cash: 100, card: 10, transfer: 75 });
   });
 });
+
+import { buildPurchaseList, isLowStock, suggestedQty } from '../../src/lib/stock';
+
+describe('stock mínimo y compra sugerida', () => {
+  it('usa el mínimo propio del producto y, si no tiene, el umbral general', () => {
+    expect(isLowStock({ stock: 3, minStock: 3 }, 5)).toBe(true);
+    expect(isLowStock({ stock: 4, minStock: 3 }, 5)).toBe(false);
+    expect(isLowStock({ stock: 4 }, 5)).toBe(true);
+    expect(isLowStock({ stock: 5 }, 5)).toBe(false);
+  });
+  it('sugiere reponer hasta el doble del mínimo, con costo estimado', () => {
+    expect(suggestedQty({ stock: 2, minStock: 10 }, 5)).toBe(18);
+    const list = buildPurchaseList([
+      { id: 1, name: 'Harina', category: 'Insumos', unit: 'kg', stock: 1, minStock: 5, cost: 100 } as any,
+      { id: 2, name: 'Vino', category: 'Bebidas', unit: 'u', stock: 50, cost: 10 } as any,
+    ], 5);
+    expect(list).toEqual([expect.objectContaining({ name: 'Harina', qty: 9, subtotal: 900 })]);
+  });
+});

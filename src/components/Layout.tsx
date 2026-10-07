@@ -1,7 +1,7 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
+import { isLowStock, readLowStockThreshold } from '../lib/stock';
 import { logout } from '../lib/auth';
 import { useBusiness } from "../contexts/BusinessContext";
-import { useAlerts } from "../contexts/AlertContext";
 import { NotificationService } from "../lib/NotificationService";
 import { useEffect, useState } from "react";
 import {
@@ -24,7 +24,8 @@ import {
   ShieldAlert,
   ChefHat,
   FileText,
-  Terminal
+  Terminal,
+  CalendarDays,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { ChatWidget } from "./ChatWidget";
@@ -45,6 +46,7 @@ interface Notification {
 const NAV_ITEMS = [
   { path: "/", label: "Dashboard", icon: LayoutDashboard },
   { path: "/mapa", label: "Mapa del Salón", icon: Grid },
+  { path: "/reservas", label: "Reservas", icon: CalendarDays },
   { path: "/pos", label: "Punto de Venta (POS)", icon: MonitorCheck },
   { path: "/inventario", label: "Inventario", icon: Package },
   { path: "/carta", label: "Menú / Carta QR", icon: Utensils },
@@ -60,8 +62,9 @@ const NAV_ITEMS = [
 export function Layout() {
   const location = useLocation();
   const { businessName, logo } = useBusiness();
-  const { lowStockCount } = useAlerts();
-  const { clientOrders, approveClientOrder, rejectClientOrder } = useStore();
+  const { clientOrders, approveClientOrder, rejectClientOrder, products } = useStore();
+  // Alerta global de stock bajo (antes solo se actualizaba al abrir Inventario)
+  const lowStockCount = products.filter(p => isLowStock(p, readLowStockThreshold())).length;
   const [prevPendingCount, setPrevPendingCount] = useState(0);
   
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {

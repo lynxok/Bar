@@ -1,4 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { useLiveQuery } from 'dexie-react-hooks';
+import { timeLabel, upcomingForTable } from '../lib/reservations';
 import { PaymentModal } from './tablemap/PaymentModal';
 import type { OrderItem } from '../contexts/StoreContext';
 import { computeTotals, taxLabel } from '../lib/pricing';
@@ -367,6 +369,8 @@ export function TableMap() {
   const orderItems = activeOrderTable?.order || [];
 
   // Carta real (productos activos del inventario), con id estable para descontar stock
+  // Reservas activas para marcar mesas reservadas en las próximas 2 horas
+  const reservations = useLiveQuery(() => db.reservations.where('status').anyOf('pending', 'confirmed').toArray(), []) || [];
   const [menuSearch, setMenuSearch] = useState('');
   const menuItems = products
     .filter(p => p.status !== 'inactive' && p.id != null)
@@ -795,6 +799,18 @@ export function TableMap() {
                       {table.waiterName}
                     </span>
                   )}
+                  {(() => {
+                    const res = upcomingForTable(table.id, reservations);
+                    return res ? (
+                      <span
+                        title={`Reserva: ${res.customerName} (${res.partySize} pers.)`}
+                        className="font-black bg-violet-600 text-white px-1 rounded mt-0.5"
+                        style={{ fontSize: `${fontSizeWaiter}px` }}
+                      >
+                        📅 {timeLabel(res.date)}
+                      </span>
+                    ) : null;
+                  })()}
                 </>
               );
             })()}

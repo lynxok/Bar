@@ -6,7 +6,7 @@ const { EventEmitter } = require('events');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lynx-'));
 
 // ---- DB en memoria que imita el handler del renderer ----
-const DB = { users: [], products: [], salonTables: [], clientOrders: [], orders: [], expenses: [] };
+const DB = { users: [], products: [], salonTables: [], clientOrders: [], orders: [], expenses: [], reservations: [] };
 const seq = {};
 function handle({ table, id, method, body, query }) {
   const t = DB[table]; if (!t) throw new Error(`Table ${table} not found`);

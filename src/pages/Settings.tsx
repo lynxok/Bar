@@ -8,6 +8,7 @@ import { LoggerService } from "../lib/LoggerService";
 import QRCode from "qrcode";
 import InvoiceDesignSettings from "../components/InvoiceDesignSettings";
 import { BackupPanel } from "../components/BackupPanel";
+import { PrinterSettings } from "../components/PrinterSettings";
 import { MercadoPagoSettings } from "../components/payments/MercadoPagoSettings";
 
 export function Settings() {
@@ -306,7 +307,7 @@ export function Settings() {
     }
   };
 
-  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'updates' | 'network' | 'arca'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'users' | 'updates' | 'network' | 'arca' | 'printers'>('general');
 
   return (
     <div className="max-w-4xl space-y-8">
@@ -340,6 +341,19 @@ export function Settings() {
         >
           Usuarios y Permisos
         </button>
+        {isElectron && (
+          <button
+            onClick={() => setActiveTab('printers')}
+            className={cn(
+              "px-6 py-3 font-bold text-sm border-b-2 transition-all",
+              activeTab === 'printers'
+                ? "border-indigo-600 text-indigo-650"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            )}
+          >
+            Impresoras
+          </button>
+        )}
         <button
           onClick={() => setActiveTab('updates')}
           className={cn(
@@ -562,6 +576,8 @@ export function Settings() {
           </div>
         </div>
       )}
+
+      {activeTab === 'printers' && isElectron && <PrinterSettings />}
 
       {activeTab === 'updates' && (
         <div className="space-y-8 animate-in fade-in duration-200">

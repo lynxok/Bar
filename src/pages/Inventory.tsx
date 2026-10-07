@@ -1,4 +1,6 @@
 import { useState, useEffect, Fragment } from "react";
+import { isLowStock, isLowStock as isLowStockFn, readLowStockThreshold, saveLowStockThreshold } from '../lib/stock';
+import { PurchaseListModal } from '../components/PurchaseListModal';
 import {
   Package,
   ArrowUpRight,
@@ -45,7 +47,11 @@ export function Inventory() {
   const [ingredients, setIngredients] = useState<{id: string, ingredientId?: number, name: string, quantity: number, unit: string}[]>([]);
   const [hasVariants, setHasVariants] = useState(false);
   const [newProductVariants, setNewProductVariants] = useState<{id: string, name: string, sku: string, price: number, takeawayPrice: number, stock: number}[]>([]);
-  const [lowStockThreshold, setLowStockThreshold] = useState(5);
+  // Umbral general (para productos sin stock mínimo propio); se guarda en este dispositivo
+  const [lowStockThreshold, setLowStockThresholdState] = useState(() => readLowStockThreshold());
+  const setLowStockThreshold = (n: number) => { setLowStockThresholdState(n); saveLowStockThreshold(n); };
+  const [isPurchaseListOpen, setIsPurchaseListOpen] = useState(false);
+  const [newProductMinStock, setNewProductMinStock] = useState<number | ''>('');
   const { setLowStockCount } = useAlerts();
 
   // New Product Modal State
@@ -64,7 +70,7 @@ export function Inventory() {
   const [stockStatusFilter, setStockStatusFilter] = useState('Todos los Estados');
 
   const [editingRowId, setEditingRowId] = useState<number | string | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', sku: '', barcode: '', price: 0, takeawayPrice: 0, stock: 0, unit: 'Unidades', cost: 0, status: 'active' });
+  const [editForm, setEditForm] = useState<{ name: string; sku: string; barcode: string; price: number; takeawayPrice: number; stock: number; unit: string; cost: number; status: string; minStock: number | '' }>({ name: '', sku: '', barcode: '', price: 0, takeawayPrice: 0, stock: 0, unit: 'Unidades', cost: 0, status: 'active', minStock: '' });
   const [expandedProducts, setExpandedProducts] = useState<Record<string, boolean>>({'2': true});
   const [historyModalItem, setHistoryModalItem] = useState<any>(null);
 
@@ -76,7 +82,7 @@ export function Inventory() {
   }, 0);
 
   useEffect(() => {
-    const count = products.filter(p => p.stock < lowStockThreshold).length;
+    const count = products.filter(p => isLowStock(p, lowStockThreshold)).length;
     setLowStockCount(count);
   }, [products, lowStockThreshold, setLowStockCount]);
 
@@ -91,7 +97,8 @@ export function Inventory() {
       stock: product.stock || 0,
       unit: product.unit || 'Unidades',
       cost: product.cost || 0,
-      status: product.status || 'active'
+      status: product.status || 'active',
+      minStock: product.minStock ?? ''
     });
   };
 
@@ -114,6 +121,7 @@ export function Inventory() {
           unit: editForm.unit,
           cost: editForm.cost,
           status: editForm.status,
+          minStock: editForm.minStock === '' ? undefined : Number(editForm.minStock),
           priceHistory: newHistory
         });
       } else {
@@ -161,7 +169,7 @@ export function Inventory() {
   const uniqueCategories = Array.from(new Set(products.map(p => p.category)));
 
   const filteredProducts = products.filter(p => {
-    const isLowStock = p.stock < lowStockThreshold;
+    const isLowStock = isLowStockFn(p, lowStockThreshold);
     const matchCategory = categoryFilter === 'Todas las Categorías' || p.category === categoryFilter;
     const matchStock = stockStatusFilter === 'Todos los Estados' 
                        || (stockStatusFilter === 'Stock Bajo' && isLowStock)
@@ -214,6 +222,7 @@ export function Inventory() {
       takeawayPrice: Number(newProductTakeawayPrice) || 0,
       cost: ingredients.length > 0 ? recipeCost : (Number(newProductCost) || 0),
       stock: newProductStock,
+      minStock: newProductMinStock === '' ? undefined : Number(newProductMinStock),
       unit: newProductUnit,
       status: newProductIsMenuAvailable ? 'active' : 'inactive',
       recipe: ingredients.length > 0 ? ingredients.map(ing => ({
@@ -290,10 +299,10 @@ export function Inventory() {
             <div className="p-2 bg-error-container rounded-lg text-error">
               <AlertTriangle className="h-5 w-5" />
             </div>
-            <span className="text-error font-bold text-xs">{products.filter(p => p.stock < lowStockThreshold).length} Artículos</span>
+            <span className="text-error font-bold text-xs">{products.filter(p => isLowStock(p, lowStockThreshold)).length} Artículos</span>
           </div>
           <p className="font-label-caps text-label-caps text-on-surface-variant mb-1">STOCK BAJO</p>
-          <h3 className="font-h2 text-h2 text-on-surface">{products.filter(p => p.stock < lowStockThreshold).length}</h3>
+          <h3 className="font-h2 text-h2 text-on-surface">{products.filter(p => isLowStock(p, lowStockThreshold)).length}</h3>
         </div>
 
         <div className="bg-surface-container-lowest p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -395,6 +404,12 @@ export function Inventory() {
               onChange={(e) => setLowStockThreshold(Number(e.target.value))}
               className="bg-white border border-outline-variant rounded-md text-body-md w-20 px-3 py-1.5 focus:ring-teal-500 outline-none text-on-surface"
             />
+            <button
+              onClick={() => setIsPurchaseListOpen(true)}
+              className="ml-2 px-3 py-1.5 rounded-md bg-indigo-600 text-white text-xs font-bold whitespace-nowrap"
+            >
+              Lista de compra
+            </button>
           </div>
           <div className="ml-auto">
             <span className="text-body-md text-on-surface-variant">
@@ -425,7 +440,7 @@ export function Inventory() {
                   </td>
                 </tr>
               ) : filteredProducts.map((product) => {
-                const isLowStock = product.stock < lowStockThreshold;
+                const isLowStock = isLowStockFn(product, lowStockThreshold);
                 const isEditing = editingRowId === product.id;
                 const hasVariants = product.variants && product.variants.length > 0;
                 const isExpanded = expandedProducts[product.id];
@@ -505,6 +520,14 @@ export function Inventory() {
                               value={editForm.stock} 
                               onChange={(e) => setEditForm(prev => ({ ...prev, stock: Number(e.target.value) }))}
                               className="w-16 bg-white border border-indigo-300 text-slate-800 px-1.5 py-1 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-right font-medium" 
+                            />
+                            <input
+                              type="number"
+                              title="Stock mínimo (vacío = umbral general)"
+                              placeholder="mín"
+                              value={editForm.minStock}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, minStock: e.target.value === '' ? '' : Number(e.target.value) }))}
+                              className="w-14 bg-amber-50 border border-amber-300 text-slate-800 px-1.5 py-1 rounded text-sm outline-none text-right font-medium"
                             />
                             <input 
                               type="text" 
@@ -810,6 +833,10 @@ export function Inventory() {
       </div>
 
       {/* Create Product Modal */}
+      {isPurchaseListOpen && (
+        <PurchaseListModal products={products} threshold={lowStockThreshold} onClose={() => setIsPurchaseListOpen(false)} />
+      )}
+
       {isCreateModalOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl h-[90vh] flex flex-col overflow-hidden border border-slate-200" onClick={(e) => e.stopPropagation()}>
@@ -1125,6 +1152,14 @@ export function Inventory() {
                             value={newProductStock}
                             onChange={(e) => setNewProductStock(Number(e.target.value))}
                             className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                          />
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 mt-3">Stock mínimo (alerta)</label>
+                          <input
+                            type="number"
+                            placeholder={`General: ${lowStockThreshold}`}
+                            value={newProductMinStock}
+                            onChange={(e) => setNewProductMinStock(e.target.value === '' ? '' : Number(e.target.value))}
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
                           />
                         </div>
                         <div>

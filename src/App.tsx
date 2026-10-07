@@ -16,6 +16,7 @@ import { Security } from './pages/Security';
 import { Logs } from './pages/Logs';
 import Kitchen from './pages/Kitchen';
 import Help from './pages/Help';
+import Reservations from './pages/Reservations';
 import { Login } from './pages/Login';
 import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
@@ -86,6 +87,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="mapa" element={<TableMap />} />
+            <Route path="reservas" element={<Reservations />} />
             <Route path="pos" element={<POS />} />
             <Route path="inventario" element={<Inventory />} />
             <Route path="finanzas" element={<Finance />} />

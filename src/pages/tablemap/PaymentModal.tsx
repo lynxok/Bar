@@ -6,6 +6,8 @@ import { computeTotals, taxLabel } from '../../lib/pricing';
 import { mpIsConfigured } from '../../lib/mercadopago';
 import { MercadoPagoQr } from '../../components/payments/MercadoPagoQr';
 import { cn } from '../../lib/utils';
+import { maybeAutoPrintTicket, printTicket, type TicketData } from '../../lib/printing';
+import { Printer } from 'lucide-react';
 
 interface Props {
   tableId: string;
@@ -82,14 +84,28 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
       return { ...p, qty: { ...p.qty, [itemId]: next } };
     }));
 
-  const run = async (fn: () => Promise<unknown>) => {
+  const ticket = (extra: Partial<TicketData> = {}): TicketData => ({
+    title: `Mesa ${tableId.replace('T-', '')}`,
+    items: items.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
+    subtotal, taxLabel: taxLabel(tax), tax: totals.tax, discountPct, discountAmount, total: toPay,
+    ...extra,
+  });
+
+  const [printMsg, setPrintMsg] = useState('');
+  const printPreBill = async () => setPrintMsg((await printTicket(ticket({ preBill: true }))) || 'Pre-cuenta enviada a la impresora.');
+
+  const run = async (fn: () => Promise<unknown>, printed: TicketData) => {
     setBusy(true); setError('');
-    try { await fn(); onPaid(); } catch (e: any) { setError(e?.message || 'No se pudo cobrar la mesa.'); } finally { setBusy(false); }
+    try {
+      await fn();
+      maybeAutoPrintTicket(printed).catch(() => {});
+      onPaid();
+    } catch (e: any) { setError(e?.message || 'No se pudo cobrar la mesa.'); } finally { setBusy(false); }
   };
 
   const paySingle = (paymentRef?: string) => run(() => closeOrder(tableId, paymentRef ? MP : method, {
     customerDni: dni || undefined, discountPct, tip: tipValue, paymentRef,
-  }));
+  }), ticket({ tip: tipValue, paymentMethod: paymentRef ? MP : method }));
 
   const paySplit = () => run(() => closeOrderSplit(tableId, parts.map(p => ({
     paymentMethod: p.paymentMethod,
@@ -98,7 +114,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
     items: splitKind === 'items'
       ? Object.entries(p.qty).filter(([, q]) => Number(q) > 0).map(([id, qty]) => ({ id, qty: Number(qty) }))
       : undefined,
-  })), { discountPct }));
+  })), { discountPct }), ticket({ paymentMethod: `Dividida en ${parts.length} partes` }));
 
   const canSplit = splitKind === 'equal' || (unassigned.length === 0 && parts.every(p => Object.values(p.qty).some(q => Number(q) > 0)));
 
@@ -115,7 +131,10 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
               </button>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 rounded-full"><X className="w-7 h-7" /></button>
+          <div className="flex items-center gap-2">
+            <button onClick={printPreBill} title="Imprimir pre-cuenta" className="px-3 h-10 rounded-xl bg-slate-100 text-slate-700 text-xs font-bold flex items-center gap-1"><Printer className="w-4 h-4" /> Pre-cuenta</button>
+            <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500 rounded-full"><X className="w-7 h-7" /></button>
+          </div>
         </div>
 
         <div className="p-8 space-y-6 overflow-y-auto">
@@ -243,6 +262,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
             </div>
           )}
 
+          {printMsg && <div className="text-xs font-bold text-slate-600 bg-slate-50 rounded-xl p-2">{printMsg}</div>}
           {error && <div className="text-sm font-bold text-rose-700 bg-rose-50 rounded-xl p-3">{error}</div>}
 
           {!(mode === 'single' && showMpQr) && (

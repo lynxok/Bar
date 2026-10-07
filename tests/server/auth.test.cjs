@@ -40,6 +40,11 @@ const req = async (p, { method = 'GET', token, body } = {}) => {
   ok((await req('/api/db/orders', { method: 'POST', token: tj, body: { tableId: 'T-1', items: [], total: 0 } })).s === 200, 'mozo POST orders -> 200');
   ok((await req('/api/db/orders/1', { method: 'DELETE', token: tj })).s === 403, 'mozo DELETE orders -> 403');
   ok((await req('/api/db/inventadaXYZ', { token: tj })).s === 403, 'tabla desconocida -> 403');
+  ok((await req('/api/db/reservations', { method: 'POST', token: tj, body: { customerName: 'Gómez', partySize: 4, date: '2026-10-10T21:00:00Z', status: 'confirmed' } })).s === 200, 'mozo puede cargar reservas');
+  ok((await req('/api/db/reservations/1', { method: 'DELETE', token: tj })).s === 403, 'mozo no puede borrar reservas');
+  ok((await req('/api/print', { method: 'POST', token: tj, body: { target: 'otra', lines: [] } })).s === 400, 'impresión: destino inválido rechazado');
+  ok((await req('/api/print', { method: 'POST', body: { target: 'ticket', lines: [{ text: 'x' }] } })).s === 401, 'impresión sin sesión -> 401');
+  ok((await req('/api/mp/qr', { method: 'POST', body: { amount: 10 } })).s === 401, 'Mercado Pago sin sesión -> 401');
   const me = await req('/api/auth/me', { token: tj });
   ok(me.s === 200 && me.j.allowedTables.includes('products') && !me.j.allowedTables.includes('users'), '/me devuelve tablas permitidas');
 

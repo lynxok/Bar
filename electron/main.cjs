@@ -1187,3 +1187,25 @@ expressApp.get('/api/mp/check/:reference', requireAuth, async (req, res) => {
 expressApp.get('/api/mp/status', requireAuth, async (req, res) => {
   try { const s = await mercadoPago.status(); res.json({ configured: s.configured }); } catch (e) { sendError(res, e); }
 });
+
+// ---------- Impresión térmica (comandas y tickets) ----------
+const { createPrinting } = require('./printing.cjs');
+const printing = createPrinting({ userDataPath, BrowserWindow, getMainWindow: () => win });
+const printLimiter = createRateLimiter(60, 60 * 1000);
+
+ipcMain.handle('printer-config-get', async (event) => { assertMainWindow(event); return printing.getConfig(); });
+ipcMain.handle('printer-config-set', async (event, cfg) => { assertMainWindow(event); return printing.setConfig(cfg); });
+ipcMain.handle('printers-list', async (event) => { assertMainWindow(event); return printing.listSystemPrinters(); });
+ipcMain.handle('print-lines', async (event, job) => { assertMainWindow(event); return printing.print(job || {}); });
+
+// Celulares/tablets: imprimir la cuenta en la impresora de tickets del local
+expressApp.post('/api/print', requireAuth, async (req, res) => {
+  if (!printLimiter(req.token)) return res.status(429).json({ error: 'Demasiadas impresiones seguidas' });
+  const { target, category, lines } = req.body || {};
+  if (!['ticket', 'kitchen'].includes(target)) return res.status(400).json({ error: 'Destino inválido' });
+  try { res.json(await printing.print({ target, category, lines })); } catch (e) { sendError(res, e); }
+});
+expressApp.get('/api/print/config', requireAuth, (req, res) => {
+  const c = printing.getConfig();
+  res.json({ ticketWidth: printing.charsFor('ticket'), header: c.header, footer: c.footer, hasTicketPrinter: !!c.ticketPrinterId });
+});

@@ -4,6 +4,7 @@ import { logout } from '../lib/auth';
 import { SyncStatusBadge } from '../components/SyncStatusBadge';
 import { computeTotals } from '../lib/pricing';
 import { mpIsConfigured } from '../lib/mercadopago';
+import { printTicket } from '../lib/printing';
 import { MercadoPagoQr } from '../components/payments/MercadoPagoQr';
 import { useStore, OrderItem, type Table } from '../contexts/StoreContext';
 import { 
@@ -889,6 +890,23 @@ export function WaiterMobile() {
                     onCancel={() => setShowMpQr(false)}
                   />
                 </div>
+              )}
+
+              {!showMpQr && (
+                <button
+                  onClick={async () => {
+                    const err = await printTicket({
+                      title: `Mesa ${checkoutTableId.replace('T-', '')}`,
+                      items: table.order.map((i: any) => ({ name: i.name, qty: i.qty, price: i.price })),
+                      subtotal: table.order.reduce((a: number, i: any) => a + i.price * i.qty, 0),
+                      total: totalItemsPrice, preBill: true,
+                    });
+                    triggerToast(err || 'Cuenta enviada a la impresora', err ? 'error' : 'success');
+                  }}
+                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-2xl text-xs font-black uppercase tracking-wider"
+                >
+                  Imprimir cuenta
+                </button>
               )}
 
               {!showMpQr && <button 
