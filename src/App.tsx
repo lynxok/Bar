@@ -17,6 +17,7 @@ import { Logs } from './pages/Logs';
 import Kitchen from './pages/Kitchen';
 import Help from './pages/Help';
 import Reservations from './pages/Reservations';
+import Mugs from './pages/Mugs';
 import { Login } from './pages/Login';
 import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
@@ -94,6 +95,7 @@ export default function App() {
             <Route path="cierre" element={<CashClose />} />
             <Route path="analitica" element={<Analytics />} />
             <Route path="fidelizacion" element={<Loyalty />} />
+            <Route path="vasos" element={<Mugs />} />
             <Route path="facturacion" element={<BillingDrafts />} />
             <Route path="configuracion" element={<Settings />} />
             <Route path="carta" element={<MenuConfig />} />

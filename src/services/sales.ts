@@ -3,6 +3,7 @@ import { db, type Product } from '../db/database';
 import { getStoredUser } from '../lib/auth';
 import { LoggerService } from '../lib/LoggerService';
 import { computeTotals } from '../lib/pricing';
+import { activeMultiplier, crossedMilestones, fillPoints, getMugProgram, isFillItem } from '../lib/mugs';
 
 export interface OrderItem {
   id: string;
@@ -49,6 +50,8 @@ export const findProductForItem = async (item: any): Promise<Product | undefined
 };
 
 const deductStockForItem = async (item: any) => {
+  // Recargas de vaso y abonos de locker no descuentan stock (el barril no se sigue por ahora)
+  if (isFillItem(item) || item?.lockerRenewal) return;
   const qty = item.qty || 1;
   const product = await findProductForItem(item);
   if (!product || product.id == null) return;
@@ -143,31 +146,96 @@ const registerSale = async (params: {
     billed: false
   });
 
+  const config = await db.loyaltyConfig.get('global');
+  const multiplier = activeMultiplier(config, now);
+  const fillLines = items.filter(isFillItem);
+  // Factor para pasar de precio de lista a lo efectivamente cobrado (descuento e impuestos incluidos)
+  const paidRatio = subtotal > 0 ? total / subtotal : 0;
+  const fillPaid = roundMoney(itemsSubtotal(fillLines) * paidRatio);
+
+  // Puntos generales del cliente de la venta: las recargas suman aparte, al dueño del vaso
   if (customer && opts.awardPoints) {
-    const config = await db.loyaltyConfig.get('global');
-    const basePoints = Math.floor(total / 100);
-    let multiplier = 1;
-    const nowStr = now.split('T')[0];
-    (config?.promotions || []).forEach(p => {
-      if (p.active) {
-        const startOk = !p.startDate || nowStr >= p.startDate;
-        const endOk = !p.endDate || nowStr <= p.endDate;
-        if (startOk && endOk) multiplier = Math.max(multiplier, p.multiplier);
-      }
-    });
+    const basePoints = Math.floor(Math.max(0, total - fillPaid) / 100);
     const earnedPoints = Math.floor(basePoints * multiplier);
-    await db.customers.update(customer.id!, { points: (customer.points || 0) + earnedPoints });
-    await db.loyaltyTransactions.add({
-      customerDni: customer.dni,
-      customerName: customer.name,
-      type: 'purchase',
-      points: earnedPoints,
-      description: `${loyaltyLabel} - Pago ${paymentMethod}`,
-      timestamp: now,
-    });
+    if (earnedPoints > 0 || fillLines.length === 0) {
+      await db.customers.update(customer.id!, { points: (customer.points || 0) + earnedPoints });
+      await db.loyaltyTransactions.add({
+        customerDni: customer.dni,
+        customerName: customer.name,
+        type: 'purchase',
+        points: earnedPoints,
+        description: `${loyaltyLabel} - Pago ${paymentMethod}`,
+        timestamp: now,
+      });
+    }
+  }
+
+  if (fillLines.length) {
+    await registerMugFills({ lines: fillLines, paidRatio, multiplier, config, opts, tableId, paymentMethod, now, servedBy: user?.name });
+  }
+  for (const item of items) {
+    if (item?.lockerRenewal) await renewLocker(item.lockerRenewal, now);
   }
 
   return { total, discountAmount };
+};
+
+/** Registra recargas de vaso: historial, litros del vaso, puntos al dueño e hitos de litros. */
+const registerMugFills = async (p: {
+  lines: any[]; paidRatio: number; multiplier: number; config: any; opts: NormalizedOptions;
+  tableId: string; paymentMethod: string; now: string; servedBy?: string;
+}) => {
+  const program = getMugProgram(p.config);
+  for (const line of p.lines) {
+    const qty = line.qty || 1;
+    const mug = await db.mugs.get(line.mugFill.mugId);
+    if (!mug || mug.id == null) continue; // vaso dado de baja: la venta se cobra igual
+    const volumeMl = (Number(line.mugFill.volumeMl) || mug.capacityMl) * qty;
+    const amount = roundMoney(line.price * qty * p.paidRatio);
+    const owner = await db.customers.where('dni').equals(mug.customerDni).first();
+    const points = owner && p.opts.awardPoints ? fillPoints(program, volumeMl, amount, p.multiplier) : 0;
+
+    const ownerMugs = await db.mugs.where('customerDni').equals(mug.customerDni).toArray();
+    const beforeMl = ownerMugs.reduce((acc, m) => acc + (m.totalMl || 0), 0);
+
+    await db.mugFills.add({
+      mugId: mug.id, mugCode: mug.code, ownerDni: mug.customerDni,
+      productId: line.productId, productName: String(line.name), volumeMl, amount, points,
+      tableId: p.tableId, paymentMethod: p.paymentMethod, servedBy: p.servedBy, timestamp: p.now,
+    });
+    await db.mugs.update(mug.id, {
+      totalMl: (mug.totalMl || 0) + volumeMl,
+      fillCount: (mug.fillCount || 0) + qty,
+      lastFillAt: p.now,
+    });
+
+    if (!owner || owner.id == null) continue;
+    const bonuses = p.opts.awardPoints ? crossedMilestones(program, beforeMl, beforeMl + volumeMl) : [];
+    const totalNew = points + bonuses.reduce((a, b) => a + (Number(b.bonusPoints) || 0), 0);
+    if (totalNew > 0) await db.customers.update(owner.id, { points: (owner.points || 0) + totalNew });
+    await db.loyaltyTransactions.add({
+      customerDni: owner.dni, customerName: owner.name, type: 'purchase', points,
+      description: `Recarga vaso ${mug.code}: ${(volumeMl / 1000).toLocaleString('es-AR')} L`,
+      timestamp: p.now,
+    });
+    for (const b of bonuses) {
+      await db.loyaltyTransactions.add({
+        customerDni: owner.dni, customerName: owner.name, type: 'adjustment', points: Number(b.bonusPoints) || 0,
+        description: `Hito ${b.liters} L alcanzado: ${b.label}`, timestamp: p.now,
+      });
+    }
+  }
+};
+
+/** Extiende el abono de un locker N meses desde su vencimiento (o desde hoy si ya venció). */
+const renewLocker = async (r: { lockerId: number; months: number }, now: string) => {
+  const locker = await db.lockers.get(r.lockerId);
+  if (!locker || locker.id == null) return;
+  const today = now.split('T')[0];
+  const from = locker.expiresAt && locker.expiresAt > today ? locker.expiresAt : today;
+  const d = new Date(`${from}T12:00:00`);
+  d.setMonth(d.getMonth() + Math.max(1, Math.floor(Number(r.months) || 1)));
+  await db.lockers.update(locker.id, { expiresAt: d.toISOString().split('T')[0] });
 };
 
 const auditDiscount = async (where: string, opts: NormalizedOptions, discountAmount: number, total: number) => {
@@ -180,7 +248,7 @@ const auditDiscount = async (where: string, opts: NormalizedOptions, discountAmo
   } catch (e) { console.error('No se pudo auditar el descuento', e); }
 };
 
-const SALE_TABLES = () => [db.salonTables, db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig, db.billingDrafts];
+const SALE_TABLES = () => [db.salonTables, db.orders, db.customers, db.products, db.loyaltyTransactions, db.loyaltyConfig, db.billingDrafts, db.mugs, db.mugFills, db.lockers];
 const tableLabel = (tableId: string) => tableId.replace('T-', '');
 
 export const closeOrder = async (tableId: string, paymentMethod: string, options?: string | CloseOrderOptions) => {

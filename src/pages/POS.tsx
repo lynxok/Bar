@@ -20,7 +20,9 @@ import {
   Smartphone,
   Gift,
   CheckCircle2,
+  Beer,
 } from "lucide-react";
+import { MugFillModal } from '../components/mugs/MugFillModal';
 import { useStore } from "../contexts/StoreContext";
 import { useBusiness } from "../contexts/BusinessContext";
 import { cn } from "../lib/utils";
@@ -49,7 +51,8 @@ export function POS() {
   };
 
   const { taxRate, pricesIncludeTax } = useBusiness();
-  const [cart, setCart] = useState<{ id: string; name: string; price: number; qty: number }[]>([]);
+  const [cart, setCart] = useState<{ id: string; name: string; price: number; qty: number; [k: string]: any }[]>([]);
+  const [isMugFillOpen, setIsMugFillOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('Efectivo');
   const [loyaltyId, setLoyaltyId] = useState('');
   const [tipInput, setTipInput] = useState('');
@@ -163,6 +166,13 @@ export function POS() {
           >
             <Barcode className="h-5 w-5" />
             Escanear
+          </button>
+          <button
+            onClick={() => setIsMugFillOpen(true)}
+            className="h-5 w-5"
+          >
+            <Beer className="h-5 w-5" />
+            Recarga de vaso
           </button>
           <div className="flex bg-surface-container p-1 rounded-xl shadow-sm border border-outline-variant">
             <button
@@ -455,6 +465,7 @@ export function POS() {
         </div>
       )}
 
+      <MugFillModal isOpen={isMugFillOpen} onClose={() => setIsMugFillOpen(false)} onAdd={item => setCart(prev => [...prev, item])} />
       {isScannerOpen && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-outline text-on-surface">

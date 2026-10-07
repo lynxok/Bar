@@ -196,6 +196,77 @@ export interface FloorPlan {
   isDefault?: number;
 }
 
+
+// ---------- Vasos propios y lockers (modelo "Stammgast") ----------
+/** Vaso/jarra de un cliente, identificado por un QR con código opaco (no contiene el DNI). */
+export interface Mug {
+  id?: number;
+  /** Código impreso en el QR, p. ej. "7F3K9Q". Único. */
+  code: string;
+  customerDni: string;
+  customerName: string;
+  capacityMl: number;
+  model?: string;
+  status: 'active' | 'lost' | 'retired';
+  lockerId?: number;
+  /** Litros acumulados (en ml) y cantidad de recargas: caché para mostrar rápido; el detalle está en mugFills */
+  totalMl: number;
+  fillCount: number;
+  lastFillAt?: string;
+  purchasePrice?: number;
+  createdAt: string;
+  notes?: string;
+  updatedAt?: string;
+}
+
+/** Locker físico donde el cliente guarda su vaso. */
+export interface Locker {
+  id?: number;
+  /** Etiqueta física, p. ej. "A-12" */
+  label: string;
+  status: 'free' | 'assigned' | 'maintenance';
+  customerDni?: string;
+  customerName?: string;
+  mugId?: number;
+  assignedAt?: string;
+  /** Vencimiento del abono (ISO, fecha). Vacío = sin abono */
+  expiresAt?: string;
+  monthlyFee?: number;
+  notes?: string;
+  updatedAt?: string;
+}
+
+/** Una recarga cobrada de un vaso. Se registra al cerrar la venta. */
+export interface MugFill {
+  id?: number;
+  mugId: number;
+  mugCode: string;
+  ownerDni: string;
+  productId?: number;
+  productName: string;
+  volumeMl: number;
+  amount: number;
+  points: number;
+  tableId: string;
+  paymentMethod: string;
+  servedBy?: string;
+  timestamp: string;
+  updatedAt?: string;
+}
+
+export interface MugProgramConfig {
+  /** Cómo suman puntos las recargas: por litro o por plata gastada (1 punto cada $100) */
+  pointsMode: 'per_liter' | 'per_peso';
+  pointsPerLiter: number;
+  /** Descuento opcional sobre la recarga para dueños de vaso (0 = mismo precio) */
+  holderDiscountPct: number;
+  /** Cervezas habilitadas para recarga, con precio por litro */
+  fillProducts: { productId: number; name: string; pricePerLiter: number }[];
+  /** Hitos por litros acumulados del cliente: al cruzarlos suma puntos extra */
+  milestones: { liters: number; bonusPoints: number; label: string }[];
+  defaultLockerFee: number;
+}
+
 export interface LoyaltyConfig {
   id: string; // "global"
   pointValue: number;
@@ -209,6 +280,8 @@ export interface LoyaltyConfig {
     endDate?: string;
     active: boolean;
   }[];
+  /** Programa de vasos propios (opcional: si falta se usan valores por defecto) */
+  mugProgram?: MugProgramConfig;
 }
 
 export interface LoyaltyTransaction {
@@ -314,6 +387,9 @@ export class BarDatabase extends Dexie {
   loyaltyTransactions!: Table<LoyaltyTransaction>;
   clientOrders!: Table<ClientOrder>;
   billingDrafts!: Table<BillingDraft>;
+  mugs!: Table<Mug>;
+  lockers!: Table<Locker>;
+  mugFills!: Table<MugFill>;
 
   constructor() {
     super('BarDatabase');
@@ -375,6 +451,13 @@ export class BarDatabase extends Dexie {
     this.version(12).stores({
       reservations: '++id, date, status, tableId, updatedAt'
     });
+
+    // v13: vasos propios, lockers y recargas
+    this.version(13).stores({
+      mugs: '++id, &code, customerDni, status, lockerId, updatedAt',
+      lockers: '++id, &label, status, customerDni, updatedAt',
+      mugFills: '++id, mugId, ownerDni, timestamp, updatedAt'
+    });
   }
 }
 
@@ -393,7 +476,7 @@ export const SYNCED_TABLES = [
   'products', 'orders', 'expenses', 'salonTables', 'paymentOrders',
   'comandas', 'rewards', 'customers', 'shifts', 'users', 'messages',
   'floorPlans', 'loyaltyConfig', 'loyaltyTransactions', 'clientOrders', 'billingDrafts',
-  'reservations'
+  'reservations', 'mugs', 'lockers', 'mugFills'
 ] as const;
 
 // Tablas que los dispositivos remotos escriben en el host (incluye logs, que no se descargan)

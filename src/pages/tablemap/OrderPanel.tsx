@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Search, X, ChefHat, Wallet, Plus, Minus, Smartphone, Flame, AlertTriangle } from 'lucide-react';
+import { Search, X, ChefHat, Wallet, Plus, Minus, Smartphone, Flame, AlertTriangle, Beer } from 'lucide-react';
+import { MugFillModal } from '../../components/mugs/MugFillModal';
 import { cn } from '../../lib/utils';
 import { formatMoney } from '../../lib/format';
 import type { OrderItem } from '../../contexts/StoreContext';
@@ -31,6 +32,7 @@ export function OrderPanel({
 }: OrderPanelProps) {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const [mugFillOpen, setMugFillOpen] = useState(false);
 
   const categories = ['Todos', ...Array.from(new Set(menuItems.map(i => i.category || 'Otros')))];
 
@@ -63,6 +65,12 @@ export function OrderPanel({
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-[#0F6B41]/20 hover:bg-emerald-100 text-[#0F6B41] dark:text-emerald-400 rounded-xl text-xs font-semibold transition-all cursor-pointer"
               >
                 <Smartphone className="w-4 h-4" /> QR mesa
+              </button>
+              <button
+                onClick={() => setMugFillOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 dark:bg-amber-500/15 hover:bg-amber-100 text-amber-800 dark:text-amber-300 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+              >
+                <Beer className="w-4 h-4" /> Recarga de vaso
               </button>
             </div>
             <button
@@ -239,6 +247,7 @@ export function OrderPanel({
           </div>
         </div>
       </div>
+      <MugFillModal isOpen={mugFillOpen} onClose={() => setMugFillOpen(false)} onAdd={onAddItem} />
     </div>
   );
 }

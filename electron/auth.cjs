@@ -47,12 +47,13 @@ const ROLE_RULES = {
     products: 'rcu', orders: 'rcu', expenses: 'rcu', salonTables: ALL, paymentOrders: 'rcu',
     comandas: ALL, rewards: 'r', customers: 'rcu', shifts: 'rcu', messages: ALL,
     floorPlans: 'r', loyaltyConfig: 'r', loyaltyTransactions: 'rc', clientOrders: ALL,
-    billingDrafts: 'rcu', reservations: ALL, systemLogs: LOGS_WRITE, auditLogs: LOGS_WRITE,
+    billingDrafts: 'rcu', reservations: ALL, mugs: 'rcu', lockers: 'rcu', mugFills: 'rc', systemLogs: LOGS_WRITE, auditLogs: LOGS_WRITE,
   },
   mozo: {
     products: 'ru', orders: 'rc', salonTables: 'rcu', comandas: 'rcu', rewards: 'r',
     customers: 'rcu', shifts: 'r', messages: 'rcu', floorPlans: 'r', loyaltyConfig: 'r',
     loyaltyTransactions: 'rc', clientOrders: 'rcu', billingDrafts: 'c', reservations: 'rcu',
+    mugs: 'ru', lockers: 'r', mugFills: 'rc',
     systemLogs: LOGS_WRITE, auditLogs: LOGS_WRITE,
   },
   cocinero: {
@@ -65,6 +66,7 @@ const KNOWN_TABLES = [
   'products', 'orders', 'expenses', 'config', 'salonTables', 'paymentOrders', 'systemLogs',
   'auditLogs', 'comandas', 'rewards', 'customers', 'shifts', 'users', 'messages', 'floorPlans',
   'loyaltyConfig', 'loyaltyTransactions', 'clientOrders', 'billingDrafts', 'reservations',
+  'mugs', 'lockers', 'mugFills',
 ];
 
 const METHOD_LETTER = { GET: 'r', POST: 'c', PUT: 'u', PATCH: 'u', DELETE: 'd' };
