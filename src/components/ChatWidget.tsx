@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { MessageSquare, X, Send, User, Check, CheckCheck } from 'lucide-react';
 import { useStore } from '../contexts/StoreContext';
 import { cn } from '../lib/utils';
 
 export function ChatWidget() {
+  const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [text, setText] = useState('');
   const [myRole, setMyRole] = useState<'Caja' | 'Cocina'>('Caja'); // Default to Caja
   const [popupMessage, setPopupMessage] = useState<any | null>(null);
   const { messages, sendMessage, markAsRead } = useStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMapRoute = location.pathname.startsWith('/mapa');
 
   // Trigger popup when receiving a new message and chat is closed
   useEffect(() => {
@@ -58,7 +61,10 @@ export function ChatWidget() {
   const unreadCount = messages.filter(m => m.senderRole !== myRole && m.status === 'sent').length;
 
   return (
-    <div className="fixed bottom-6 right-6 z-50">
+    <div className={cn(
+      "fixed z-50 transition-all duration-300",
+      isMapRoute ? "bottom-6 left-6 md:left-28" : "bottom-6 right-6"
+    )}>
       
       {/* Toast Notification Popup */}
       {popupMessage && !isOpen && (
@@ -67,14 +73,17 @@ export function ChatWidget() {
              setIsOpen(true);
              setPopupMessage(null);
           }}
-          className="absolute bottom-20 right-0 w-72 bg-slate-900 text-white p-4 rounded-2xl shadow-2xl cursor-pointer hover:bg-slate-800 transition-colors animate-in slide-in-from-right-10 fade-in duration-300 border border-slate-700"
+          className={cn(
+            "absolute bottom-20 w-72 bg-[#1C1C1C] text-white p-4 rounded-2xl shadow-2xl cursor-pointer hover:bg-black transition-colors animate-in fade-in duration-300 border border-white/15",
+            isMapRoute ? "left-0" : "right-0"
+          )}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-inner">
+            <div className="w-10 h-10 bg-[#0F6B41] rounded-full flex items-center justify-center flex-shrink-0 shadow-inner">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-wider mb-0.5">Nuevo mensaje de {popupMessage.senderRole}</p>
+              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Nuevo mensaje de {popupMessage.senderRole}</p>
               <p className="text-sm font-medium truncate text-slate-200">{popupMessage.text}</p>
             </div>
             <button 
@@ -82,7 +91,7 @@ export function ChatWidget() {
                 e.stopPropagation();
                 setPopupMessage(null);
               }}
-              className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white transition-colors bg-slate-800 rounded-full"
+              className="w-6 h-6 flex items-center justify-center text-slate-400 hover:text-white transition-colors bg-white/10 rounded-full"
             >
               <X className="w-3 h-3" />
             </button>
@@ -94,22 +103,25 @@ export function ChatWidget() {
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="w-14 h-14 bg-indigo-600 rounded-full shadow-2xl flex items-center justify-center hover:bg-indigo-700 hover:scale-105 transition-all relative group border-4 border-white"
+          className="w-14 h-14 bg-[#0F6B41] hover:bg-emerald-700 rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all relative group border-4 border-white dark:border-[#1E4437] cursor-pointer"
         >
           <MessageSquare className="w-6 h-6 text-white" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">
+            <span className="absolute -top-1 -right-1 bg-[#FA4515] text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">
               {unreadCount}
             </span>
           )}
           
           {/* Tooltip */}
-          <div className="absolute right-16 bg-slate-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap">
+          <div className={cn(
+            "absolute bg-[#1C1C1C] text-white text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg",
+            isMapRoute ? "left-16" : "right-16"
+          )}>
             Chat Interno
-            <div className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-slate-800" />
           </div>
         </button>
       )}
+
 
       {/* Chat Window */}
       {isOpen && (

@@ -16,8 +16,9 @@ interface BusinessContextType {
 const BusinessContext = createContext<BusinessContextType | undefined>(undefined);
 
 export function BusinessProvider({ children }: { children: ReactNode }) {
-  const [businessName, setBusinessName] = useState(() => localStorage.getItem('bar_businessName') || 'GastroAnalytics');
+  const [businessName, setBusinessName] = useState(() => localStorage.getItem('bar_businessName') || 'Mi local');
   const [logo, setLogo] = useState<string | null>(() => localStorage.getItem('bar_logo'));
+
   // (antes `|| 21` impedía guardar 0%)
   const [taxRate, setTaxRate] = useState(() => readTaxSettings().taxRate);
   const [pricesIncludeTax, setPricesIncludeTax] = useState(() => readTaxSettings().pricesIncludeTax);

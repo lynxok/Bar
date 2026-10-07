@@ -34,7 +34,9 @@ import {
 } from 'recharts';
 import { cn } from "../lib/utils";
 import { useStore } from "../contexts/StoreContext";
+import { formatMoney } from "../lib/format";
 import { INITIAL_CATEGORIES } from "./Inventory";
+
 
 const getTierStyle = (tierName: string, index: number = 0) => {
   const name = tierName.toLowerCase();
@@ -315,9 +317,10 @@ export function Loyalty() {
             </div>
             <div className="text-slate-400 text-xs mt-2 flex items-center font-medium">
               <Award className="h-3 w-3 mr-1" />
-              Equivalente a ${(customersData.reduce((acc, c) => acc + (c.points || 0), 0) * pointValue).toLocaleString('es-AR', {minimumFractionDigits: 2})}
+              Equivalente a {formatMoney(customersData.reduce((acc, c) => acc + (c.points || 0), 0) * pointValue)}
             </div>
           </div>
+
           <div className="bg-amber-50 p-4 rounded-xl text-amber-500">
             <Star className="h-6 w-6" />
           </div>

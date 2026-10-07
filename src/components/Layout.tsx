@@ -1,9 +1,9 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
 import { isLowStock, readLowStockThreshold } from '../lib/stock';
-import { logout } from '../lib/auth';
+import { logout, getStoredUser, isSuperadminRole, isAdminRole } from '../lib/auth';
 import { useBusiness } from "../contexts/BusinessContext";
 import { NotificationService } from "../lib/NotificationService";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   LayoutDashboard,
   Grid,
@@ -43,21 +43,17 @@ interface Notification {
   read: boolean;
 }
 
-const NAV_ITEMS = [
-  { path: "/", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/mapa", label: "Mapa del Salón", icon: Grid },
-  { path: "/reservas", label: "Reservas", icon: CalendarDays },
-  { path: "/pos", label: "Punto de Venta (POS)", icon: MonitorCheck },
-  { path: "/inventario", label: "Inventario", icon: Package },
-  { path: "/carta", label: "Menú / Carta QR", icon: Utensils },
-  { path: "/finanzas", label: "Finanzas", icon: Wallet },
-  { path: "/cierre", label: "Cierre de Caja", icon: Banknote },
-  { path: "/analitica", label: "Analítica", icon: BarChart },
-  { path: "/fidelizacion", label: "Fidelización", icon: Award },
-  { path: "/facturacion", label: "Borradores de Factura", icon: FileText },
-  { path: "/cocina", label: "Cocina", icon: ChefHat },
-  { path: "/seguridad", label: "Auditoría y Seguridad", icon: ShieldAlert },
-];
+interface NavItem {
+  path: string;
+  label: string;
+  icon: any;
+}
+
+interface NavGroup {
+  group: 'Operación' | 'Gestión' | 'Sistema';
+  items: NavItem[];
+}
+
 
 export function Layout() {
   const location = useLocation();
@@ -176,23 +172,82 @@ export function Layout() {
     });
   };
 
-  const userString = localStorage.getItem('bar_user');
-  let isSuperadmin = false;
-  try {
-    if (userString) {
-      const u = JSON.parse(userString);
-      isSuperadmin = u.role?.toLowerCase() === 'superadmin';
-    }
-  } catch (e) {
-    console.error(e);
-  }
+  const currentUser = getStoredUser();
+  const roleName = currentUser?.role?.toLowerCase() || 'staff';
+  const isSuperadmin = isSuperadminRole(currentUser?.role);
+  const isAdmin = isAdminRole(currentUser?.role) || isSuperadmin;
+  const isCocinero = roleName === 'cocinero';
+  const isCajero = roleName === 'cajero';
 
-  const MENU_ITEMS = [
-    ...NAV_ITEMS,
-    ...(isSuperadmin ? [{ path: "/logs", label: "Registro Técnico", icon: Terminal }] : []),
-    { path: "/configuracion", label: "Configuración", icon: Settings },
-    { path: "/ayuda", label: "Ayuda", icon: HelpCircle }
-  ];
+  // Navegación agrupada según manual de requerimientos y roles
+  const navGroups: NavGroup[] = useMemo(() => {
+    if (isCocinero) {
+      return [
+        {
+          group: 'Operación',
+          items: [
+            { path: "/cocina", label: "Cocina", icon: ChefHat },
+          ]
+        },
+        {
+          group: 'Sistema',
+          items: [
+            { path: "/ayuda", label: "Ayuda", icon: HelpCircle }
+          ]
+        }
+      ];
+    }
+
+    const operacion: NavItem[] = [
+      { path: "/", label: "Dashboard", icon: LayoutDashboard },
+      { path: "/mapa", label: "Mapa del Salón", icon: Grid },
+      { path: "/pos", label: "Caja Rápida (POS)", icon: MonitorCheck },
+      { path: "/cocina", label: "Cocina", icon: ChefHat },
+      { path: "/reservas", label: "Reservas", icon: CalendarDays },
+    ];
+
+    const gestion: NavItem[] = [
+      { path: "/inventario", label: "Inventario", icon: Package },
+      { path: "/carta", label: "Carta QR", icon: Utensils },
+      { path: "/finanzas", label: "Finanzas", icon: Wallet },
+      { path: "/cierre", label: "Cierre de Caja", icon: Banknote },
+      { path: "/analitica", label: "Analítica", icon: BarChart },
+      { path: "/fidelizacion", label: "Fidelización", icon: Award },
+      { path: "/facturacion", label: "Facturación", icon: FileText },
+    ];
+
+    const sistema: NavItem[] = [
+      { path: "/configuracion", label: "Configuración", icon: Settings },
+    ];
+
+    if (isAdmin) {
+      sistema.push({ path: "/seguridad", label: "Auditoría", icon: ShieldAlert });
+    }
+    if (isSuperadmin) {
+      sistema.push({ path: "/logs", label: "Registro Técnico", icon: Terminal });
+    }
+    sistema.push({ path: "/ayuda", label: "Ayuda", icon: HelpCircle });
+
+    return [
+      { group: 'Operación', items: operacion },
+      { group: 'Gestión', items: gestion },
+      { group: 'Sistema', items: sistema },
+    ];
+  }, [isAdmin, isSuperadmin, isCocinero]);
+
+  const allNavItems = useMemo(() => {
+    return navGroups.flatMap(g => g.items);
+  }, [navGroups]);
+
+  const currentTitle = useMemo(() => {
+    if (location.pathname === '/') return 'Dashboard';
+    const found = allNavItems.find(i => i.path === location.pathname);
+    if (found) return found.label;
+    if (location.pathname.startsWith('/cliente')) return 'Carta Digital';
+    if (location.pathname === '/mozo') return 'App del Mozo';
+    return 'Panel de Control';
+  }, [location.pathname, allNavItems]);
+
 
   useEffect(() => {
     if (lowStockCount > 0) {
@@ -324,74 +379,80 @@ export function Layout() {
         "fixed left-0 top-0 h-screen bg-slate-900 hidden md:flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
         isSidebarCollapsed ? "w-20" : "w-64"
       )}>
-        <div className="p-6 flex items-center gap-3 overflow-hidden">
-          {logo ? (
-            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 bg-white">
-              <img src={logo} alt="Logo" className="w-full h-full object-cover" />
-            </div>
-          ) : (
-            <div className="w-8 h-8 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Utensils className="h-5 w-5 text-white" />
-            </div>
-          )}
-          {!isSidebarCollapsed && (
-            <span className="font-bold text-white text-xl tracking-tight leading-tight truncate transition-all duration-300 animate-in fade-in" title={businessName}>
-              {businessName}
-            </span>
-          )}
+        <div className="p-5 flex items-center gap-3 overflow-hidden border-b border-white/10">
+          <Link to="/" className="flex items-center gap-3 overflow-hidden">
+            {isSidebarCollapsed ? (
+              <img
+                src="./brand/isologo-light.png"
+                alt="LYNX"
+                className="h-10 w-10 object-contain rounded-lg"
+              />
+            ) : (
+              <img
+                src="./brand/logo-full-dark.png"
+                alt="LYNX BarOS"
+                className="h-10 w-auto object-contain max-w-[170px]"
+              />
+            )}
+          </Link>
         </div>
         
-        <nav className="flex-1 px-4 space-y-1">
-          {MENU_ITEMS.map((item) => {
-            const isActive = location.pathname === item.path;
-            const Icon = item.icon;
-            
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={cn(
-                  "flex items-center px-4 py-3 rounded-lg gap-3 transition-all duration-300",
-                  isActive
-                    ? "bg-indigo-600 text-white"
-                    : "hover:bg-slate-800",
-                  isSidebarCollapsed ? "justify-center px-2" : ""
-                )}
-                title={isSidebarCollapsed ? item.label : undefined}
-              >
-                <Icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-white" : "text-slate-400")} />
-                {!isSidebarCollapsed && (
-                  <span className="text-sm font-medium animate-in fade-in duration-300">
-                    {item.label}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+        <nav className="flex-1 px-3 py-3 space-y-4 overflow-y-auto">
+          {navGroups.map((group) => (
+            <div key={group.group} className="space-y-1">
+              {!isSidebarCollapsed && (
+                <div className="px-3 py-1 text-[11px] font-bold tracking-wider text-emerald-300/60 uppercase">
+                  {group.group}
+                </div>
+              )}
+              {group.items.map((item) => {
+                const isActive = location.pathname === item.path;
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.path}
+                    to={item.path}
+                    className={cn(
+                      "flex items-center px-3.5 py-2.5 rounded-xl gap-3 transition-all min-h-[44px]",
+                      isActive
+                        ? "bg-[#0F6B41] text-white shadow-sm font-semibold"
+                        : "text-slate-300 hover:bg-white/5 hover:text-white font-medium",
+                      isSidebarCollapsed ? "justify-center px-2" : ""
+                    )}
+                    title={isSidebarCollapsed ? item.label : undefined}
+                  >
+                    <Icon className={cn("h-5 w-5 flex-shrink-0", isActive ? "text-white" : "text-emerald-400/80")} />
+                    {!isSidebarCollapsed && (
+                      <span className="text-sm truncate">
+                        {item.label}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
         
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t border-white/10 bg-black/10">
           <div className="flex items-center justify-between overflow-hidden">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center font-bold text-white uppercase flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-[#0F6B41] flex items-center justify-center font-bold text-white uppercase flex-shrink-0">
                 {(() => {
                   try {
-                    const u = JSON.parse(localStorage.getItem('bar_user') || '{}');
-                    return (u.name || 'U').substring(0, 2);
+                    const u = getStoredUser();
+                    return (u?.name || 'U').substring(0, 2);
                   } catch { return 'U'; }
                 })()}
               </div>
               {!isSidebarCollapsed && (
                 <div className="overflow-hidden animate-in fade-in duration-300">
                   <div className="text-sm font-semibold text-white truncate w-24">
-                    {(() => {
-                      try { return JSON.parse(localStorage.getItem('bar_user') || '{}').name || 'Usuario'; } catch { return 'Usuario'; }
-                    })()}
+                    {currentUser?.name || 'Usuario'}
                   </div>
-                  <div className="text-xs text-slate-500 truncate">
-                    {(() => {
-                      try { return JSON.parse(localStorage.getItem('bar_user') || '{}').role || 'Staff'; } catch { return 'Staff'; }
-                    })()}
+                  <div className="text-xs text-emerald-300/80 truncate font-medium">
+                    {currentUser?.role || 'Staff'}
                   </div>
                 </div>
               )}
@@ -402,7 +463,7 @@ export function Layout() {
                 onClick={() => {
                   void logout().finally(() => window.location.reload());
                 }}
-                className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0 animate-in fade-in"
+                className="p-2 text-slate-300 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
                 title="Cerrar Sesión"
               >
                 <LogOut className="w-5 h-5" />
@@ -412,14 +473,13 @@ export function Layout() {
 
           {/* Agency Footer */}
           {!isSidebarCollapsed && (
-            <div className="mt-4 pt-4 border-t border-slate-800/80 flex flex-col items-center gap-3 opacity-80 hover:opacity-100 transition-opacity animate-in fade-in duration-300">
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-[10px] text-slate-500 font-medium tracking-widest uppercase">Desarrollado por</span>
-                <a href="https://www.lnx.com.ar" target="_blank" rel="noopener noreferrer" className="hover:scale-105 transition-transform">
-                  <img src="./lynx-consulting-logo.png" alt="LYNX Consulting" className="h-12 object-contain" />
-                </a>
-              </div>
-              <span className="text-[9px] text-slate-600 font-medium tracking-widest">v1.1.1 (Local-First)</span>
+            <div className="mt-3 pt-3 border-t border-white/10 flex flex-col items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
+              <span className="text-[11px] text-slate-300 font-semibold tracking-wide">
+                LYNX BarOS by LYNX Consulting
+              </span>
+              <span className="text-[10px] text-emerald-400/70 font-semibold">
+                v1.2.0 (Local-First)
+              </span>
             </div>
           )}
 
@@ -432,31 +492,32 @@ export function Layout() {
         isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
       )}>
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-4 md:px-8 justify-between sticky top-0 z-40">
+        <header className="h-16 bg-white dark:bg-[#1E4437] border-b border-slate-200 dark:border-white/10 flex items-center px-4 md:px-8 justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
-              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all hidden md:block"
+              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-white/10 rounded-lg transition-all hidden md:block min-h-[44px] min-w-[44px] cursor-pointer"
               title={isSidebarCollapsed ? "Expandir menú" : "Colapsar menú"}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600 dark:text-slate-200">
                 <line x1="3" y1="12" x2="21" y2="12"></line>
                 <line x1="3" y1="6" x2="21" y2="6"></line>
                 <line x1="3" y1="18" x2="21" y2="18"></line>
               </svg>
             </button>
-            <h2 className="text-lg font-semibold text-slate-800 hidden md:block">
-              Panel de Control
+            <h2 className="text-lg font-bold text-[#1C1C1C] dark:text-white hidden md:block tracking-tight">
+              {currentTitle}
             </h2>
             <div className="flex items-center gap-2 md:hidden">
               {logo ? (
                 <img src={logo} alt="Logo" className="w-7 h-7 object-cover rounded-lg" />
               ) : (
-                <Utensils className="h-5 w-5 text-indigo-600" />
+                <Utensils className="h-5 w-5 text-[#0F6B41]" />
               )}
-              <span className="font-extrabold text-slate-900 text-base tracking-tight leading-none truncate max-w-[160px]">{businessName}</span>
+              <span className="font-bold text-[#1C1C1C] dark:text-white text-base tracking-tight leading-none truncate max-w-[160px]">{businessName}</span>
             </div>
           </div>
+
           <div className="flex items-center gap-4 ml-auto">
             <SyncStatusBadge />
             <button

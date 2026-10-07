@@ -5,8 +5,10 @@ import App from './App.tsx';
 import { BusinessProvider } from './contexts/BusinessContext.tsx';
 import { AlertProvider } from './contexts/AlertContext.tsx';
 import { StoreProvider } from './contexts/StoreContext.tsx';
+import { ToastProvider } from './components/ui/Toast.tsx';
 import { LoggerService } from './lib/LoggerService';
 import './index.css';
+
 
 // Global Error Catching
 window.onerror = (message, source, lineno, colno, error) => {
@@ -23,10 +25,13 @@ createRoot(document.getElementById('root')!).render(
       <BusinessProvider>
         <AlertProvider>
           <StoreProvider>
-            <App />
+            <ToastProvider>
+              <App />
+            </ToastProvider>
           </StoreProvider>
         </AlertProvider>
       </BusinessProvider>
     </HashRouter>
   </StrictMode>
 );
+

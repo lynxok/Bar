@@ -20,7 +20,9 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { useStore } from "../contexts/StoreContext";
+import { formatMoney } from "../lib/format";
 import * as XLSX from 'xlsx';
+
 
 const EXPENSE_CATEGORIES = [
   'Insumos / Mercadería',
@@ -159,23 +161,23 @@ export function Finance() {
           className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-500 hover:shadow-md transition-all cursor-pointer group"
         >
           <div className="flex justify-between items-start">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 group-hover:text-indigo-500 transition-colors">Ventas Totales</p>
-            <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500 transition-colors" />
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 group-hover:text-emerald-700 transition-colors">Ventas Totales</p>
+            <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-700 transition-colors" />
           </div>
-          <h3 className="text-3xl font-bold text-emerald-600 group-hover:text-indigo-600 transition-colors">${salesRevenue.toLocaleString()}</h3>
+          <h3 className="text-3xl font-bold text-[#0F6B41] font-mono tabular-nums">{formatMoney(salesRevenue)}</h3>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Gastos Pagados</p>
-          <h3 className="text-3xl font-bold text-red-500">${totalExpenses.toLocaleString()}</h3>
+          <h3 className="text-3xl font-bold text-[#C62828] font-mono tabular-nums">{formatMoney(totalExpenses)}</h3>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Cuentas x Pagar</p>
-          <h3 className="text-3xl font-bold text-amber-500">${totalPayables.toLocaleString()}</h3>
+          <h3 className="text-3xl font-bold text-amber-500 font-mono tabular-nums">{formatMoney(totalPayables)}</h3>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Balance Operativo</p>
-          <h3 className={cn("text-3xl font-bold", balance >= 0 ? "text-slate-900" : "text-red-600")}>
-            ${balance.toLocaleString()}
+          <h3 className={cn("text-3xl font-bold font-mono tabular-nums", balance >= 0 ? "text-[#0F6B41]" : "text-[#C62828]")}>
+            {formatMoney(balance)}
           </h3>
         </div>
       </div>
@@ -194,12 +196,13 @@ export function Finance() {
                     <h4 className="text-sm font-bold text-slate-800">{exp.provider}</h4>
                     <p className="text-[10px] text-slate-500">{exp.description}</p>
                   </div>
-                  <span className="font-bold text-red-500">-${exp.amount.toLocaleString()}</span>
+                  <span className="font-bold text-[#C62828] font-mono tabular-nums">-{formatMoney(exp.amount)}</span>
                 </div>
               ))
             )}
           </div>
         </div>
+
 
         {/* Tabs Area */}
         <div className="lg:col-span-2 space-y-4">
@@ -373,7 +376,7 @@ export function Finance() {
                       <tr key={sale.id} className="text-sm hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 text-slate-600">{new Date(sale.timestamp).toLocaleString()}</td>
                         <td className="px-6 py-4 font-bold text-slate-800">{sale.paymentMethod || 'Efectivo'}</td>
-                        <td className="px-6 py-4 text-right font-bold text-emerald-600">${sale.total.toLocaleString()}</td>
+                        <td className="px-6 py-4 text-right font-bold text-[#0F6B41] font-mono tabular-nums">{formatMoney(sale.total)}</td>
                       </tr>
                     ))
                   )}
@@ -383,9 +386,10 @@ export function Finance() {
 
             <div className="p-6 bg-slate-50 border-t border-slate-200 flex justify-end shrink-0">
                <h3 className="text-lg text-slate-600 font-bold">
-                 Total Filtrado: <span className="text-emerald-600 text-2xl ml-2">${filteredSales.reduce((acc, s) => acc + s.total, 0).toLocaleString()}</span>
+                 Total Filtrado: <span className="text-[#0F6B41] text-2xl ml-2 font-mono tabular-nums">{formatMoney(filteredSales.reduce((acc, s) => acc + s.total, 0))}</span>
                </h3>
             </div>
+
           </div>
         </div>
       )}

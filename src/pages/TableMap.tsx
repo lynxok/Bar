@@ -1311,9 +1311,10 @@ export function TableMap() {
                     : "bg-indigo-50 border-indigo-100 text-indigo-600 hover:bg-indigo-100"
                 )}
               >
-                {isMergeMode ? `Cancelando fusión visual` : 'Unir Mesas (Merge)'}
+                {isMergeMode ? 'Cancelar unión' : 'Unir mesas'}
               </button>
             )}
+
 
             {isEditingLayout && (
               <div className="flex gap-3">

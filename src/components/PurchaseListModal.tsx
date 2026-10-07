@@ -2,8 +2,10 @@ import { Printer, ShoppingCart, Sheet, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import type { Product } from '../db/database';
 import { buildPurchaseList } from '../lib/stock';
+import { formatMoney } from '../lib/format';
 
-const money = (n: number) => `$${n.toLocaleString('es-AR', { maximumFractionDigits: 2 })}`;
+const money = (n: number) => formatMoney(n);
+
 
 /** Lista de compra sugerida a partir del stock mínimo de cada producto/insumo. */
 export function PurchaseListModal({ products, threshold, onClose }: { products: Product[]; threshold: number; onClose: () => void }) {

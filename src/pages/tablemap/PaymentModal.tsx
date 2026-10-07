@@ -24,10 +24,13 @@ const METHODS = [
 ];
 const MP = 'Mercado Pago';
 
+import { formatMoney } from '../../lib/format';
+
 interface PartState { paymentMethod: string; customerDni: string; tip: string; qty: Record<string, number>; }
 const emptyPart = (): PartState => ({ paymentMethod: 'Efectivo', customerDni: '', tip: '', qty: {} });
-const money = (n: number) => `$${n.toLocaleString('es-AR', { maximumFractionDigits: 2 })}`;
+const money = (n: number) => formatMoney(n);
 const round2 = (n: number) => Math.round(n * 100) / 100;
+
 
 /** Cobro de mesa: una cuenta o dividida (partes iguales / por ítems), con descuento, propina y QR de Mercado Pago. */
 export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {

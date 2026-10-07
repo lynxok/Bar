@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { mpCheck, mpCreateQr, newPaymentReference } from '../../lib/mercadopago';
+import { formatMoney } from '../../lib/format';
+
 
 interface Props {
   amount: number;
@@ -61,8 +63,10 @@ export function MercadoPagoQr({ amount, description, tableId, onApproved, onCanc
       <div className="bg-white rounded-2xl p-4 inline-block border border-slate-200 min-h-[200px] min-w-[200px]">
         {qrImg ? <img src={qrImg} alt="QR Mercado Pago" className="w-56 h-56" /> : <div className="w-56 h-56 flex items-center justify-center text-slate-400 text-sm">{status === 'error' ? '—' : 'Generando…'}</div>}
       </div>
-      <div className="text-2xl font-black text-slate-900">${amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</div>
+      <div className="text-2xl font-black text-slate-900 font-mono tabular-nums">{formatMoney(amount)}</div>
+
       <div className={status === 'error' || status === 'rejected' || status === 'amount_mismatch' ? 'text-sm font-bold text-rose-600' : 'text-sm font-bold text-slate-600'}>
+
         {label[status] || `Estado: ${status}`}
       </div>
       <button onClick={onCancel} className="text-xs font-bold text-slate-500 underline">Cancelar y elegir otro medio de pago</button>

@@ -18,10 +18,15 @@ import {
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { BillingDraft } from "../db/database";
+import { formatMoney } from "../lib/format";
+import { useToast } from "../components/ui/Toast";
+
 
 export function BillingDrafts() {
   const { billingDrafts, markDraftsAsBilled } = useStore();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'pending' | 'billed'>('pending');
+
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
@@ -242,7 +247,7 @@ export function BillingDrafts() {
           </div>
           <div>
             <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Pendiente de Facturar</span>
-            <span className="text-2xl font-black text-on-surface">${totalPendingAmount.toLocaleString('es-AR')}</span>
+            <span className="text-2xl font-black text-on-surface font-mono tabular-nums">{formatMoney(totalPendingAmount)}</span>
             <span className="text-xs text-amber-600 block mt-0.5 font-medium">{pendingCount} borradores</span>
           </div>
         </div>
@@ -253,10 +258,11 @@ export function BillingDrafts() {
           </div>
           <div>
             <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Facturado Consolidado</span>
-            <span className="text-2xl font-black text-on-surface">${totalBilledAmount.toLocaleString('es-AR')}</span>
+            <span className="text-2xl font-black text-on-surface font-mono tabular-nums">{formatMoney(totalBilledAmount)}</span>
             <span className="text-xs text-emerald-600 block mt-0.5 font-medium">{billedCount} facturas emitidas</span>
           </div>
         </div>
+
 
         <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline shadow-sm flex items-center gap-4">
           <div className="p-3 bg-indigo-500/10 text-indigo-650 rounded-xl">
@@ -417,9 +423,10 @@ export function BillingDrafts() {
                       )}
                     </td>
                   )}
-                  <td className="px-6 py-4 text-right font-black text-on-surface">
-                    ${draft.amount.toLocaleString('es-AR')}
+                  <td className="px-6 py-4 text-right font-black text-on-surface font-mono tabular-nums">
+                    {formatMoney(draft.amount)}
                   </td>
+
                   <td className="px-6 py-4 text-center">
                     <div className="flex gap-1.5 justify-center">
                       <button
@@ -650,9 +657,10 @@ export function BillingDrafts() {
 
               <div className="border-t border-outline-variant pt-3 flex justify-between text-base font-black text-on-surface font-sans">
                 <span>TOTAL COMERCIAL:</span>
-                <span>${previewDraft.amount.toLocaleString('es-AR')}</span>
+                <span className="font-mono tabular-nums">{formatMoney(previewDraft.amount)}</span>
               </div>
             </div>
+
 
             <div className="flex gap-2">
               <button

@@ -1,20 +1,25 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { useStore } from '../contexts/StoreContext';
+import { useBusiness } from '../contexts/BusinessContext';
+import { formatMoney } from '../lib/format';
 import { 
   Utensils, Receipt, ShoppingBag, Clock, Plus, Minus, Send, 
   CheckCircle, XCircle, AlertCircle, Search, ShoppingCart, Menu
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
+
 export function ClientSummary() {
   const { tableId } = useParams<{ tableId: string }>();
   const { tables, products, clientOrders, submitClientOrder } = useStore();
+  const { businessName, logo } = useBusiness();
   
   const [activeTab, setActiveTab] = useState<'consumo' | 'pedir' | 'pedidos'>('pedir');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [cart, setCart] = useState<Record<number, { product: any; qty: number }>>({});
+
 
   // Generate persistent customer session ID
   const [customerId] = useState(() => {
@@ -116,28 +121,37 @@ export function ClientSummary() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col max-w-md mx-auto shadow-md border-x border-slate-200">
       {/* Mobile Header */}
-      <header className="bg-white px-6 py-4 border-b border-slate-200 sticky top-0 z-30 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-black text-slate-900">LYNX BarOS</h1>
-            <p className="text-xs text-slate-500 font-bold flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-indigo-500" /> Mesa {tableId}
-            </p>
+      <header className="bg-white px-5 py-3.5 border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {logo ? (
+              <img src={logo} alt="Logo" className="w-10 h-10 object-cover rounded-xl border border-slate-200 shrink-0" />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-[#0F6B41] flex items-center justify-center text-white shrink-0">
+                <Utensils className="w-5 h-5" />
+              </div>
+            )}
+            <div className="min-w-0">
+              <h1 className="text-base font-bold text-[#1C1C1C] truncate leading-tight">{businessName}</h1>
+              <p className="text-xs text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
+                <Clock className="w-3 h-3 text-[#0F6B41]" /> Mesa {tableId?.replace('T-', '')}
+              </p>
+            </div>
           </div>
-          <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex flex-col items-center justify-center text-white shadow-lg shadow-indigo-100">
-            <span className="text-[10px] font-black leading-none uppercase tracking-tighter">Mesa</span>
-            <span className="text-lg font-black leading-none mt-0.5">{tableId?.replace('T-', '')}</span>
+          <div className="min-h-[44px] min-w-[52px] bg-[#0F6B41] rounded-2xl flex flex-col items-center justify-center text-white shadow-md shrink-0 px-2">
+            <span className="text-[9px] font-bold leading-none uppercase tracking-wider text-emerald-200">Mesa</span>
+            <span className="text-lg font-bold leading-none mt-1 font-mono">{tableId?.replace('T-', '')}</span>
           </div>
         </div>
       </header>
 
       {/* Tabs Menu */}
-      <div className="flex bg-white border-b border-slate-200 sticky top-[77px] z-20">
+      <div className="flex bg-white border-b border-slate-200 sticky top-[69px] z-20">
         <button
           onClick={() => setActiveTab('pedir')}
           className={cn(
-            "flex-1 py-3 text-center text-xs font-black uppercase tracking-wider border-b-4 transition-all",
-            activeTab === 'pedir' ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
+            activeTab === 'pedir' ? "border-[#0F6B41] text-[#0F6B41]" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Carta / Pedir
@@ -145,8 +159,8 @@ export function ClientSummary() {
         <button
           onClick={() => setActiveTab('consumo')}
           className={cn(
-            "flex-1 py-3 text-center text-xs font-black uppercase tracking-wider border-b-4 transition-all",
-            activeTab === 'consumo' ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
+            activeTab === 'consumo' ? "border-[#0F6B41] text-[#0F6B41]" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Mi Consumo ({registeredOrder.length})
@@ -154,16 +168,17 @@ export function ClientSummary() {
         <button
           onClick={() => setActiveTab('pedidos')}
           className={cn(
-            "flex-1 py-3 text-center text-xs font-black uppercase tracking-wider border-b-4 transition-all relative",
-            activeTab === 'pedidos' ? "border-indigo-600 text-indigo-600" : "border-transparent text-slate-500 hover:text-slate-700"
+            "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all relative cursor-pointer",
+            activeTab === 'pedidos' ? "border-[#0F6B41] text-[#0F6B41]" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
-          Mis Envios
+          Mis Envíos
           {myPastOrders.filter(o => o.status === 'pending').length > 0 && (
-            <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse" />
+            <span className="absolute top-2.5 right-2 w-2.5 h-2.5 bg-[#FA4515] rounded-full animate-pulse" />
           )}
         </button>
       </div>
+
 
       <main className="flex-1 p-5 space-y-6 pb-28 overflow-y-auto">
         {/* Tab 1: Ordering menu */}
@@ -188,10 +203,10 @@ export function ClientSummary() {
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
                   className={cn(
-                    "px-4 py-2 rounded-xl text-xs font-black whitespace-nowrap transition-all border",
+                    "px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer",
                     selectedCategory === cat 
-                      ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-100" 
-                      : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                      ? "bg-[#0F6B41] border-[#0F6B41] text-white shadow-sm" 
+                      : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                   )}
                 >
                   {cat}
@@ -210,14 +225,14 @@ export function ClientSummary() {
                 filteredProducts.map(product => {
                   const cartItem = cart[product.id!];
                   return (
-                    <div key={product.id} className="bg-white p-4 rounded-3xl border border-slate-150 flex items-center justify-between shadow-sm">
+                    <div key={product.id} className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between shadow-sm">
                       <div className="flex-1 min-w-0 pr-4">
-                        <span className="text-[9px] font-black text-indigo-500 uppercase tracking-wider">{product.category}</span>
-                        <h4 className="font-bold text-slate-800 truncate text-sm mt-0.5">{product.name}</h4>
+                        <span className="text-[10px] font-semibold text-[#0F6B41] uppercase tracking-wider">{product.category}</span>
+                        <h4 className="font-semibold text-[#1C1C1C] truncate text-sm mt-0.5">{product.name}</h4>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="font-black text-slate-900 text-base">${product.price.toLocaleString()}</span>
+                          <span className="font-bold text-[#1C1C1C] text-base tabular-nums">{formatMoney(product.price)}</span>
                           {product.stock <= 3 && product.stock > 0 && (
-                            <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded-md">¡Últimos {product.stock}!</span>
+                            <span className="text-[10px] font-semibold text-[#FA4515] bg-orange-50 px-2 py-0.5 rounded-md">¡Últimos {product.stock}!</span>
                           )}
                         </div>
                       </div>
@@ -238,7 +253,7 @@ export function ClientSummary() {
                                 "w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-all",
                                 product.stock <= cartItem.qty 
                                   ? "bg-slate-100 text-slate-300 cursor-not-allowed" 
-                                  : "bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-100"
+                                  : "bg-[#0F6B41] text-white hover:bg-[#0c5734] shadow-sm cursor-pointer"
                               )}
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -249,13 +264,13 @@ export function ClientSummary() {
                             onClick={() => addToCart(product)}
                             disabled={product.stock <= 0}
                             className={cn(
-                              "px-3.5 py-1.5 rounded-xl text-xs font-black transition-all",
+                              "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer",
                               product.stock <= 0
                                 ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                : "bg-indigo-50 text-indigo-600 hover:bg-indigo-100"
+                                : "bg-emerald-50 text-[#0F6B41] hover:bg-emerald-100"
                             )}
                           >
-                            {product.stock <= 0 ? 'Sin Stock' : 'Agregar'}
+                            {product.stock <= 0 ? 'Sin stock' : 'Agregar'}
                           </button>
                         )}
                       </div>
@@ -276,13 +291,13 @@ export function ClientSummary() {
             )}>
               <div className={cn(
                 "w-12 h-12 rounded-xl flex items-center justify-center",
-                registeredOrder.length > 0 ? "bg-emerald-100 text-emerald-600" : "bg-slate-200 text-slate-400"
+                registeredOrder.length > 0 ? "bg-[#0F6B41]/10 text-[#0F6B41]" : "bg-slate-200 text-slate-400"
               )}>
                 <ShoppingBag className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="font-bold text-slate-900">
-                  {registeredOrder.length > 0 ? 'Consumo de la Mesa' : 'Sin consumos todavía'}
+                <h3 className="font-semibold text-slate-900">
+                  {registeredOrder.length > 0 ? 'Consumo de la mesa' : 'Sin consumos todavía'}
                 </h3>
                 <p className="text-xs text-slate-500 font-medium">
                   {registeredOrder.length > 0 ? `${registeredOrder.length} productos registrados en sistema` : 'Los productos aprobados aparecerán aquí.'}
@@ -290,10 +305,10 @@ export function ClientSummary() {
               </div>
             </div>
 
-            <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
               <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
                 <Receipt className="w-4 h-4 text-slate-400" />
-                <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider">Detalle del Ticket</h3>
+                <h3 className="text-xs font-semibold text-slate-800 uppercase tracking-wider">Detalle del ticket</h3>
               </div>
               
               <div className="divide-y divide-slate-100">
@@ -305,16 +320,16 @@ export function ClientSummary() {
                   registeredOrder.map((item: any, idx: number) => (
                     <div key={idx} className="p-4 flex justify-between items-center">
                       <div className="flex gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-bold text-slate-500 text-sm">
+                        <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-sm">
                           {item.qty}x
                         </div>
                         <div>
-                          <h4 className="text-sm font-bold text-slate-800">{item.name}</h4>
-                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">${item.price} c/u</p>
+                          <h4 className="text-sm font-semibold text-slate-800">{item.name}</h4>
+                          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tight tabular-nums">{formatMoney(item.price)} c/u</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-slate-900 text-sm">${(item.price * item.qty).toLocaleString()}</p>
+                        <p className="font-bold text-slate-900 text-sm tabular-nums">{formatMoney(item.price * item.qty)}</p>
                       </div>
                     </div>
                   ))
@@ -322,21 +337,21 @@ export function ClientSummary() {
               </div>
 
               {registeredOrder.length > 0 && (
-                <div className="p-6 bg-slate-900 text-white">
+                <div className="p-6 bg-[#1E4437] text-white">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-400 font-bold uppercase tracking-widest text-xs">Total Consumido</span>
-                    <span className="text-2xl font-black text-white">${registeredTotal.toLocaleString()}</span>
+                    <span className="text-slate-200 font-semibold uppercase tracking-widest text-xs">Total consumido</span>
+                    <span className="text-2xl font-bold text-white tabular-nums">{formatMoney(registeredTotal)}</span>
                   </div>
                 </div>
               )}
             </div>
 
-            <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl flex gap-3">
+            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex gap-3">
               <div className="p-2 bg-white rounded-lg h-fit shadow-sm">
-                <Utensils className="w-4 h-4 text-indigo-600" />
+                <Utensils className="w-4 h-4 text-[#0F6B41]" />
               </div>
-              <p className="text-xs text-indigo-800 font-medium leading-relaxed">
-                Este es un resumen de tu consumo actual. Para pedir algo más, utiliza la pestaña de "Carta" o llama al mozo para solicitar la cuenta.
+              <p className="text-xs text-[#1E4437] font-medium leading-relaxed">
+                Este es un resumen de tu consumo actual. Para pedir algo más, utilizá la pestaña de "Carta" o solicitá la cuenta al personal.
               </p>
             </div>
           </div>
@@ -389,17 +404,17 @@ export function ClientSummary() {
                     
                     <div className="space-y-1.5">
                       {order.items.map((it: any, itemIdx: number) => (
-                        <div key={itemIdx} className="flex justify-between text-xs font-bold text-slate-600">
+                        <div key={itemIdx} className="flex justify-between text-xs font-semibold text-slate-700">
                           <span>{it.qty}x {it.name}</span>
-                          <span>${(it.price * it.qty).toLocaleString()}</span>
+                          <span className="tabular-nums">{formatMoney(it.price * it.qty)}</span>
                         </div>
                       ))}
                     </div>
                     
                     {order.status === 'pending' && (
-                      <div className="p-3 bg-amber-50/50 rounded-xl flex items-start gap-2 text-[10px] text-amber-800 font-semibold border border-amber-100/50">
+                      <div className="p-3 bg-amber-50 rounded-xl flex items-start gap-2 text-[11px] text-amber-800 font-semibold border border-amber-200">
                         <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                        <span>Pedido Enviado - Esperando confirmación del mozo. Te notificaremos aquí al instante.</span>
+                        <span>Pedido enviado. Esperando confirmación del personal.</span>
                       </div>
                     )}
                   </div>
@@ -412,18 +427,18 @@ export function ClientSummary() {
 
       {/* Floating Cart Bar (at bottom of screen) */}
       {cartItemCount > 0 && activeTab === 'pedir' && (
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/80 backdrop-blur-md border-t border-slate-100 z-40">
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/90 backdrop-blur-md border-t border-slate-200 z-40">
           <button
             onClick={handleSendOrder}
-            className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black text-sm shadow-xl flex items-center justify-between px-6 transition-all active:scale-[0.98] animate-in slide-in-from-bottom duration-300"
+            className="w-full min-h-[48px] py-3.5 bg-[#FA4515] hover:bg-[#e03a0e] text-white rounded-xl font-bold text-sm shadow-lg flex items-center justify-between px-6 transition-all active:scale-[0.98] cursor-pointer"
           >
             <div className="flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4" />
-              <span>Enviar Pedido ({cartItemCount})</span>
+              <ShoppingCart className="w-5 h-5" />
+              <span>Enviar pedido ({cartItemCount})</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider opacity-70">Total</span>
-              <span className="text-base font-black">${cartTotal.toLocaleString()}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-wider opacity-85">Total</span>
+              <span className="text-lg font-bold tabular-nums">{formatMoney(cartTotal)}</span>
               <Send className="w-4 h-4 ml-1" />
             </div>
           </button>
@@ -431,9 +446,9 @@ export function ClientSummary() {
       )}
 
       {/* Footer Branding */}
-      <footer className="p-6 text-center text-slate-400 border-t border-slate-100 bg-white">
-        <p className="text-[9px] font-bold uppercase tracking-[0.2em] mb-0.5">LYNX BarOS</p>
-        <p className="text-[8px]">Mesa {tableId} • Sesión #{customerId.slice(-4)}</p>
+      <footer className="p-6 text-center text-slate-500 border-t border-slate-200 bg-white">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1E4437] mb-0.5">LYNX BarOS</p>
+        <p className="text-[11px] text-slate-400">Mesa {tableId} • by LYNX</p>
       </footer>
     </div>
   );

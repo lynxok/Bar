@@ -11,11 +11,16 @@ import {
 import { Download, TrendingUp, Calendar, ArrowUpRight } from 'lucide-react';
 import { useStore } from "../contexts/StoreContext";
 import { cn } from "../lib/utils";
+import { formatMoney } from "../lib/format";
+import { useToast } from "../components/ui/Toast";
 import * as XLSX from 'xlsx';
+
 
 export function Analytics() {
   const { orders, expenses } = useStore();
+  const { showToast } = useToast();
   const [timeFilter, setTimeFilter] = useState('Hoy');
+
 
   // Determine date filter
   const getStartDate = () => {
@@ -95,9 +100,10 @@ export function Analytics() {
     }));
 
     if (reportData.length === 0) {
-      alert("No hay datos de ventas para este periodo.");
+      showToast("No hay datos de ventas para este periodo.", "info");
       return;
     }
+
 
     const ws = XLSX.utils.json_to_sheet(reportData);
     const wb = XLSX.utils.book_new();
@@ -141,7 +147,7 @@ export function Analytics() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
           <p className="text-slate-500 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Ingresos Brutos ({timeFilter})</p>
-          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10">${totalSales.toLocaleString()}</h3>
+          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10 font-mono tabular-nums">{formatMoney(totalSales)}</h3>
           <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm relative z-10">
             <TrendingUp className="w-4 h-4" />
             <span>Basado en ventas cerradas</span>
@@ -150,17 +156,17 @@ export function Analytics() {
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
           <p className="text-slate-500 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Gastos Directos ({timeFilter})</p>
-          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10">${totalExpenses.toLocaleString()}</h3>
+          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10 font-mono tabular-nums">{formatMoney(totalExpenses)}</h3>
           <div className="flex items-center gap-2 text-slate-500 font-bold text-sm relative z-10">
-            <span className="text-indigo-600">Registro de egresos</span>
+            <span className="text-emerald-700 font-semibold">Registro de egresos</span>
           </div>
         </div>
 
-        <div className="bg-indigo-600 p-6 rounded-2xl shadow-xl relative overflow-hidden group text-white">
-          <p className="text-indigo-100 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Utilidad Operativa</p>
-          <h3 className="text-[36px] font-bold mb-2 relative z-10">${netProfit.toLocaleString()}</h3>
+        <div className="bg-[#0F6B41] p-6 rounded-2xl shadow-xl relative overflow-hidden group text-white">
+          <p className="text-emerald-200 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Utilidad Operativa</p>
+          <h3 className="text-[36px] font-bold mb-2 relative z-10 font-mono tabular-nums">{formatMoney(netProfit)}</h3>
           <div className="flex items-center gap-2 font-bold text-sm relative z-10">
-            <span className="bg-white/20 px-2 py-0.5 rounded flex items-center gap-1">
+            <span className="bg-white/20 px-2 py-0.5 rounded flex items-center gap-1 font-mono">
               <ArrowUpRight className="w-3 h-3" /> {margin.toFixed(1)}%
             </span>
             <span className="opacity-80">Rendimiento Actual</span>
@@ -185,9 +191,9 @@ export function Analytics() {
                   <Tooltip 
                     cursor={{fill: '#f8fafc'}}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                    formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ventas']}
+                    formatter={(value: number) => [formatMoney(value), 'Ventas']}
                   />
-                  <Bar dataKey="sales" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="sales" fill="#0F6B41" radius={[6, 6, 0, 0]} />
                 </BarChart>
              </ResponsiveContainer>
           </div>
@@ -208,9 +214,9 @@ export function Analytics() {
                      <Tooltip 
                         cursor={{fill: '#f8fafc'}}
                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
-                        formatter={(value: number) => [`$${value.toLocaleString()}`, 'Ingresos']}
+                        formatter={(value: number) => [formatMoney(value), 'Ingresos']}
                      />
-                     <Bar dataKey="value" fill="#10b981" radius={[0, 6, 6, 0]} barSize={24} />
+                     <Bar dataKey="value" fill="#1E4437" radius={[0, 6, 6, 0]} barSize={24} />
                   </BarChart>
                </ResponsiveContainer>
              ) : (
@@ -218,6 +224,7 @@ export function Analytics() {
                  No hay suficientes datos en este periodo.
                </div>
              )}
+
           </div>
         </div>
 

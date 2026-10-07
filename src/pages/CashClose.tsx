@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { summarizeShift } from '../lib/payments';
 import { useStore } from '../contexts/StoreContext';
+import { formatMoney } from '../lib/format';
+import { useToast } from '../components/ui/Toast';
 import {
   LockIcon,
   AlertTriangle,
@@ -13,11 +15,14 @@ import {
   XCircle,
   FileCheck2,
   PlayCircle,
-  HelpCircle
+  HelpCircle,
+  Sparkles
 } from "lucide-react";
+
 
 export function CashClose() {
   const { orders, tables, openShift, closeShift, activeShift, shifts } = useStore();
+  const { showToast, confirm } = useToast();
   
   // State for Shift Opening
   const [initialCashInput, setInitialCashInput] = useState('');
@@ -48,49 +53,60 @@ export function CashClose() {
 
   const mesasPendientes = tables.filter(t => t.status !== 'available' && t.status !== 'dirty').length;
   
+  const hasDeclaredCash = declaredCashInput.trim().length > 0;
   const declaredCash = parseFloat(declaredCashInput.replace(/[^0-9.-]+/g,"")) || 0;
   const initialCash = activeShift ? activeShift.initialCash : 0;
   // Las propinas en efectivo también quedan en la caja
   const expectedCash = initialCash + totals.sales.cash + tips.cash;
-  const difference = declaredCash - expectedCash;
-  const totalDeclaredAllMethods = declaredCash + totals.sales.card + totals.sales.transfer;
+  const difference = hasDeclaredCash ? declaredCash - expectedCash : 0;
+  const totalDeclaredAllMethods = (hasDeclaredCash ? declaredCash : 0) + totals.sales.card + totals.sales.transfer;
 
   const handleOpenShiftSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const initCash = parseFloat(initialCashInput) || 0;
     if (initCash < 0) {
-      alert("El fondo inicial no puede ser negativo.");
+      showToast("El fondo inicial no puede ser negativo.", "warning");
       return;
     }
     try {
       await openShift(cashierNameInput, initCash);
-      alert("Turno abierto exitosamente.");
+      showToast("Turno abierto exitosamente.", "success");
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message || "Error al abrir turno", "error");
     }
   };
 
   const handleConfirmClose = async () => {
     if (!activeShift) return;
     if (mesasPendientes > 0) {
-      alert(`No puede cerrar caja con ${mesasPendientes} mesas activas en el salón.`);
+      showToast(`No podés cerrar caja con ${mesasPendientes} mesas activas en el salón.`, "warning");
+      return;
+    }
+    if (!hasDeclaredCash) {
+      showToast("Ingresá el efectivo contado antes de cerrar el turno.", "warning");
       return;
     }
     if (difference !== 0 && !comments.trim()) {
-      alert("Debe ingresar un comentario justificando la diferencia de caja.");
+      showToast("Ingresá un comentario justificando la diferencia de caja.", "warning");
       return;
     }
-    if (!window.confirm("¿Está seguro de cerrar el turno?")) return;
+    const ok = await confirm({
+      title: "¿Cerrar turno de caja?",
+      message: "¿Confirmás el cierre del turno actual? Se asentarán los montos declarados.",
+      confirmText: "Cerrar Turno",
+    });
+    if (!ok) return;
 
     try {
       await closeShift(declaredCash, comments);
-      alert("Turno cerrado exitosamente.");
+      showToast("Turno cerrado exitosamente.", "success");
       setDeclaredCashInput('');
       setComments('');
     } catch (err: any) {
-      alert(err.message);
+      showToast(err.message || "Error al cerrar turno", "error");
     }
   };
+
 
   const handlePrintZ = () => {
     window.print();
@@ -193,46 +209,61 @@ export function CashClose() {
 
             <div className="space-y-3 px-2">
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
+                <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <Banknote className="w-4 h-4 text-slate-400" /> Fondo de Caja Inicial
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${initialCash.toLocaleString()}</span>
+                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(initialCash)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
+                <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <Banknote className="w-4 h-4 text-slate-400" /> Ventas Efectivo Turno
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.sales.cash.toLocaleString()}</span>
+                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(totals.sales.cash)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
+                <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <CreditCard className="w-4 h-4 text-slate-400" /> Tarjetas (Visa, Master)
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.sales.card.toLocaleString()}</span>
+                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(totals.sales.card)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
+                <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <Landmark className="w-4 h-4 text-slate-400" /> Transferencias / Pago Móvil
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.sales.transfer.toLocaleString()}</span>
+                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(totals.sales.transfer)}</span>
               </div>
               {tips.total > 0 && (
                 <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                  <span className="text-slate-600 flex items-center gap-2">
+                  <span className="text-slate-600 flex items-center gap-2 font-medium">
                     <Landmark className="w-4 h-4 text-slate-400" /> Propinas (no son venta)
                   </span>
                   <span className="text-right">
-                    <span className="font-bold text-slate-800 text-lg">${tips.total.toLocaleString()}</span>
-                    <span className="block text-[11px] text-slate-500">en efectivo: ${tips.cash.toLocaleString()} (incluidas en la caja)</span>
+                    <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(tips.total)}</span>
+                    <span className="block text-[11px] text-slate-500">en efectivo: {formatMoney(tips.cash)} (incluidas en la caja)</span>
                   </span>
                 </div>
               )}
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2">
+                <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <Clock className="w-4 h-4 text-slate-400" /> Mesas Activas / Abiertas
                 </span>
-                <span className={`font-bold text-lg ${mesasPendientes > 0 ? 'text-rose-600 animate-pulse' : 'text-emerald-500'}`}>
+                <span className={`font-bold text-lg ${mesasPendientes > 0 ? 'text-[#C62828] animate-pulse' : 'text-[#0F6B41]'}`}>
                   {mesasPendientes}
+                </span>
+              </div>
+
+              {/* Línea destacada: Efectivo esperado en caja */}
+              <div className="mt-4 p-4 rounded-xl bg-emerald-50 dark:bg-[#1E4437]/40 border border-[#0F6B41]/30 flex justify-between items-center">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#0F6B41] dark:text-emerald-300 block">
+                    Efectivo esperado en caja
+                  </span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-300">
+                    Fondo inicial + ventas en efectivo + propinas en efectivo
+                  </span>
+                </div>
+                <span className="font-bold text-[#0F6B41] dark:text-emerald-300 text-2xl font-mono tabular-nums">
+                  {formatMoney(expectedCash)}
                 </span>
               </div>
             </div>
@@ -240,15 +271,35 @@ export function CashClose() {
           </div>
         </div>
 
-        {/* Warning card for Difference */}
-        {difference !== 0 && (
+        {/* Info or Warning card for Difference */}
+        {!hasDeclaredCash ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex gap-4 animate-in fade-in duration-200">
+            <Banknote className="w-6 h-6 text-slate-500 shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-slate-800 text-sm">Ingresá el efectivo contado</h4>
+              <p className="text-sm text-slate-600 mt-1">
+                Contá los billetes en caja y cargá el monto arriba para calcular el arqueo y balancear el turno.
+              </p>
+            </div>
+          </div>
+        ) : difference !== 0 ? (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0 mt-0.5" />
             <div>
               <h4 className="font-bold text-amber-800 text-sm">Diferencia de Caja Detectada</h4>
               <p className="text-sm text-amber-700 mt-1">
-                El sistema indica que deberían haber <b>${expectedCash.toLocaleString()}</b> en efectivo. Detectada una diferencia de <b>${difference > 0 ? '+' : ''}{difference.toLocaleString()}</b>. 
-                Deberá justificar esta diferencia antes de cerrar el turno.
+                El sistema indica que deberían haber <b>{formatMoney(expectedCash)}</b> en efectivo. Detectada una diferencia de <b>{difference > 0 ? '+' : ''}{formatMoney(difference)}</b>. 
+                Deberás justificar esta diferencia con un comentario antes de cerrar el turno.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex gap-4 animate-in fade-in duration-200">
+            <FileCheck2 className="w-6 h-6 text-[#0F6B41] shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-bold text-[#0F6B41] text-sm">Caja cuadrada</h4>
+              <p className="text-sm text-emerald-800 mt-0.5">
+                El efectivo declarado coincide exactamente con el efectivo esperado ({formatMoney(expectedCash)}).
               </p>
             </div>
           </div>
@@ -258,26 +309,29 @@ export function CashClose() {
 
       {/* Summary Card */}
       <div className="w-full md:w-[400px] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden sticky top-8">
-        <div className="bg-slate-900 text-white p-6 text-center relative">
+        <div className="bg-[#1E4437] text-white p-6 text-center relative">
           <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 relative z-10 mt-6">
              <LockIcon className="w-8 h-8 text-white mt-1" />
           </div>
           <h2 className="text-[20px] font-bold text-center relative z-10">Resumen de Cierre</h2>
-          <p className="text-slate-400 text-sm mt-1 text-center mb-6 relative z-10">Turno #{shifts.length + 1}</p>
-          
-          <svg className="absolute bottom-0 left-0 w-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
-            <path fill="#ffffff" fillOpacity="1" d="M0,288L48,272C96,256,192,224,288,197.3C384,171,480,149,576,165.3C672,181,768,235,864,250.7C960,267,1056,245,1152,250.7C1248,256,1344,288,1392,304L1440,320L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-          </svg>
+          <p className="text-emerald-200 text-sm mt-1 text-center mb-6 relative z-10 font-medium">Turno #{shifts.length + 1}</p>
         </div>
         
         <div className="p-6 bg-white space-y-6">
           <div className="text-center">
             <p className="text-slate-500 font-bold uppercase tracking-wider text-xs mb-1">TOTAL DECLARADO (TODOS LOS MÉTODOS)</p>
-            <h2 className="font-black text-[38px] leading-tight text-slate-800">${totalDeclaredAllMethods.toLocaleString()}</h2>
-            <p className={`text-sm font-bold mt-1 ${difference === 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-              Diferencia: ${difference > 0 ? '+' : ''}{difference.toLocaleString()}
-            </p>
+            <h2 className="font-bold text-[38px] leading-tight text-slate-800 font-mono tabular-nums">{formatMoney(totalDeclaredAllMethods)}</h2>
+            {hasDeclaredCash ? (
+              <p className={`text-sm font-bold mt-1 ${difference === 0 ? 'text-[#0F6B41]' : 'text-[#C62828]'}`}>
+                Diferencia: {difference > 0 ? '+' : ''}{formatMoney(difference)}
+              </p>
+            ) : (
+              <p className="text-sm font-medium mt-1 text-slate-500">
+                Ingresá el efectivo contado
+              </p>
+            )}
           </div>
+
           
           <div className="pt-6 border-t border-slate-100">
             <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Comentarios de Cierre (Obligatorio si hay dif.)</label>

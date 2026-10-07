@@ -7,6 +7,8 @@ import { mpIsConfigured } from '../lib/mercadopago';
 import { printTicket } from '../lib/printing';
 import { MercadoPagoQr } from '../components/payments/MercadoPagoQr';
 import { useStore, OrderItem, type Table } from '../contexts/StoreContext';
+import { formatMoney } from '../lib/format';
+
 import { 
   LogOut, 
   ArrowLeft, 
@@ -438,7 +440,8 @@ export function WaiterMobile() {
                         <div className="flex items-center gap-2">
                           <div className="text-right">
                             {table.status !== 'available' && table.status !== 'dirty' && (
-                              <div className="font-black text-amber-500 text-xs">${totalItemsPrice}</div>
+                              <div className="font-bold text-amber-500 text-xs font-mono tabular-nums">{formatMoney(totalItemsPrice)}</div>
+
                             )}
                             {table.waiterName && (
                               <div className="text-[8px] text-slate-500 font-bold uppercase">{table.waiterName}</div>
@@ -608,7 +611,7 @@ export function WaiterMobile() {
                         <div className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">{product.category}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-black text-amber-500 text-xs">${product.price}</span>
+                        <span className="font-bold text-amber-500 text-xs font-mono tabular-nums">{formatMoney(product.price)}</span>
                         <span className="p-1 bg-indigo-600/10 border border-indigo-500/20 text-indigo-400 rounded-lg text-xs"><Plus className="w-3.5 h-3.5" /></span>
                       </div>
                     </div>
@@ -642,8 +645,9 @@ export function WaiterMobile() {
                           {product.category}
                         </span>
                       </div>
-                      <span className="font-black text-sm text-amber-500">${product.price}</span>
+                      <span className="font-bold text-sm text-amber-500 font-mono tabular-nums">{formatMoney(product.price)}</span>
                     </div>
+
                     {product.description && (
                       <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic">{product.description}</p>
                     )}
@@ -774,7 +778,7 @@ export function WaiterMobile() {
                     )}
                     <div className="flex justify-between">
                       <span>Total Consumido:</span>
-                      <span className="font-black text-amber-500 text-sm">${totalItemsPrice}</span>
+                      <span className="font-bold text-amber-500 text-sm font-mono tabular-nums">{formatMoney(totalItemsPrice)}</span>
                     </div>
                   </div>
 
@@ -822,8 +826,9 @@ export function WaiterMobile() {
               <div className="space-y-3.5">
                 <div className="flex justify-between items-center text-xs font-semibold">
                   <span className="text-slate-400">Total Consumido:</span>
-                  <span className="text-base font-black text-amber-500">${totalItemsPrice}</span>
+                  <span className="text-base font-bold text-amber-500 font-mono tabular-nums">{formatMoney(totalItemsPrice)}</span>
                 </div>
+
 
                 <div className="space-y-1">
                   <label className="text-[9px] font-bold text-slate-500 uppercase block">Método de Pago</label>
