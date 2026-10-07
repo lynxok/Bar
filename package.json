@@ -12,7 +12,8 @@
     "electron:build": "npm run build && electron-builder",
     "clean": "rm -rf dist",
     "lint": "tsc --noEmit",
-    "test:server": "node tests/server/auth.test.cjs"
+    "test:server": "node tests/server/auth.test.cjs",
+    "test:sync": "node tests/integration/run.mjs"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
@@ -51,6 +52,7 @@
     "concurrently": "^9.2.1",
     "electron": "^41.5.0",
     "electron-builder": "^26.8.1",
+    "fake-indexeddb": "^6.2.5",
     "tailwindcss": "^4.1.14",
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",

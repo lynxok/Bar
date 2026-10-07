@@ -2,12 +2,13 @@
 // Solo expone los canales IPC que la app usa realmente.
 const { contextBridge, ipcRenderer } = require('electron');
 
-const SEND = ['db-response', 'set-supabase-config', 'check-update', 'start-download', 'apply-update'];
+const SEND = ['db-response', 'db-changed', 'set-supabase-config', 'check-update', 'start-download', 'apply-update'];
 const SEND_SYNC = ['get-app-version'];
 const INVOKE = [
   'arca-generate-invoice', 'arca-regenerate-pdf', 'arca-test-connection', 'arca-generate-csr',
   'open-file-path', 'start-ngrok', 'stop-ngrok', 'get-ngrok-status',
   'auth-login', 'auth-me', 'auth-logout', 'auth-needs-setup', 'auth-setup-superadmin', 'auth-hash-password', 'auth-user-changed',
+  'backup-write', 'backup-list', 'backup-read', 'backup-export', 'backup-import-dialog', 'backup-open-folder',
 ];
 const ON = ['db-request', 'update-available', 'update-not-available', 'download-progress', 'update-downloaded', 'update-error'];
 

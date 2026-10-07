@@ -221,6 +221,59 @@ expressApp.post('/api/public/client-orders', async (req, res) => {
   } catch (e) { sendError(res, e); }
 });
 
+// ---------- Sincronización incremental ----------
+// Devuelve los registros modificados desde `since` (o todo) y las claves borradas.
+// Se resta un margen para no perder escrituras que estaban confirmándose durante la consulta.
+const SYNC_OVERLAP_MS = 5000;
+expressApp.get('/api/sync/:table', requireAuth, async (req, res) => {
+  const { table } = req.params;
+  if (!canAccess(req.session.user.role, table, 'GET')) {
+    return res.status(403).json({ error: `Sin permiso para leer ${table}` });
+  }
+  let since = '';
+  if (req.query.since) {
+    const t = Date.parse(String(req.query.since));
+    if (!Number.isNaN(t)) since = new Date(t - SYNC_OVERLAP_MS).toISOString();
+  }
+  try {
+    const data = await rendererQuery({ table, method: 'SYNC', query: { since } });
+    if (table === 'users') data.records = data.records.map(publicUser);
+    res.json(data);
+  } catch (e) { sendError(res, e); }
+});
+
+// ---------- Notificaciones en tiempo real (Server-Sent Events) ----------
+// EventSource no permite headers, por eso el token viaja en la query.
+const sseClients = new Set();
+expressApp.get('/api/events', (req, res) => {
+  const token = String(req.query.token || '');
+  const session = sessions.get(token);
+  if (!session) return res.status(401).end();
+  res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'X-Accel-Buffering': 'no' });
+  res.flushHeaders();
+  res.write('retry: 3000\n\n');
+  const client = { res, token };
+  sseClients.add(client);
+  req.on('close', () => sseClients.delete(client));
+});
+
+setInterval(() => {
+  for (const c of sseClients) c.res.write(': ping\n\n');
+}, 25000).unref();
+
+function broadcastChange(table) {
+  for (const c of sseClients) {
+    const s = sessions.get(c.token);
+    if (!s) { c.res.end(); sseClients.delete(c); continue; }
+    if (canAccess(s.user.role, table, 'GET')) c.res.write(`event: change\ndata: ${JSON.stringify({ table })}\n\n`);
+  }
+}
+
+ipcMain.on('db-changed', (event, table) => {
+  if (!win || event.sender !== win.webContents) return;
+  if (typeof table === 'string') broadcastChange(table);
+});
+
 // ---------- API de base de datos (requiere sesión y permisos por rol) ----------
 expressApp.all('/api/db/:table/:id?', requireAuth, async (req, res) => {
   const { table, id } = req.params;
@@ -999,3 +1052,89 @@ ipcMain.handle('open-file-path', async (event, filePath) => {
   shell.openPath(filePath);
 });
 
+
+// ---------- Copias de seguridad (solo PC principal) ----------
+const zlib = require('zlib');
+const BACKUP_DIR = path.join(userDataPath, 'backups');
+const BACKUP_KEEP = 30;
+
+function ensureBackupDir() {
+  fs.mkdirSync(BACKUP_DIR, { recursive: true });
+  return BACKUP_DIR;
+}
+
+function backupFileName(kind) {
+  const d = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  return `lynx-backup-${stamp}-${kind}.json.gz`;
+}
+
+function listBackups() {
+  ensureBackupDir();
+  return fs.readdirSync(BACKUP_DIR)
+    .filter(f => /^lynx-backup-.*\.json\.gz$/.test(f))
+    .map(f => { const st = fs.statSync(path.join(BACKUP_DIR, f)); return { name: f, size: st.size, mtime: st.mtime.toISOString() }; })
+    .sort((a, b) => b.name.localeCompare(a.name));
+}
+
+function readBackupFile(filePath) {
+  const raw = fs.readFileSync(filePath);
+  if (raw.length > 300 * 1024 * 1024) throw new Error('Archivo demasiado grande');
+  return filePath.endsWith('.gz') ? zlib.gunzipSync(raw).toString('utf8') : raw.toString('utf8');
+}
+
+ipcMain.handle('backup-write', async (event, { json, kind } = {}) => {
+  assertMainWindow(event);
+  if (typeof json !== 'string') throw new Error('Copia inválida');
+  const safeKind = ['auto', 'manual', 'prerestore'].includes(kind) ? kind : 'manual';
+  const file = path.join(ensureBackupDir(), backupFileName(safeKind));
+  fs.writeFileSync(file, zlib.gzipSync(Buffer.from(json, 'utf8')), { mode: 0o600 });
+  // Rotación: se conservan las últimas BACKUP_KEEP copias automáticas
+  const autos = listBackups().filter(b => b.name.endsWith('-auto.json.gz'));
+  for (const old of autos.slice(BACKUP_KEEP)) {
+    try { fs.unlinkSync(path.join(BACKUP_DIR, old.name)); } catch { /* ignorar */ }
+  }
+  return { path: file };
+});
+
+ipcMain.handle('backup-list', async (event) => {
+  assertMainWindow(event);
+  return listBackups();
+});
+
+ipcMain.handle('backup-read', async (event, name) => {
+  assertMainWindow(event);
+  if (typeof name !== 'string' || path.basename(name) !== name || !/^lynx-backup-.*\.json\.gz$/.test(name)) {
+    throw new Error('Nombre de copia inválido');
+  }
+  return readBackupFile(path.join(BACKUP_DIR, name));
+});
+
+ipcMain.handle('backup-export', async (event, json) => {
+  assertMainWindow(event);
+  const { canceled, filePath } = await dialog.showSaveDialog(win, {
+    title: 'Exportar copia de seguridad',
+    defaultPath: backupFileName('manual'),
+    filters: [{ name: 'Copia LYNX BarOS', extensions: ['gz'] }],
+  });
+  if (canceled || !filePath) return { canceled: true };
+  fs.writeFileSync(filePath, zlib.gzipSync(Buffer.from(json, 'utf8')));
+  return { canceled: false, path: filePath };
+});
+
+ipcMain.handle('backup-import-dialog', async (event) => {
+  assertMainWindow(event);
+  const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+    title: 'Restaurar copia de seguridad',
+    properties: ['openFile'],
+    filters: [{ name: 'Copia LYNX BarOS', extensions: ['gz', 'json'] }],
+  });
+  if (canceled || !filePaths || !filePaths[0]) return null;
+  return readBackupFile(filePaths[0]);
+});
+
+ipcMain.handle('backup-open-folder', async (event) => {
+  assertMainWindow(event);
+  return shell.openPath(ensureBackupDir());
+});

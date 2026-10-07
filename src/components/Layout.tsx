@@ -30,8 +30,7 @@ import { cn } from "../lib/utils";
 import { ChatWidget } from "./ChatWidget";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { useStore } from "../contexts/StoreContext";
-import { isHost } from "../db/database";
-import { onSyncStateChange } from "../services/syncService";
+import { SyncStatusBadge } from "./SyncStatusBadge";
 import { MagneticDock } from "./MagneticDock";
 
 interface Notification {
@@ -64,14 +63,6 @@ export function Layout() {
   const { lowStockCount } = useAlerts();
   const { clientOrders, approveClientOrder, rejectClientOrder } = useStore();
   const [prevPendingCount, setPrevPendingCount] = useState(0);
-  const [syncConnected, setSyncConnected] = useState(true);
-
-  // Escuchar el estado de sincronización en clientes remotos
-  useEffect(() => {
-    onSyncStateChange((connected) => {
-      setSyncConnected(connected);
-    });
-  }, []);
   
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     return localStorage.getItem('sidebar_collapsed') === 'true';
@@ -464,17 +455,7 @@ export function Layout() {
             </div>
           </div>
           <div className="flex items-center gap-4 ml-auto">
-            {!isHost && (
-              <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[9px] font-black border transition-all duration-300 tracking-wider",
-                syncConnected
-                  ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                  : "bg-rose-50 text-rose-700 border-rose-100 animate-pulse"
-              )} title={syncConnected ? "Sincronizado con PC Base" : "Error de sincronización con PC Base"}>
-                <span className={cn("w-1.5 h-1.5 rounded-full", syncConnected ? "bg-emerald-500 animate-pulse" : "bg-rose-500")}></span>
-                {syncConnected ? 'CONECTADO' : 'DESCONECTADO'}
-              </div>
-            )}
+            <SyncStatusBadge />
             <button
               onClick={toggleDarkMode}
               className="p-2 text-slate-400 hover:text-slate-600 transition-colors"

@@ -234,7 +234,29 @@ export interface BillingDraft {
   };
 }
 
+/** Registro de un borrado en el host, para que los dispositivos lo repliquen */
+export interface Tombstone {
+  id?: number;
+  table: string;
+  key: any;
+  deletedAt: string;
+}
+
+/** Cambio hecho en un celular/tablet, pendiente de enviar al host */
+export interface OutboxEntry {
+  id?: number;
+  table: string;
+  method: 'POST' | 'PUT' | 'DELETE';
+  key: any;
+  body: any;
+  createdAt: string;
+  attempts: number;
+  lastError?: string;
+}
+
 export class BarDatabase extends Dexie {
+  tombstones!: Table<Tombstone>;
+  outbox!: Table<OutboxEntry>;
   products!: Table<Product>;
   orders!: Table<Order>;
   expenses!: Table<Expense>;
@@ -280,6 +302,38 @@ export class BarDatabase extends Dexie {
       clientOrders: '++id, tableId, status, timestamp',
       billingDrafts: 'id, date, billed'
     });
+
+    // v11: updatedAt indexado para sync incremental, registro de borrados y cola offline
+    this.version(11).stores({
+      products: '++id, name, sku, category, updatedAt',
+      orders: '++id, tableId, status, timestamp, updatedAt',
+      expenses: '++id, provider, date, category, updatedAt',
+      config: 'id',
+      salonTables: 'id, updatedAt',
+      paymentOrders: '++id, provider, status, date, updatedAt',
+      systemLogs: '++id, level, timestamp',
+      auditLogs: '++id, userId, action, module, timestamp',
+      comandas: '++id, tableId, status, timestamp, updatedAt',
+      rewards: '++id, name, pointsCost, updatedAt',
+      customers: '++id, dni, name, updatedAt',
+      shifts: '++id, endTime, status, updatedAt',
+      users: '++id, name, role, updatedAt',
+      messages: '++id, timestamp, senderRole, status, updatedAt',
+      floorPlans: '++id, name, timestamp, updatedAt',
+      loyaltyConfig: 'id, updatedAt',
+      loyaltyTransactions: '++id, customerDni, timestamp, updatedAt',
+      clientOrders: '++id, tableId, status, timestamp, updatedAt',
+      billingDrafts: 'id, date, billed, updatedAt',
+      tombstones: '++id, table, deletedAt',
+      outbox: '++id, table, createdAt'
+    }).upgrade(async tx => {
+      const epoch = new Date(0).toISOString();
+      for (const name of ['products', 'orders', 'expenses', 'salonTables', 'paymentOrders', 'comandas',
+        'rewards', 'customers', 'shifts', 'users', 'messages', 'floorPlans', 'loyaltyConfig',
+        'loyaltyTransactions', 'clientOrders', 'billingDrafts']) {
+        await tx.table(name).toCollection().modify((r: any) => { if (!r.updatedAt) r.updatedAt = epoch; });
+      }
+    });
   }
 }
 
@@ -290,40 +344,112 @@ export const isElectron = window.navigator.userAgent.toLowerCase().includes('ele
 // que no se puede falsificar desde un navegador cambiando el user-agent.
 export const isHost = !!getIpc();
 
-// 1. ESCUCHADOR IPC EN EL HOST (ELECTRON)
-// Cuando Express recibe una llamada HTTP de un celular, la envía aquí vía IPC.
-// Este código consulta el IndexedDB real de la PC principal y devuelve el resultado.
+// ---------------------------------------------------------------------------
+// SINCRONIZACIÓN
+// Tablas que se replican entre la PC principal (host) y celulares/tablets.
+// ---------------------------------------------------------------------------
+export const SYNCED_TABLES = [
+  'products', 'orders', 'expenses', 'salonTables', 'paymentOrders',
+  'comandas', 'rewards', 'customers', 'shifts', 'users', 'messages',
+  'floorPlans', 'loyaltyConfig', 'loyaltyTransactions', 'clientOrders', 'billingDrafts'
+] as const;
+
+// Tablas que los dispositivos remotos escriben en el host (incluye logs, que no se descargan)
+const REMOTE_WRITE_TABLES: string[] = [...SYNCED_TABLES, 'systemLogs', 'auditLogs'];
+
+const resolveKey = (table: any, id: any) => {
+  if (id === undefined || id === null || id === '') return null;
+  // Las tablas autoincrementales usan claves numéricas; el resto (mesas, borradores) son strings
+  return table.schema.primKey.auto && !isNaN(Number(id)) ? Number(id) : id;
+};
+
+// 1. EN EL HOST (ELECTRON): marca de tiempo en cada cambio, registro de borrados,
+//    aviso al proceso principal (para notificar por SSE) y atención de consultas remotas.
 if (isHost) {
   const ipc = getIpc()!;
+
+  const pendingNotify = new Map<string, ReturnType<typeof setTimeout>>();
+  const notifyChange = (table: string) => {
+    if (pendingNotify.has(table)) return;
+    pendingNotify.set(table, setTimeout(() => {
+      pendingNotify.delete(table);
+      ipc.send('db-changed', table);
+    }, 120));
+  };
+
+  for (const name of SYNCED_TABLES) {
+    const t = (db as any)[name] as Table<any>;
+    t.hook('creating', function (this: any, _pk: any, obj: any) {
+      obj.updatedAt = new Date().toISOString();
+      this.onsuccess = () => notifyChange(name);
+    });
+    t.hook('updating', function (this: any) {
+      this.onsuccess = () => notifyChange(name);
+      return { updatedAt: new Date().toISOString() };
+    });
+    t.hook('deleting', function (this: any, pk: any) {
+      this.onsuccess = () => {
+        Dexie.ignoreTransaction(() =>
+          db.tombstones.add({ table: name, key: pk, deletedAt: new Date().toISOString() })
+        ).catch(err => console.error('No se pudo registrar el borrado', name, pk, err));
+        notifyChange(name);
+      };
+    });
+  }
+
+  // Limpieza de registros de borrado viejos (los clientes hacen sync completo periódicamente)
+  setTimeout(() => {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    db.tombstones.where('deletedAt').below(cutoff).delete().catch(() => {});
+  }, 60_000);
+
+  // Cuando Express recibe una llamada HTTP de un celular, la envía aquí vía IPC.
+  // Este código consulta el IndexedDB real de la PC principal y devuelve el resultado.
   ipc.on('db-request', async (_: any, { requestId, table, id, method, body, query }: any) => {
     try {
       const targetTable = (db as any)[table];
-      if (!targetTable) throw new Error(`Table ${table} not found`);
+      if (!targetTable || !db.tables.some(t => t.name === table)) throw new Error(`Table ${table} not found`);
 
       let data;
-      const key = id ? (isNaN(Number(id)) ? id : Number(id)) : null;
+      const key = resolveKey(targetTable, id);
+      const pk = targetTable.schema.primKey.name || 'id';
 
-      if (method === 'GET') {
+      if (method === 'SYNC') {
+        // Cambios desde una fecha (o todo, si no hay fecha) + claves borradas
+        const now = new Date().toISOString();
+        const since = query && query.since ? String(query.since) : '';
+        if (!since) {
+          data = { now, full: true, records: await targetTable.toArray(), deleted: [] };
+        } else {
+          const records = await targetTable.where('updatedAt').above(since).toArray();
+          const deleted = (await db.tombstones.where('deletedAt').above(since).toArray())
+            .filter(t => t.table === table)
+            .map(t => t.key);
+          data = { now, full: false, records, deleted };
+        }
+      } else if (method === 'GET') {
         if (key !== null) {
           data = await targetTable.get(key);
+        } else if (query && query.where && query.equals !== undefined) {
+          data = await targetTable.where(query.where).equals(query.equals).toArray();
+        } else if (query && query.orderBy) {
+          data = query.reverse === 'true'
+            ? await targetTable.orderBy(query.orderBy).reverse().toArray()
+            : await targetTable.orderBy(query.orderBy).toArray();
         } else {
-          // Filtrado básico para consultas comunes
-          if (query && query.where && query.equals) {
-            data = await targetTable.where(query.where).equals(query.equals).toArray();
-          } else if (query && query.orderBy) {
-            if (query.reverse === 'true') {
-              data = await targetTable.orderBy(query.orderBy).reverse().toArray();
-            } else {
-              data = await targetTable.orderBy(query.orderBy).toArray();
-            }
-          } else {
-            data = await targetTable.toArray();
-          }
+          data = await targetTable.toArray();
         }
       } else if (method === 'POST') {
-        data = await targetTable.add(body);
+        const record = { ...(body || {}) };
+        delete record.updatedAt;
+        // En tablas autoincrementales el host asigna el id (evita choques entre dispositivos)
+        if (targetTable.schema.primKey.auto) delete record[pk];
+        data = await targetTable.add(record);
       } else if (method === 'PUT') {
-        data = await targetTable.update(key, body);
+        const changes = { ...(body || {}) };
+        delete changes.updatedAt;
+        delete changes[pk];
+        data = await targetTable.update(key, changes);
       } else if (method === 'DELETE') {
         data = await targetTable.delete(key);
       }
@@ -336,47 +462,124 @@ if (isHost) {
   });
 }
 
-// 2. INTERCEPTORES DE ESCRITURA EN EL CLIENTE (CELULARES/TABLETS)
-// Cuando el celular hace una operación de escritura (add, update, delete) en Dexie,
-// se ejecuta localmente (para feedback visual instantáneo) y se envía al Host por HTTP API.
-if (!isHost) {
-  // Dentro de una transacción Dexie no se puede esperar un fetch (la transacción se cierra
-  // antes de tiempo: PrematureCommitError). Las escrituras remotas se encolan y se envían,
-  // en orden, recién cuando la transacción local se confirmó.
-  const txQueues = new WeakMap<object, Array<() => Promise<void>>>();
-  const sendRemote = (fn: () => Promise<void>): Promise<void> => {
-    const tx = (Dexie as any).currentTransaction;
-    if (!tx) return fn();
-    let queue = txQueues.get(tx);
-    if (!queue) {
-      const q: Array<() => Promise<void>> = [];
-      queue = q;
-      txQueues.set(tx, q);
-      tx.on('complete', async () => {
-        for (const send of q) {
-          await send();
-        }
-      });
+// 2. EN CELULARES/TABLETS: las escrituras se aplican localmente (respuesta instantánea)
+//    y se encolan en `outbox` para enviarlas al host, con reintentos si no hay conexión.
+type OutboxListener = (pending: number) => void;
+const outboxListeners = new Set<OutboxListener>();
+export function onOutboxChange(fn: OutboxListener) {
+  outboxListeners.add(fn);
+  return () => { outboxListeners.delete(fn); };
+}
+const emitOutbox = async () => {
+  if (outboxListeners.size === 0) return;
+  const n = await Dexie.ignoreTransaction(() => db.outbox.count());
+  outboxListeners.forEach(fn => fn(n));
+};
+
+/** Claves con cambios todavía no confirmados por el host (la sync no debe pisarlas) */
+export async function getPendingKeys(table: string): Promise<Set<any>> {
+  const entries = await Dexie.ignoreTransaction(() => db.outbox.where('table').equals(table).toArray());
+  return new Set(entries.map(e => e.key));
+}
+
+async function remapLocalKey(tableName: string, oldKey: any, newKey: any) {
+  const t = (db as any)[tableName];
+  const idKey = t.schema.primKey.name || 'id';
+  await db.transaction('rw', [t, db.outbox], async () => {
+    const rec = await t.get(oldKey);
+    if (rec) {
+      await (t.originalDelete || t.delete.bind(t))(oldKey);
+      await t.put({ ...rec, [idKey]: newKey });
     }
-    queue.push(fn);
-    return Promise.resolve();
+    // Las operaciones siguientes sobre el mismo registro apuntan al id nuevo
+    await db.outbox.where('table').equals(tableName).modify((e: OutboxEntry) => {
+      if (e.key === oldKey) e.key = newKey;
+    });
+  });
+}
+
+let flushing: Promise<void> | null = null;
+
+/** Envía al host las escrituras pendientes, en orden. Se detiene ante errores de red. */
+export function flushOutbox(): Promise<void> {
+  if (isHost || isPublicClientRoute()) return Promise.resolve();
+  if (flushing) return flushing;
+  flushing = (async () => {
+    try {
+      while (true) {
+        const entry = await db.outbox.orderBy('id').first();
+        if (!entry) break;
+        const localTable = (db as any)[entry.table];
+        const path = entry.method === 'POST' || entry.key === null || entry.key === undefined
+          ? `/api/db/${entry.table}`
+          : `/api/db/${entry.table}/${encodeURIComponent(String(entry.key))}`;
+        try {
+          const result = await apiFetch(path, {
+            method: entry.method,
+            body: entry.method === 'DELETE' ? undefined : JSON.stringify(entry.body ?? {}),
+          });
+          await db.outbox.delete(entry.id!);
+          // Alta en tabla autoincremental: el host asignó el id definitivo -> remapear localmente
+          if (entry.method === 'POST' && localTable?.schema.primKey.auto && result != null && result !== entry.key) {
+            await remapLocalKey(entry.table, entry.key, result);
+          }
+        } catch (err: any) {
+          const status = err?.status;
+          if (status && status >= 400 && status < 500 && ![401, 408, 429].includes(status)) {
+            // Rechazo definitivo (permisos/validación): se descarta para no bloquear la cola
+            console.error(`Cambio rechazado por el host (${entry.method} ${entry.table}):`, err.message);
+            await db.outbox.delete(entry.id!);
+            continue;
+          }
+          await db.outbox.update(entry.id!, { attempts: (entry.attempts || 0) + 1, lastError: String(err?.message || err) });
+          break; // sin conexión: se reintenta en el próximo ciclo
+        }
+      }
+    } finally {
+      flushing = null;
+      emitOutbox().catch(() => {});
+    }
+  })();
+  return flushing;
+}
+
+if (!isHost) {
+  // Dentro de una transacción Dexie no se puede escribir en `outbox` (no está en el scope)
+  // ni esperar un fetch (PrematureCommitError): se acumula y se encola al confirmarse.
+  const txQueues = new WeakMap<object, OutboxEntry[]>();
+
+  const enqueue = (entry: OutboxEntry): Promise<void> => {
+    const tx = (Dexie as any).currentTransaction;
+    if (tx) {
+      let queue = txQueues.get(tx);
+      if (!queue) {
+        const q: OutboxEntry[] = [];
+        queue = q;
+        txQueues.set(tx, q);
+        tx.on('complete', () => {
+          Dexie.ignoreTransaction(() => db.outbox.bulkAdd(q))
+            .then(() => { emitOutbox(); return flushOutbox(); })
+            .catch(err => console.error('No se pudieron encolar cambios', err));
+        });
+      }
+      queue.push(entry);
+      return Promise.resolve();
+    }
+    return Dexie.ignoreTransaction(() => db.outbox.add(entry))
+      .then(() => { emitOutbox(); flushOutbox(); });
   };
 
-  const remotePath = (tableName: string, key?: any) =>
-    key === undefined ? `/api/db/${tableName}` : `/api/db/${tableName}/${encodeURIComponent(String(key))}`;
-
   const wrapTableForClient = (tableName: string, originalTable: any) => {
+    const idKey = originalTable.schema.primKey.name || 'id';
+    const now = () => new Date().toISOString();
+
     // Interceptar ADD
     const originalAdd = originalTable.add.bind(originalTable);
     originalTable.originalAdd = originalAdd;
     originalTable.add = async function(item: any, key?: any) {
       const localId = await originalAdd(item, key);
       const itemWithId = { ...item };
-
-      const idKey = originalTable.schema.primKey.name || 'id';
-      if (localId && !itemWithId[idKey]) {
-        itemWithId[idKey] = localId;
-      }
+      if (localId !== undefined && itemWithId[idKey] === undefined) itemWithId[idKey] = localId;
 
       if (isPublicClientRoute()) {
         // Comensal sin login (carta QR): solo puede enviar pedidos por la ruta pública.
@@ -386,13 +589,7 @@ if (!isHost) {
         }
         return localId;
       }
-      await sendRemote(async () => {
-        try {
-          await apiFetch(remotePath(tableName), { method: 'POST', body: JSON.stringify(itemWithId) });
-        } catch (err) {
-          console.error(`Error de sincronización (ADD) en tabla ${tableName}:`, err);
-        }
-      });
+      await enqueue({ table: tableName, method: 'POST', key: localId, body: itemWithId, createdAt: now(), attempts: 0 });
       return localId;
     };
 
@@ -402,13 +599,7 @@ if (!isHost) {
     originalTable.update = async function(key: any, changes: any) {
       const localResult = await originalUpdate(key, changes);
       if (isPublicClientRoute()) return localResult;
-      await sendRemote(async () => {
-        try {
-          await apiFetch(remotePath(tableName, key), { method: 'PUT', body: JSON.stringify(changes) });
-        } catch (err) {
-          console.error(`Error de sincronización (UPDATE) en tabla ${tableName}:`, err);
-        }
-      });
+      await enqueue({ table: tableName, method: 'PUT', key, body: changes, createdAt: now(), attempts: 0 });
       return localResult;
     };
 
@@ -418,25 +609,12 @@ if (!isHost) {
     originalTable.delete = async function(key: any) {
       const localResult = await originalDelete(key);
       if (isPublicClientRoute()) return localResult;
-      await sendRemote(async () => {
-        try {
-          await apiFetch(remotePath(tableName, key), { method: 'DELETE' });
-        } catch (err) {
-          console.error(`Error de sincronización (DELETE) en tabla ${tableName}:`, err);
-        }
-      });
+      await enqueue({ table: tableName, method: 'DELETE', key, body: null, createdAt: now(), attempts: 0 });
       return localResult;
     };
   };
 
-  const tableNames = [
-    'products', 'orders', 'expenses', 'salonTables', 'paymentOrders',
-    'systemLogs', 'auditLogs', 'comandas', 'rewards', 'customers',
-    'shifts', 'users', 'messages', 'floorPlans', 'loyaltyConfig',
-    'loyaltyTransactions', 'clientOrders', 'billingDrafts'
-  ];
-
-  tableNames.forEach(name => {
+  REMOTE_WRITE_TABLES.forEach(name => {
     if ((db as any)[name]) {
       wrapTableForClient(name, (db as any)[name]);
     }

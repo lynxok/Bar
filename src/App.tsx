@@ -20,6 +20,8 @@ import { Login } from './pages/Login';
 import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
 import { startSyncService, stopSyncService } from './services/syncService';
+import { runAutoBackupIfNeeded } from './lib/backup';
+import { isHost } from './db/database';
 import {
   getStoredUser, verifySession, onUnauthorized, isPublicClientRoute,
   isSuperadminRole, isAdminRole, type SessionUser,
@@ -47,6 +49,15 @@ export default function App() {
     startSyncService();
     return () => stopSyncService();
   }, [isAuthenticated, isClientRoute, checkingSession]);
+
+  // Copia de seguridad automática diaria (solo en la PC principal)
+  useEffect(() => {
+    if (!isHost) return;
+    const tick = () => runAutoBackupIfNeeded().catch(err => console.error('Backup automático falló', err));
+    const first = setTimeout(tick, 15_000);
+    const every = setInterval(tick, 60 * 60_000);
+    return () => { clearTimeout(first); clearInterval(every); };
+  }, []);
 
   const handleLogin = (user: SessionUser) => {
     setCurrentUser(user);

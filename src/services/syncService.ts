@@ -1,52 +1,84 @@
-import { db, isHost } from '../db/database';
-import { apiFetch, getAllowedTables, getPublicTableId, isPublicClientRoute } from '../lib/auth';
+import { db, isHost, SYNCED_TABLES, flushOutbox, getPendingKeys } from '../db/database';
+import { apiFetch, getAllowedTables, getPublicTableId, getToken, isPublicClientRoute } from '../lib/auth';
+
+/*
+ * Sincronización de celulares/tablets con la PC principal:
+ * - Incremental: solo se piden los cambios desde la última sync de cada tabla.
+ * - En tiempo real: el host avisa por SSE (/api/events) qué tabla cambió.
+ * - Polling de respaldo cada 15 s y sync completa cada 10 min (o al arrancar).
+ * - Antes de descargar se envían los cambios locales pendientes (outbox) y la sync
+ *   nunca pisa registros con cambios locales todavía no confirmados.
+ */
+
+const POLL_MS = 15_000;
+const FULL_SYNC_MS = 10 * 60_000;
+const PUBLIC_POLL_MS = 5_000;
 
 let syncIntervalId: ReturnType<typeof setInterval> | null = null;
+let eventSource: EventSource | null = null;
 let isSyncing = false;
-let onSyncStateChangeCallback: ((connected: boolean) => void) | null = null;
+let syncAgain = false;
+let lastFullSync = 0;
+const dirtyTables = new Set<string>();
+const cursors = new Map<string, string>();
+const syncListeners = new Set<(connected: boolean) => void>();
 let isConnected = true;
 
-// Tablas que se sincronizan con el host (se filtran por las que el rol puede leer)
-const SYNC_TABLES = [
-  'products', 'orders', 'expenses', 'salonTables', 'paymentOrders',
-  'comandas', 'rewards', 'customers', 'shifts', 'users', 'messages',
-  'floorPlans', 'loyaltyConfig', 'loyaltyTransactions', 'clientOrders', 'billingDrafts'
-];
-
 export function onSyncStateChange(callback: (connected: boolean) => void) {
-  onSyncStateChangeCallback = callback;
+  syncListeners.add(callback);
+  return () => { syncListeners.delete(callback); };
 }
 
-/**
- * Reemplaza el contenido local de una tabla (o de un subconjunto) por lo que dice el host.
- * Usa put/delete sin interceptores para no reenviar los cambios al servidor.
- * @param scope si se indica, solo se borran registros locales que cumplan el filtro
- */
-async function applyServerData(tableName: string, serverData: any[], scope?: (item: any) => boolean) {
-  const localTable = (db as any)[tableName];
-  if (!localTable || !Array.isArray(serverData)) return;
+export const getSyncConnected = () => isConnected;
 
+const setConnected = (ok: boolean) => {
+  const prev = isConnected;
+  isConnected = ok;
+  if (prev !== ok) syncListeners.forEach(fn => fn(ok));
+};
+
+/**
+ * Aplica datos del host en la tabla local sin pasar por los interceptores.
+ * @param deleteMissingScope si se indica, borra los registros locales de ese alcance que el host ya no tiene
+ */
+async function applyServerData(tableName: string, records: any[], deletedKeys: any[], deleteMissingScope?: (item: any) => boolean) {
+  const localTable = (db as any)[tableName];
+  if (!localTable || !Array.isArray(records)) return;
   const idKey = localTable.schema.primKey.name || 'id';
-  const localData: any[] = await localTable.toArray();
-  const localMap = new Map(localData.map((item: any) => [item[idKey], item]));
-  const serverIds = new Set(serverData.map((item: any) => item[idKey]));
+  const pending = await getPendingKeys(tableName);
   const originalDelete = localTable.originalDelete || localTable.delete.bind(localTable);
 
-  const toPut = serverData.filter(serverItem => {
-    const localItem = localMap.get(serverItem[idKey]);
-    return !localItem || JSON.stringify(localItem) !== JSON.stringify(serverItem);
-  });
+  // Primero los borrados (si una clave se borró y se volvió a crear, gana el registro nuevo)
+  const recordKeys = new Set(records.map(r => r[idKey]));
+  for (const key of deletedKeys || []) {
+    if (!pending.has(key) && !recordKeys.has(key)) await originalDelete(key);
+  }
+
+  const toPut: any[] = [];
+  for (const r of records) {
+    if (pending.has(r[idKey])) continue; // hay un cambio local sin confirmar: no se pisa
+    const local = await localTable.get(r[idKey]);
+    if (!local || JSON.stringify(local) !== JSON.stringify(r)) toPut.push(r);
+  }
   if (toPut.length) await localTable.bulkPut(toPut);
 
-  for (const localItem of localData) {
-    if (scope && !scope(localItem)) continue;
-    if (!serverIds.has(localItem[idKey])) await originalDelete(localItem[idKey]);
+  if (deleteMissingScope) {
+    const serverIds = new Set(records.map(r => r[idKey]));
+    const localData: any[] = await localTable.toArray();
+    for (const item of localData) {
+      const key = item[idKey];
+      if (deleteMissingScope(item) && !serverIds.has(key) && !pending.has(key)) await originalDelete(key);
+    }
   }
 }
 
-async function syncTable(tableName: string) {
-  const serverData = await apiFetch<any[]>(`/api/db/${tableName}`);
-  await applyServerData(tableName, serverData);
+async function syncTable(tableName: string, full: boolean) {
+  const since = full ? '' : (cursors.get(tableName) || '');
+  const data = await apiFetch<{ now: string; full: boolean; records: any[]; deleted: any[] }>(
+    `/api/sync/${tableName}${since ? `?since=${encodeURIComponent(since)}` : ''}`
+  );
+  await applyServerData(tableName, data.records, data.deleted, data.full ? () => true : undefined);
+  cursors.set(tableName, data.now);
 }
 
 /** Modo comensal (carta QR sin login): solo menú, su mesa y sus pedidos */
@@ -57,55 +89,78 @@ async function syncPublic() {
     apiFetch<any[]>('/api/public/menu'),
     apiFetch<{ table: any; clientOrders: any[] }>(`/api/public/table/${encodeURIComponent(tableId)}`),
   ]);
-  await applyServerData('products', menu);
-  await applyServerData('salonTables', [tableInfo.table], () => true);
-  await applyServerData('clientOrders', tableInfo.clientOrders, (co) => co.tableId === tableId);
+  await applyServerData('products', menu, [], () => true);
+  await applyServerData('salonTables', [tableInfo.table], [], () => true);
+  await applyServerData('clientOrders', tableInfo.clientOrders, [], (co) => co.tableId === tableId);
 }
 
-export async function runFullSync() {
-  if (isSyncing) return;
+/** Sincroniza. Sin argumentos: todas las tablas permitidas (completa si corresponde). */
+export async function runFullSync(onlyTables?: string[]) {
+  if (isSyncing) { syncAgain = true; onlyTables?.forEach(t => dirtyTables.add(t)); return; }
   isSyncing = true;
-
-  let ok = false;
   try {
     if (isPublicClientRoute()) {
       await syncPublic();
-      ok = true;
-    } else {
-      const allowed = new Set(getAllowedTables());
-      const tables = SYNC_TABLES.filter(t => allowed.has(t));
-      let successCount = 0;
-      for (const table of tables) {
-        try {
-          await syncTable(table);
-          successCount++;
-        } catch (err) {
-          console.error(`Error sincronizando la tabla ${table}:`, err);
-        }
-      }
-      ok = tables.length > 0 && successCount === tables.length;
+      setConnected(true);
+      return;
     }
+    await flushOutbox();
+    const full = Date.now() - lastFullSync > FULL_SYNC_MS;
+    const allowed = new Set(getAllowedTables());
+    const tables = (onlyTables && !full ? onlyTables : [...SYNCED_TABLES]).filter(t => allowed.has(t));
+    let failures = 0;
+    for (const table of tables) {
+      try {
+        await syncTable(table, full || !cursors.has(table));
+      } catch (err) {
+        failures++;
+        console.error(`Error sincronizando la tabla ${table}:`, err);
+      }
+    }
+    if (full && failures === 0) lastFullSync = Date.now();
+    setConnected(failures === 0);
   } catch (err) {
     console.error('Error de sincronización:', err);
+    setConnected(false);
+  } finally {
+    isSyncing = false;
+    if (syncAgain) {
+      syncAgain = false;
+      const next = [...dirtyTables];
+      dirtyTables.clear();
+      setTimeout(() => runFullSync(next.length ? next : undefined).catch(console.error), 50);
+    }
   }
+}
 
-  const prevConnected = isConnected;
-  isConnected = ok;
-  if (prevConnected !== isConnected && onSyncStateChangeCallback) {
-    onSyncStateChangeCallback(isConnected);
-  }
-  isSyncing = false;
+function connectEvents() {
+  if (typeof EventSource === 'undefined' || isPublicClientRoute()) return;
+  const token = getToken();
+  if (!token) return;
+  eventSource = new EventSource(`${window.location.origin}/api/events?token=${encodeURIComponent(token)}`);
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  eventSource.addEventListener('change', (ev: MessageEvent) => {
+    try {
+      const { table } = JSON.parse(ev.data);
+      if (typeof table === 'string') dirtyTables.add(table);
+    } catch { /* ignorar */ }
+    if (timer) return;
+    timer = setTimeout(() => {
+      timer = null;
+      const tables = [...dirtyTables];
+      dirtyTables.clear();
+      runFullSync(tables).catch(console.error);
+    }, 150);
+  });
+  eventSource.onopen = () => setConnected(true);
 }
 
 /** Borra del dispositivo los datos que el rol actual no puede ver (p. ej. usuarios de sesiones viejas) */
 async function purgeForbiddenTables() {
-  if (isPublicClientRoute()) {
-    await Promise.all(SYNC_TABLES.filter(t => !['products', 'salonTables', 'clientOrders'].includes(t))
-      .map(t => (db as any)[t]?.clear()));
-    return;
-  }
-  const allowed = new Set(getAllowedTables());
-  await Promise.all(SYNC_TABLES.filter(t => !allowed.has(t)).map(t => (db as any)[t]?.clear()));
+  const keep = isPublicClientRoute()
+    ? new Set(['products', 'salonTables', 'clientOrders'])
+    : new Set(getAllowedTables());
+  await Promise.all(SYNCED_TABLES.filter(t => !keep.has(t)).map(t => (db as any)[t]?.clear()));
 }
 
 export function startSyncService() {
@@ -117,19 +172,26 @@ export function startSyncService() {
   if (syncIntervalId) return;
 
   console.log("Iniciando servicio de sincronización en cliente remoto...");
+  lastFullSync = 0;
+  cursors.clear();
   purgeForbiddenTables()
     .catch(console.error)
     .finally(() => runFullSync().catch(console.error));
 
+  connectEvents();
   syncIntervalId = setInterval(() => {
     runFullSync().catch(console.error);
-  }, 3000);
+  }, isPublicClientRoute() ? PUBLIC_POLL_MS : POLL_MS);
 }
 
 export function stopSyncService() {
   if (syncIntervalId) {
     clearInterval(syncIntervalId);
     syncIntervalId = null;
-    console.log("Servicio de sincronización detenido.");
   }
+  if (eventSource) {
+    eventSource.close();
+    eventSource = null;
+  }
+  console.log("Servicio de sincronización detenido.");
 }

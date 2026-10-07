@@ -7,6 +7,7 @@ import { Store, Upload, Save, Image as ImageIcon, X, Users, Shield, Trash2, Key,
 import { LoggerService } from "../lib/LoggerService";
 import QRCode from "qrcode";
 import InvoiceDesignSettings from "../components/InvoiceDesignSettings";
+import { BackupPanel } from "../components/BackupPanel";
 
 export function Settings() {
   const { businessName, setBusinessName, logo, setLogo, taxRate, setTaxRate } = useBusiness();
@@ -477,6 +478,7 @@ export function Settings() {
               Guardar Configuración
             </button>
           </div>
+          {isElectron && <BackupPanel />}
         </div>
       )}
 

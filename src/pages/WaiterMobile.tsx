@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { logout } from '../lib/auth';
+import { SyncStatusBadge } from '../components/SyncStatusBadge';
 import { useStore, OrderItem, type Table } from '../contexts/StoreContext';
 import { 
   LogOut, 
@@ -344,6 +345,7 @@ export function WaiterMobile() {
             LYNX <span className="text-indigo-400">MOZO</span>
           </h1>
         </div>
+        <SyncStatusBadge className="ml-auto mr-3" />
         <button 
           onClick={handleLogout}
           className="p-2 bg-slate-900 border border-slate-850 rounded-xl text-slate-400 hover:text-red-400 transition-colors"
