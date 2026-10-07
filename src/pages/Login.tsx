@@ -1,57 +1,48 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Lock, Mail, ArrowRight, ShieldAlert, KeyRound } from 'lucide-react';
-import { useStore } from '../contexts/StoreContext';
+import { login, needsSuperadminSetup, setupSuperadmin, type SessionUser } from '../lib/auth';
 
 interface LoginProps {
-  onLogin: (user: any) => void;
+  onLogin: (user: SessionUser) => void;
 }
 
 export function Login({ onLogin }: LoginProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { users } = useStore();
+  // Primer uso en la PC principal: no existe ningún Superadmin todavía
+  const [setupMode, setSetupMode] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    needsSuperadminSetup().then(setSetupMode).catch(() => setSetupMode(false));
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (setupMode) {
+      if (password.length < 8) { setError('La contraseña debe tener al menos 8 caracteres.'); return; }
+      if (password !== confirmPassword) { setError('Las contraseñas no coinciden.'); return; }
+    }
+
     setIsLoading(true);
-
-    // Simulate login loader for UX
-    setTimeout(() => {
-      // Superadmin Check (Hardcoded as requested)
-      if (email === 'ignaciovalente@hotmail.com' && password === 'Elpibe0610') {
-        onLogin({ 
-          id: 'superadmin', 
-          name: 'Ignacio Valente', 
-          role: 'Superadmin', 
-          permissions: ['all'] 
-        });
-        setIsLoading(false);
-        return;
+    try {
+      const result = setupMode
+        ? await setupSuperadmin(email.trim(), password)
+        : await login(email.trim(), password);
+      if (result.ok && result.user) {
+        onLogin(result.user);
+      } else {
+        setError(result.error || 'Credenciales incorrectas o usuario no encontrado.');
       }
-
-
-      // Local DB Users Check (Staff using their Name as Email and PIN as Password)
-      const dbUser = users.find(
-        u => u.name.toLowerCase() === email.toLowerCase() && u.pin === password
-      );
-      
-      if (dbUser) {
-        if (dbUser.status === 'Inactive') {
-          setError('El usuario está inactivo. Contacte al administrador.');
-          setIsLoading(false);
-          return;
-        }
-        onLogin(dbUser);
-        setIsLoading(false);
-        return;
-      }
-
-      setError('Credenciales incorrectas o usuario no encontrado.');
+    } catch {
+      setError('No se pudo conectar con la PC principal. Verificá la red.');
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -74,7 +65,7 @@ export function Login({ onLogin }: LoginProps) {
               <KeyRound className="w-8 h-8 text-indigo-400" />
             </div>
             <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">LYNX BarOS</h1>
-            <p className="text-sm text-slate-400">Accede al panel de control</p>
+            <p className="text-sm text-slate-400">{setupMode ? 'Primer uso: creá la cuenta Superadmin' : 'Accede al panel de control'}</p>
           </div>
 
           {/* Form */}
@@ -99,7 +90,7 @@ export function Login({ onLogin }: LoginProps) {
                   disabled={isLoading}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-11 pr-4 py-3 bg-slate-950/60 border border-slate-500/70 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm"
-                  placeholder="Correo electrónico o Nombre"
+                  placeholder={setupMode ? "Usuario o correo del Superadmin" : "Usuario o correo electrónico"}
                 />
               </div>
 
@@ -114,9 +105,26 @@ export function Login({ onLogin }: LoginProps) {
                   disabled={isLoading}
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-11 pr-4 py-3 bg-slate-950/60 border border-slate-500/70 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm"
-                  placeholder="Contraseña o PIN"
+                  placeholder={setupMode ? "Contraseña (mínimo 8 caracteres)" : "Contraseña"}
                 />
               </div>
+
+              {setupMode && (
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
+                  </div>
+                  <input
+                    type="password"
+                    required
+                    value={confirmPassword}
+                    disabled={isLoading}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="block w-full pl-11 pr-4 py-3 bg-slate-950/60 border border-slate-500/70 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all sm:text-sm"
+                    placeholder="Repetir contraseña"
+                  />
+                </div>
+              )}
             </div>
 
             <button
@@ -134,7 +142,7 @@ export function Login({ onLogin }: LoginProps) {
                 </>
               ) : (
                 <>
-                  Iniciar Sesión
+                  {setupMode ? 'Crear Superadmin' : 'Iniciar Sesión'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}
@@ -152,7 +160,7 @@ export function Login({ onLogin }: LoginProps) {
             </a>
           </div>
           <p className="text-center text-[10px] text-slate-600 tracking-widest font-medium">
-            v1.0.4 (Auto-Update Enabled)
+            v{__APP_VERSION__}
           </p>
         </div>
       </div>

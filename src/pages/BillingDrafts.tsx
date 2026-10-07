@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { getIpc } from '../lib/ipc';
 import { useStore } from "../contexts/StoreContext";
 import { 
   FileText, 
@@ -97,12 +98,12 @@ export function BillingDrafts() {
     setIsProcessing(true);
 
     try {
-      const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+      const isElectron = !!getIpc();
       const savedSettingsRaw = localStorage.getItem('bar_arca_settings');
       const arcaSettings = savedSettingsRaw ? JSON.parse(savedSettingsRaw) : null;
 
       if (isElectron && arcaSettings && arcaSettings.cuit) {
-        const ipc = (window as any).require('electron').ipcRenderer;
+        const ipc = getIpc()!;
         
         const totalAmount = selectedIds.reduce((sum, id) => {
           const draft = billingDrafts.find(d => d.id === id);
@@ -184,9 +185,9 @@ export function BillingDrafts() {
   };
 
   const handleOpenPDF = async (filePath: string) => {
-    const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+    const isElectron = !!getIpc();
     if (isElectron) {
-      const ipc = (window as any).require('electron').ipcRenderer;
+      const ipc = getIpc()!;
       await ipc.invoke('open-file-path', filePath);
     } else {
       alert("La apertura de archivos locales solo está disponible en la versión de escritorio.");
@@ -195,12 +196,12 @@ export function BillingDrafts() {
 
   const handleRegeneratePDF = async (draft: BillingDraft) => {
     try {
-      const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+      const isElectron = !!getIpc();
       const savedSettingsRaw = localStorage.getItem('bar_arca_settings');
       const arcaSettings = savedSettingsRaw ? JSON.parse(savedSettingsRaw) : null;
 
       if (isElectron && arcaSettings) {
-        const ipc = (window as any).require('electron').ipcRenderer;
+        const ipc = getIpc()!;
         const res = await ipc.invoke('arca-regenerate-pdf', {
           draft,
           settings: {

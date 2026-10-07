@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { getIpc } from '../lib/ipc';
 import { useBusiness } from "../contexts/BusinessContext";
 import { useStore } from "../contexts/StoreContext";
 import { cn } from "../lib/utils";
@@ -28,8 +29,8 @@ export function Settings() {
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [latestVersion, setLatestVersion] = useState<string | null>(null);
 
-  const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
-  const ipc = isElectron ? (window as any).require('electron').ipcRenderer : null;
+  const ipc = getIpc();
+  const isElectron = !!ipc;
   const CURRENT_VERSION = isElectron && ipc ? `v${ipc.sendSync('get-app-version')}` : "v1.1.0";
 
   // Estados de ngrok y sincronización
@@ -239,6 +240,15 @@ export function Settings() {
 
   const handleAddUser = async () => {
     if (newUser.name) {
+      const nameTaken = users.some(u => u.id !== editingUserId && String(u.name || '').toLowerCase().trim() === newUser.name.toLowerCase().trim());
+      if (nameTaken) {
+        alert('Ya existe un usuario con ese nombre.');
+        return;
+      }
+      if (!editingUserId && !newUser.pin) {
+        alert('Definí una contraseña para el nuevo usuario.');
+        return;
+      }
       if (editingUserId) {
         await updateUser(editingUserId, newUser);
         await LoggerService.audit('UPDATE', 'USERS', `Usuario actualizado: ${newUser.name} (${newUser.role})`);
@@ -262,7 +272,8 @@ export function Settings() {
 
   const handleEditUser = (user: any) => {
     setEditingUserId(user.id);
-    setNewUser({ name: user.name, role: user.role, pin: user.pin || '', permissions: user.permissions || [] });
+    // La contraseña actual nunca se muestra: dejarla vacía significa "no cambiar"
+    setNewUser({ name: user.name, role: user.role, pin: '', permissions: user.permissions || [] });
     setIsUserModalOpen(true);
   };
 
@@ -991,7 +1002,7 @@ export function Settings() {
                     value={newUser.pin}
                     onChange={e => setNewUser({...newUser, pin: e.target.value})}
                     className="w-full h-12 px-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
-                    placeholder="••••••••"
+                    placeholder={editingUserId ? "Dejar vacío para no cambiarla" : "••••••••"}
                   />
                 </div>
 

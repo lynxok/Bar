@@ -7,6 +7,11 @@ const express = require('express');
 const { Afip } = require('afip.ts');
 const forge = require('node-forge');
 const QRCode = require('qrcode');
+const crypto = require('crypto');
+const {
+  hashPassword, verifyPassword, safeEqualPlain, canAccess, readableTables,
+  normalizeRole, publicUser, createSessionStore, createRateLimiter,
+} = require('./auth.cjs');
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
 const userDataPath = app.getPath('userData');
@@ -21,27 +26,127 @@ let globalSupabaseActive = false;
 let globalSupabaseUrl = "";
 let globalSupabaseAnonKey = "";
 
-// Inicializar Express
-const expressApp = express();
-expressApp.use(express.json());
+// Sesiones y límites de intentos
+const sessions = createSessionStore(userDataPath);
+const loginLimiter = createRateLimiter(10, 60 * 1000);
+const publicLimiter = createRateLimiter(20, 60 * 1000);
 
-// Permitir CORS
-expressApp.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
-  next();
-});
+// Inicializar Express (sin CORS: solo se aceptan peticiones del mismo origen)
+const expressApp = express();
+expressApp.disable('x-powered-by');
+expressApp.use(express.json({ limit: '1mb' }));
 
 // Servir archivos estáticos en producción
 const distPath = path.join(__dirname, '../dist');
 expressApp.use(express.static(distPath));
 
+// ---------- Puente Express/IPC -> Dexie del renderer ----------
+const pendingRequests = new Map();
+
+function rendererQuery({ table, id, method, body, query }) {
+  return new Promise((resolve, reject) => {
+    if (!win || win.isDestroyed()) {
+      return reject(Object.assign(new Error('La ventana de Electron no está lista'), { status: 503 }));
+    }
+    const requestId = crypto.randomBytes(12).toString('hex');
+    const timer = setTimeout(() => {
+      if (pendingRequests.delete(requestId)) {
+        reject(Object.assign(new Error('Timeout esperando respuesta del proceso renderizado (Dexie)'), { status: 504 }));
+      }
+    }, 12000);
+    pendingRequests.set(requestId, { resolve, reject, timer });
+    win.webContents.send('db-request', { requestId, table, id, method, body, query });
+  });
+}
+
+function sendError(res, err) {
+  res.status(err.status || 500).json({ error: err.message || 'Error interno' });
+}
+
+function getBearer(req) {
+  const h = req.headers.authorization || '';
+  return h.startsWith('Bearer ') ? h.slice(7).trim() : null;
+}
+
+function requireAuth(req, res, next) {
+  const token = getBearer(req);
+  const session = sessions.get(token);
+  if (!session) return res.status(401).json({ error: 'Sesión inválida o expirada' });
+  req.session = session;
+  req.token = token;
+  next();
+}
+
+const clientIp = (req) => req.ip || (req.socket && req.socket.remoteAddress) || 'unknown';
+
+// ---------- Autenticación ----------
+async function getAllUsers() {
+  const users = await rendererQuery({ table: 'users', method: 'GET' });
+  return Array.isArray(users) ? users : [];
+}
+
+const sameName = (a, b) => String(a || '').toLowerCase().trim() === String(b || '').toLowerCase().trim();
+
+async function loginUser(name, password) {
+  if (typeof name !== 'string' || typeof password !== 'string' || !name.trim() || !password) {
+    return { ok: false, error: 'Ingresá usuario y contraseña.' };
+  }
+  const user = (await getAllUsers()).find(u => sameName(u.name, name));
+  let valid = false;
+  if (user && user.passwordHash) {
+    valid = verifyPassword(password, user.passwordHash);
+  } else if (user && user.pin) {
+    // Migración: contraseña en texto plano -> hash en el primer login exitoso
+    valid = safeEqualPlain(password, user.pin);
+    if (valid) {
+      await rendererQuery({ table: 'users', id: user.id, method: 'PUT', body: { passwordHash: hashPassword(password), pin: '' } });
+    }
+  } else {
+    hashPassword(password); // tiempo de respuesta similar exista o no el usuario
+  }
+  if (!user || !valid) return { ok: false, error: 'Credenciales incorrectas o usuario no encontrado.' };
+  if (user.status === 'Inactive') return { ok: false, error: 'El usuario está inactivo. Contacte al administrador.' };
+  const token = sessions.create(user);
+  return { ok: true, token, user: publicUser(user), allowedTables: readableTables(user.role) };
+}
+
+function sessionInfo(session) {
+  return { user: session.user, allowedTables: readableTables(session.user.role) };
+}
+
+// Re-sincroniza las sesiones abiertas cuando un usuario cambia o se borra
+async function onUserChanged(userId) {
+  try {
+    const user = (await getAllUsers()).find(u => String(u.id) === String(userId));
+    if (!user || user.status === 'Inactive') sessions.revokeUser(userId);
+    else sessions.updateUser(user);
+  } catch (e) {
+    console.error('No se pudo actualizar sesiones del usuario', userId, e);
+  }
+}
+
+expressApp.post('/api/auth/login', async (req, res) => {
+  const { name, password } = req.body || {};
+  if (!loginLimiter(`${clientIp(req)}|${String(name || '').toLowerCase()}`)) {
+    return res.status(429).json({ ok: false, error: 'Demasiados intentos. Esperá un minuto.' });
+  }
+  try {
+    const result = await loginUser(name, password);
+    res.status(result.ok ? 200 : 401).json(result);
+  } catch (e) { sendError(res, e); }
+});
+
+expressApp.get('/api/auth/me', requireAuth, (req, res) => {
+  res.json(sessionInfo(req.session));
+});
+
+expressApp.post('/api/auth/logout', requireAuth, (req, res) => {
+  sessions.revoke(req.token);
+  res.json({ ok: true });
+});
+
 // API de Información de Sincronización
-expressApp.get('/api/sync-info', (req, res) => {
+expressApp.get('/api/sync-info', requireAuth, (req, res) => {
   res.json({
     supabaseActive: globalSupabaseActive,
     supabaseUrl: globalSupabaseUrl,
@@ -49,33 +154,106 @@ expressApp.get('/api/sync-info', (req, res) => {
   });
 });
 
-// Express a IPC Bridge para redireccionar base de datos
-const pendingRequests = new Map();
+// ---------- Rutas públicas para la carta QR (sin login) ----------
+expressApp.get('/api/public/menu', async (req, res) => {
+  try {
+    const products = await rendererQuery({ table: 'products', method: 'GET' });
+    res.json((products || [])
+      .filter(p => p.status !== 'inactive')
+      .map(p => ({
+        id: p.id, name: p.name, category: p.category, price: p.price, stock: p.stock,
+        unit: p.unit, popular: p.popular, status: p.status, description: p.description,
+        image: p.image, variants: p.variants,
+      })));
+  } catch (e) { sendError(res, e); }
+});
 
-expressApp.all('/api/db/:table/:id?', (req, res) => {
-  if (!win) {
-    return res.status(503).json({ error: 'La ventana de Electron no está lista' });
+expressApp.get('/api/public/table/:id', async (req, res) => {
+  try {
+    const table = await rendererQuery({ table: 'salonTables', id: req.params.id, method: 'GET' });
+    if (!table) return res.status(404).json({ error: 'Mesa no encontrada' });
+    const clientOrders = await rendererQuery({
+      table: 'clientOrders', method: 'GET', query: { where: 'tableId', equals: table.id },
+    });
+    res.json({
+      table: {
+        id: table.id, label: table.label, status: table.status, type: table.type, capacity: table.capacity,
+        lastUpdate: table.lastUpdate,
+        order: (table.order || []).map(i => ({ id: i.id, name: i.name, price: i.price, qty: i.qty })),
+      },
+      clientOrders: (clientOrders || []).map(co => ({
+        id: co.id, tableId: co.tableId, customerId: co.customerId, items: co.items,
+        total: co.total, status: co.status, timestamp: co.timestamp,
+      })),
+    });
+  } catch (e) { sendError(res, e); }
+});
+
+expressApp.post('/api/public/client-orders', async (req, res) => {
+  if (!publicLimiter(clientIp(req))) {
+    return res.status(429).json({ error: 'Demasiados pedidos seguidos. Esperá un momento.' });
+  }
+  try {
+    const { tableId, customerId, items } = req.body || {};
+    if (typeof tableId !== 'string' || tableId.length > 64) return res.status(400).json({ error: 'Mesa inválida' });
+    if (typeof customerId !== 'string' || !customerId || customerId.length > 64) return res.status(400).json({ error: 'Comensal inválido' });
+    if (!Array.isArray(items) || items.length === 0 || items.length > 50) return res.status(400).json({ error: 'Pedido vacío o demasiado grande' });
+
+    const table = await rendererQuery({ table: 'salonTables', id: tableId, method: 'GET' });
+    if (!table) return res.status(404).json({ error: 'Mesa no encontrada' });
+
+    // Los precios se toman siempre del catálogo, nunca del cliente
+    const products = (await rendererQuery({ table: 'products', method: 'GET' })) || [];
+    const cleanItems = [];
+    for (const it of items) {
+      const qty = Number(it && it.qty);
+      if (!Number.isInteger(qty) || qty < 1 || qty > 50) return res.status(400).json({ error: 'Cantidad inválida' });
+      const product = products.find(p => String(p.id) === String(it.id)) || products.find(p => p.name === it.name);
+      if (!product || product.status === 'inactive') return res.status(400).json({ error: `Producto no disponible: ${it && it.name}` });
+      cleanItems.push({ id: String(product.id), productId: product.id, name: product.name, price: product.price, qty });
+    }
+    const total = cleanItems.reduce((acc, i) => acc + i.price * i.qty, 0);
+    const id = await rendererQuery({
+      table: 'clientOrders', method: 'POST',
+      body: { tableId, customerId, items: cleanItems, total, status: 'pending', timestamp: new Date().toISOString() },
+    });
+    res.json({ ok: true, id });
+  } catch (e) { sendError(res, e); }
+});
+
+// ---------- API de base de datos (requiere sesión y permisos por rol) ----------
+expressApp.all('/api/db/:table/:id?', requireAuth, async (req, res) => {
+  const { table, id } = req.params;
+  const method = req.method.toUpperCase();
+  const role = req.session.user.role;
+
+  if (!canAccess(role, table, method)) {
+    return res.status(403).json({ error: `Sin permiso para ${method} en ${table}` });
   }
 
-  const requestId = Math.random().toString(36).substring(7);
-  pendingRequests.set(requestId, res);
-
-  win.webContents.send('db-request', {
-    requestId,
-    table: req.params.table,
-    id: req.params.id,
-    method: req.method,
-    body: req.body,
-    query: req.query
-  });
-
-  // Timeout para evitar peticiones colgadas
-  setTimeout(() => {
-    if (pendingRequests.has(requestId)) {
-      pendingRequests.delete(requestId);
-      res.status(504).json({ error: 'Timeout esperando respuesta del proceso renderizado (Dexie)' });
+  let body = req.body;
+  if (table === 'users' && (method === 'POST' || method === 'PUT')) {
+    body = { ...(body || {}) };
+    delete body.passwordHash;
+    if (normalizeRole(body.role) === 'superadmin' && normalizeRole(role) !== 'superadmin' && String(body.role || '').toLowerCase() === 'superadmin') {
+      return res.status(403).json({ error: 'Solo un Superadmin puede asignar ese rol' });
     }
-  }, 12000);
+    if (typeof body.pin === 'string' && body.pin.length > 0) {
+      body.passwordHash = hashPassword(body.pin);
+      body.pin = '';
+    } else if (method === 'PUT') {
+      delete body.pin; // sin contraseña nueva: se mantiene la actual
+    }
+  }
+
+  try {
+    let data = await rendererQuery({ table, id, method, body, query: req.query });
+    if (table === 'users') {
+      if (method === 'GET') data = Array.isArray(data) ? data.map(publicUser) : publicUser(data);
+      if (method === 'PUT' || method === 'DELETE') await onUserChanged(id);
+    }
+    res.json(data === undefined ? null : data);
+  } catch (e) { sendError(res, e); }
 });
 
 // Ruta fallback para el ruteo SPA en el cliente de producción
@@ -88,15 +266,68 @@ expressApp.get('*', (req, res, next) => {
 
 // Responder a la petición de datos desde el Renderer
 ipcMain.on('db-response', (event, { requestId, success, data, error }) => {
-  const res = pendingRequests.get(requestId);
-  if (res) {
-    pendingRequests.delete(requestId);
-    if (success) {
-      res.json(data);
-    } else {
-      res.status(500).json({ error: error || 'Error interno del servidor de base de datos' });
-    }
+  if (!win || event.sender !== win.webContents) return;
+  const pending = pendingRequests.get(requestId);
+  if (!pending) return;
+  pendingRequests.delete(requestId);
+  clearTimeout(pending.timer);
+  if (success) pending.resolve(data);
+  else pending.reject(new Error(error || 'Error interno del servidor de base de datos'));
+});
+
+// ---------- IPC de autenticación (solo ventana principal) ----------
+function assertMainWindow(event) {
+  if (!win || event.sender !== win.webContents) throw new Error('Origen IPC no autorizado');
+}
+
+ipcMain.handle('auth-login', async (event, { name, password } = {}) => {
+  assertMainWindow(event);
+  return loginUser(name, password);
+});
+
+ipcMain.handle('auth-me', async (event, token) => {
+  assertMainWindow(event);
+  const s = sessions.get(token);
+  return s ? sessionInfo(s) : null;
+});
+
+ipcMain.handle('auth-logout', async (event, token) => {
+  assertMainWindow(event);
+  sessions.revoke(token);
+  return true;
+});
+
+ipcMain.handle('auth-needs-setup', async (event) => {
+  assertMainWindow(event);
+  const users = await getAllUsers();
+  return !users.some(u => String(u.role || '').toLowerCase() === 'superadmin' && u.passwordHash);
+});
+
+ipcMain.handle('auth-setup-superadmin', async (event, { name, password } = {}) => {
+  assertMainWindow(event);
+  const users = await getAllUsers();
+  if (users.some(u => String(u.role || '').toLowerCase() === 'superadmin' && u.passwordHash)) {
+    return { ok: false, error: 'Ya existe un Superadmin configurado.' };
   }
+  if (typeof name !== 'string' || name.trim().length < 3) return { ok: false, error: 'El usuario debe tener al menos 3 caracteres.' };
+  if (typeof password !== 'string' || password.length < 8) return { ok: false, error: 'La contraseña debe tener al menos 8 caracteres.' };
+  if (users.some(u => sameName(u.name, name))) return { ok: false, error: 'Ya existe un usuario con ese nombre.' };
+  await rendererQuery({
+    table: 'users', method: 'POST',
+    body: { name: name.trim(), role: 'Superadmin', permissions: ['all'], status: 'Active', pin: '', passwordHash: hashPassword(password) },
+  });
+  return loginUser(name.trim(), password);
+});
+
+ipcMain.handle('auth-hash-password', async (event, password) => {
+  assertMainWindow(event);
+  return hashPassword(password);
+});
+
+ipcMain.handle('auth-user-changed', async (event, userId) => {
+  assertMainWindow(event);
+  await onUserChanged(userId);
+  return true;
 });
 
 // Servidor Express
@@ -114,8 +345,10 @@ function createWindow() {
     width: 1280,
     height: 800,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      preload: path.join(__dirname, 'preload.cjs'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true
     },
     icon: path.join(__dirname, '../public/icon.png')
   });

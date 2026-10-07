@@ -20,39 +20,41 @@ import { Login } from './pages/Login';
 import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
 import { startSyncService, stopSyncService } from './services/syncService';
+import {
+  getStoredUser, verifySession, onUnauthorized, isPublicClientRoute,
+  isSuperadminRole, isAdminRole, type SessionUser,
+} from './lib/auth';
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+  const isClientRoute = isPublicClientRoute();
+  const [currentUser, setCurrentUser] = useState<SessionUser | null>(() => getStoredUser());
+  const [checkingSession, setCheckingSession] = useState(!isClientRoute && !!getStoredUser());
+  const isAuthenticated = !!currentUser;
 
-  // Iniciar servicio de sincronización
+  // Validar la sesión guardada contra el host (el rol nunca se toma de localStorage)
   useEffect(() => {
+    if (isClientRoute) return;
+    verifySession()
+      .then(user => setCurrentUser(user))
+      .finally(() => setCheckingSession(false));
+    return onUnauthorized(() => setCurrentUser(null));
+  }, [isClientRoute]);
+
+  // Sincronización: solo con sesión válida (o en modo comensal para la carta QR)
+  useEffect(() => {
+    if (checkingSession) return;
+    if (!isAuthenticated && !isClientRoute) return;
     startSyncService();
     return () => stopSyncService();
-  }, []);
+  }, [isAuthenticated, isClientRoute, checkingSession]);
 
-  // Check local storage on load
-  useEffect(() => {
-    const storedUser = localStorage.getItem('bar_user');
-    if (storedUser) {
-      setCurrentUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
-    }
-  }, []);
-
-  const handleLogin = (user: any) => {
-    localStorage.setItem('bar_user', JSON.stringify(user));
+  const handleLogin = (user: SessionUser) => {
     setCurrentUser(user);
-    setIsAuthenticated(true);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('bar_user');
-    setCurrentUser(null);
-    setIsAuthenticated(false);
-  };
-
-  const isClientRoute = window.location.hash.includes('/cliente/') || window.location.pathname.includes('/cliente/');
+  if (checkingSession) {
+    return <div className="min-h-screen bg-slate-950" />;
+  }
 
   if (!isAuthenticated && !isClientRoute) {
     return <Login onLogin={handleLogin} />;
@@ -82,8 +84,8 @@ export default function App() {
             <Route path="facturacion" element={<BillingDrafts />} />
             <Route path="configuracion" element={<Settings />} />
             <Route path="carta" element={<MenuConfig />} />
-            <Route path="seguridad" element={<Security />} />
-            <Route path="logs" element={<Logs />} />
+            <Route path="seguridad" element={isAdminRole(currentUser?.role) ? <Security /> : <Navigate to="/" replace />} />
+            <Route path="logs" element={isSuperadminRole(currentUser?.role) ? <Logs /> : <Navigate to="/" replace />} />
             <Route path="cocina" element={<Kitchen />} />
             <Route path="ayuda" element={<Help />} />
             <Route path="mozo" element={<WaiterMobile />} />

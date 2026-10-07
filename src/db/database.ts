@@ -1,4 +1,6 @@
 import Dexie, { type Table } from 'dexie';
+import { getIpc } from '../lib/ipc';
+import { apiFetch, isPublicClientRoute } from '../lib/auth';
 
 export interface Product {
   id?: number;
@@ -17,6 +19,8 @@ export interface Product {
   prepCount?: number;
   prepTimeTotal?: number;
   variants?: any[];
+  description?: string;
+  image?: string;
 }
 
 export interface Order {
@@ -142,7 +146,10 @@ export interface User {
   id?: number;
   name: string;
   role: string;
+  /** Solo se usa para enviar una contraseña nueva; nunca se guarda en texto plano */
   pin?: string;
+  /** Hash scrypt de la contraseña (solo existe en la PC principal) */
+  passwordHash?: string;
   permissions: string[];
   status?: string;
 }
@@ -273,14 +280,15 @@ export class BarDatabase extends Dexie {
 export const db = new BarDatabase();
 
 export const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
-// El host principal es la aplicación de Electron.
-export const isHost = isElectron;
+// El host principal es la aplicación de Electron. Se detecta por el puente IPC del preload,
+// que no se puede falsificar desde un navegador cambiando el user-agent.
+export const isHost = !!getIpc();
 
 // 1. ESCUCHADOR IPC EN EL HOST (ELECTRON)
 // Cuando Express recibe una llamada HTTP de un celular, la envía aquí vía IPC.
 // Este código consulta el IndexedDB real de la PC principal y devuelve el resultado.
-if (isElectron) {
-  const ipc = (window as any).require('electron').ipcRenderer;
+if (isHost) {
+  const ipc = getIpc()!;
   ipc.on('db-request', async (_: any, { requestId, table, id, method, body, query }: any) => {
     try {
       const targetTable = (db as any)[table];
@@ -326,12 +334,8 @@ if (isElectron) {
 // Cuando el celular hace una operación de escritura (add, update, delete) en Dexie,
 // se ejecuta localmente (para feedback visual instantáneo) y se envía al Host por HTTP API.
 if (!isHost) {
-  const apiFetch = async (path: string, options?: RequestInit) => {
-    const hostUrl = window.location.origin;
-    const res = await fetch(`${hostUrl}${path}`, options);
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
-  };
+  const remotePath = (tableName: string, key?: any) =>
+    key === undefined ? `/api/db/${tableName}` : `/api/db/${tableName}/${encodeURIComponent(String(key))}`;
 
   const wrapTableForClient = (tableName: string, originalTable: any) => {
     // Interceptar ADD
@@ -340,20 +344,24 @@ if (!isHost) {
     originalTable.add = async function(item: any, key?: any) {
       const localId = await originalAdd(item, key);
       const itemWithId = { ...item };
-      
+
       const idKey = originalTable.schema.primKey.name || 'id';
       if (localId && !itemWithId[idKey]) {
         itemWithId[idKey] = localId;
       }
-      
+
       try {
-        await apiFetch(`/api/db/${tableName}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(itemWithId)
-        });
+        if (isPublicClientRoute()) {
+          // Comensal sin login (carta QR): solo puede enviar pedidos por la ruta pública
+          if (tableName === 'clientOrders') {
+            await apiFetch('/api/public/client-orders', { method: 'POST', body: JSON.stringify(itemWithId) });
+          }
+        } else {
+          await apiFetch(remotePath(tableName), { method: 'POST', body: JSON.stringify(itemWithId) });
+        }
       } catch (err) {
         console.error(`Error de sincronización (ADD) en tabla ${tableName}:`, err);
+        if (isPublicClientRoute()) throw err; // el comensal tiene que enterarse si su pedido no llegó
       }
       return localId;
     };
@@ -363,12 +371,9 @@ if (!isHost) {
     originalTable.originalUpdate = originalUpdate;
     originalTable.update = async function(key: any, changes: any) {
       const localResult = await originalUpdate(key, changes);
+      if (isPublicClientRoute()) return localResult;
       try {
-        await apiFetch(`/api/db/${tableName}/${key}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(changes)
-        });
+        await apiFetch(remotePath(tableName, key), { method: 'PUT', body: JSON.stringify(changes) });
       } catch (err) {
         console.error(`Error de sincronización (UPDATE) en tabla ${tableName}:`, err);
       }
@@ -380,10 +385,9 @@ if (!isHost) {
     originalTable.originalDelete = originalDelete;
     originalTable.delete = async function(key: any) {
       const localResult = await originalDelete(key);
+      if (isPublicClientRoute()) return localResult;
       try {
-        await apiFetch(`/api/db/${tableName}/${key}`, {
-          method: 'DELETE'
-        });
+        await apiFetch(remotePath(tableName, key), { method: 'DELETE' });
       } catch (err) {
         console.error(`Error de sincronización (DELETE) en tabla ${tableName}:`, err);
       }
@@ -392,12 +396,12 @@ if (!isHost) {
   };
 
   const tableNames = [
-    'products', 'orders', 'expenses', 'salonTables', 'paymentOrders', 
-    'systemLogs', 'auditLogs', 'comandas', 'rewards', 'customers', 
-    'shifts', 'users', 'messages', 'floorPlans', 'loyaltyConfig', 
-    'loyaltyTransactions', 'clientOrders'
+    'products', 'orders', 'expenses', 'salonTables', 'paymentOrders',
+    'systemLogs', 'auditLogs', 'comandas', 'rewards', 'customers',
+    'shifts', 'users', 'messages', 'floorPlans', 'loyaltyConfig',
+    'loyaltyTransactions', 'clientOrders', 'billingDrafts'
   ];
-  
+
   tableNames.forEach(name => {
     if ((db as any)[name]) {
       wrapTableForClient(name, (db as any)[name]);

@@ -1,6 +1,7 @@
 import { createContext, useContext, ReactNode, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft } from '../db/database';
+import { getIpc } from '../lib/ipc';
 export type { Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft };
 
 export interface OrderItem {
@@ -651,16 +652,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     await db.clientOrders.update(orderId, { status: 'rejected' });
   };
 
+  // En la PC principal la contraseña se hashea acá; en dispositivos remotos la hashea el servidor.
+  const prepareUserPayload = async (user: any, isNew: boolean) => {
+    const { passwordHash: _ignored, ...payload } = user || {};
+    const ipc = getIpc();
+    if (typeof payload.pin === 'string' && payload.pin.length > 0) {
+      if (ipc) {
+        payload.passwordHash = await ipc.invoke<string>('auth-hash-password', payload.pin);
+        payload.pin = '';
+      }
+    } else if (!isNew) {
+      delete payload.pin; // sin contraseña nueva: se conserva la actual
+    }
+    return payload;
+  };
+
   const addUser = async (user: any) => {
-    await db.users.add(user);
+    await db.users.add(await prepareUserPayload(user, true));
   };
 
   const updateUser = async (id: number, user: any) => {
-    await db.users.update(id, user);
+    await db.users.update(id, await prepareUserPayload(user, false));
+    await getIpc()?.invoke('auth-user-changed', id);
   };
 
   const deleteUser = async (id: number) => {
     await db.users.delete(id);
+    await getIpc()?.invoke('auth-user-changed', id);
   };
 
   const sendMessage = async (msg: any) => {

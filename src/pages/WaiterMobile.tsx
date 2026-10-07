@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useStore, OrderItem } from '../contexts/StoreContext';
+import { logout } from '../lib/auth';
+import { useStore, OrderItem, type Table } from '../contexts/StoreContext';
 import { 
   LogOut, 
   ArrowLeft, 
@@ -165,8 +166,7 @@ export function WaiterMobile() {
   }, [clientOrders]);
 
   const handleLogout = () => {
-    localStorage.removeItem('bar_user');
-    window.location.reload();
+    void logout().finally(() => window.location.reload());
   };
 
   const handleCleanTable = async (tableId: string, e: React.MouseEvent) => {

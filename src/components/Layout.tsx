@@ -1,4 +1,5 @@
 import { Outlet, Link, useLocation } from "react-router-dom";
+import { logout } from '../lib/auth';
 import { useBusiness } from "../contexts/BusinessContext";
 import { useAlerts } from "../contexts/AlertContext";
 import { NotificationService } from "../lib/NotificationService";
@@ -405,8 +406,7 @@ export function Layout() {
             {!isSidebarCollapsed && (
               <button 
                 onClick={() => {
-                  localStorage.removeItem('bar_user');
-                  window.location.reload();
+                  void logout().finally(() => window.location.reload());
                 }}
                 className="p-2 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors flex-shrink-0 animate-in fade-in"
                 title="Cerrar Sesión"
