@@ -8,6 +8,7 @@ import { LoggerService } from "../lib/LoggerService";
 import QRCode from "qrcode";
 import InvoiceDesignSettings from "../components/InvoiceDesignSettings";
 import { BackupPanel } from "../components/BackupPanel";
+import { MercadoPagoSettings } from "../components/payments/MercadoPagoSettings";
 
 export function Settings() {
   const { businessName, setBusinessName, logo, setLogo, taxRate, setTaxRate, pricesIncludeTax, setPricesIncludeTax } = useBusiness();
@@ -487,6 +488,7 @@ export function Settings() {
               Guardar Configuración
             </button>
           </div>
+          {isElectron && <MercadoPagoSettings />}
           {isElectron && <BackupPanel />}
         </div>
       )}

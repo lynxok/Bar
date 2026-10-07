@@ -1162,3 +1162,28 @@ ipcMain.handle('get-public-base-url', async (event) => {
   const port = app.isPackaged ? SERVER_PORT : 3000;
   return { url: `http://${pick.address}:${port}`, source: 'lan' };
 });
+
+// ---------- Mercado Pago (QR + conciliación) ----------
+const { createMercadoPago } = require('./mercadopago.cjs');
+const { safeStorage } = require('electron');
+const mercadoPago = createMercadoPago({ userDataPath, safeStorage });
+const mpLimiter = createRateLimiter(60, 60 * 1000);
+
+ipcMain.handle('mp-status', async (event) => { assertMainWindow(event); return mercadoPago.status(); });
+ipcMain.handle('mp-set-token', async (event, token) => { assertMainWindow(event); return mercadoPago.setToken(token); });
+ipcMain.handle('mp-clear', async (event) => { assertMainWindow(event); return mercadoPago.clear(); });
+ipcMain.handle('mp-create-qr', async (event, args) => { assertMainWindow(event); return mercadoPago.createQr(args || {}); });
+ipcMain.handle('mp-check', async (event, args) => { assertMainWindow(event); return mercadoPago.check(args || {}); });
+
+// Para celulares/tablets (mozos y caja): el token nunca sale de la PC principal
+expressApp.post('/api/mp/qr', requireAuth, async (req, res) => {
+  if (!mpLimiter(req.token)) return res.status(429).json({ error: 'Demasiadas solicitudes' });
+  try { res.json(await mercadoPago.createQr(req.body || {})); } catch (e) { sendError(res, e); }
+});
+expressApp.get('/api/mp/check/:reference', requireAuth, async (req, res) => {
+  if (!mpLimiter(req.token)) return res.status(429).json({ error: 'Demasiadas solicitudes' });
+  try { res.json(await mercadoPago.check({ reference: req.params.reference, amount: Number(req.query.amount) || 0 })); } catch (e) { sendError(res, e); }
+});
+expressApp.get('/api/mp/status', requireAuth, async (req, res) => {
+  try { const s = await mercadoPago.status(); res.json({ configured: s.configured }); } catch (e) { sendError(res, e); }
+});

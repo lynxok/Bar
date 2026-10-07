@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { logout } from '../lib/auth';
 import { SyncStatusBadge } from '../components/SyncStatusBadge';
 import { computeTotals } from '../lib/pricing';
+import { mpIsConfigured } from '../lib/mercadopago';
+import { MercadoPagoQr } from '../components/payments/MercadoPagoQr';
 import { useStore, OrderItem, type Table } from '../contexts/StoreContext';
 import { 
   LogOut, 
@@ -59,6 +61,10 @@ export function WaiterMobile() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card' | 'qr'>('cash');
   const [dniInput, setDniInput] = useState('');
   const [discountInput, setDiscountInput] = useState('0');
+  const [tipInput, setTipInput] = useState('');
+  const [mpEnabled, setMpEnabled] = useState(false);
+  const [showMpQr, setShowMpQr] = useState(false);
+  useEffect(() => { mpIsConfigured().then(setMpEnabled); }, []);
 
   // Toast notifications
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -265,19 +271,26 @@ export function WaiterMobile() {
     }
   };
 
-  const handleCheckoutClose = async () => {
+  const handleCheckoutClose = async (paymentRef?: string) => {
     if (!checkoutTableId) return;
+    // QR con Mercado Pago configurado: primero se muestra el QR y se espera la confirmación
+    if (paymentMethod === 'qr' && mpEnabled && !paymentRef) {
+      setShowMpQr(true);
+      return;
+    }
     try {
       const discount = Number(discountInput) || 0;
       // Se registra con el mismo nombre que usan la caja y el mapa de mesas
-      const methodLabel = paymentMethod === 'cash' ? 'Efectivo' : paymentMethod === 'card' ? 'Tarjeta' : 'QR';
-      await closeOrder(checkoutTableId, methodLabel, { customerDni: dniInput, discountPct: discount });
+      const methodLabel = paymentRef ? 'Mercado Pago' : paymentMethod === 'cash' ? 'Efectivo' : paymentMethod === 'card' ? 'Tarjeta' : 'QR';
+      await closeOrder(checkoutTableId, methodLabel, { customerDni: dniInput, discountPct: discount, tip: Number(tipInput) || 0, paymentRef });
       await updateTable(checkoutTableId, { status: 'dirty', waiterName: '', order: [] });
       
       setCheckoutTableId(null);
       setScannedTableId(null);
       setDniInput('');
       setDiscountInput('0');
+      setTipInput('');
+      setShowMpQr(false);
       triggerToast(`Mesa ${checkoutTableId.replace('T-', '')} cobrada con éxito.`);
     } catch (e: any) {
       console.error(e);
@@ -852,14 +865,38 @@ export function WaiterMobile() {
                     className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs font-bold outline-none text-white focus:border-indigo-600"
                   />
                 </div>
+
+                <div className="space-y-1">
+                  <label className="text-[9px] font-bold text-slate-500 uppercase block">Propina ($, no suma a la venta)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="0"
+                    value={tipInput}
+                    onChange={(e) => setTipInput(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs font-bold outline-none text-white focus:border-emerald-600"
+                  />
+                </div>
               </div>
 
-              <button 
-                onClick={handleCheckoutClose}
+              {showMpQr && (
+                <div className="bg-white rounded-2xl p-4">
+                  <MercadoPagoQr
+                    amount={Math.round((totalItemsPrice * (1 - (Number(discountInput) || 0) / 100) + (Number(tipInput) || 0)) * 100) / 100}
+                    description={`Mesa ${checkoutTableId.replace('T-', '')}`}
+                    tableId={checkoutTableId}
+                    onApproved={(paymentId) => handleCheckoutClose(paymentId)}
+                    onCancel={() => setShowMpQr(false)}
+                  />
+                </div>
+              )}
+
+              {!showMpQr && <button 
+                onClick={() => handleCheckoutClose()}
                 className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/20 active:scale-95"
               >
-                <Wallet className="w-4 h-4" /> Confirmar Pago y Cerrar
-              </button>
+                <Wallet className="w-4 h-4" /> {paymentMethod === 'qr' && mpEnabled ? 'Generar QR de Mercado Pago' : 'Confirmar Pago y Cerrar'}
+              </button>}
             </div>
           </div>
         );

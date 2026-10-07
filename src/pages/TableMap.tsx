@@ -1,4 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from "react";
+import { PaymentModal } from './tablemap/PaymentModal';
+import type { OrderItem } from '../contexts/StoreContext';
 import { computeTotals, taxLabel } from '../lib/pricing';
 import { TableQrModal } from './tablemap/TableQrModal';
 import { 
@@ -1854,111 +1856,19 @@ export function TableMap() {
         </div>
       )}
 
-      {/* Payment & Loyalty Modal */}
-      {isPaymentModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[200] flex items-center justify-center p-6">
-          <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
-            <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-              <div>
-                <h3 className="font-black text-2xl text-slate-900">Cobrar Mesa {selectedTableId}</h3>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Finalizar cuenta y registrar puntos</p>
-              </div>
-              <button onClick={() => setIsPaymentModalOpen(false)} className="p-3 text-slate-400 hover:bg-white hover:text-rose-500 rounded-full transition-all border border-transparent hover:border-slate-100 shadow-sm">
-                <X className="w-8 h-8" />
-              </button>
-            </div>
-
-            <div className="p-10 space-y-8">
-              {/* Payment Methods */}
-              <div className="space-y-4">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Método de Pago</label>
-                <div className="grid grid-cols-2 gap-3">
-                  {[
-                    { id: 'Efectivo', icon: Wallet, label: 'Efectivo' },
-                    { id: 'Tarjeta', icon: CreditCard, label: 'Tarjeta' },
-                    { id: 'Transferencia', icon: ArrowRightLeft, label: 'Transf.' },
-                    { id: 'Billetera', icon: Smartphone, label: 'Billetera' },
-                  ].map(method => (
-                    <button 
-                      key={method.id}
-                      onClick={() => setPaymentMethod(method.id)}
-                      className={cn(
-                        "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all active:scale-[0.98]",
-                        paymentMethod === method.id 
-                          ? "bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100" 
-                          : "bg-slate-50 border-transparent text-slate-600 hover:border-slate-200"
-                      )}
-                    >
-                      <method.icon className={cn("h-5 w-5", paymentMethod === method.id ? "text-white" : "text-indigo-500")} />
-                      <span className="text-xs font-black uppercase tracking-wider">{method.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Loyalty ID */}
-              <div className="space-y-4 pt-4 border-t border-slate-100">
-                <div className="flex justify-between items-center">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Fidelización (Opcional)</label>
-                  <span className="text-[9px] font-black text-indigo-500 bg-indigo-50 px-2 py-1 rounded-full uppercase">Suma 10% en Puntos</span>
-                </div>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
-                  <input 
-                    id="global-scanner-focus"
-                    type="text" 
-                    value={loyaltyId}
-                    onChange={e => setLoyaltyId(e.target.value)}
-                    className="w-full h-14 pl-12 pr-4 bg-slate-50 border-2 border-transparent rounded-2xl font-bold text-slate-900 focus:bg-white focus:border-indigo-500 outline-none transition-all"
-                    placeholder="DNI o N° de Socio (F2)"
-                  />
-                </div>
-                <p className="text-[10px] text-slate-400 font-bold italic">Si no es socio, puedes registrarlo en la sección de Fidelización.</p>
-              </div>
-
-              {/* Total Summary */}
-              <div className="bg-slate-900 rounded-[2.5rem] p-8 space-y-4 text-white shadow-2xl">
-                <div className="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest px-2">
-                  <span>Subtotal</span>
-                  <span>${subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest px-2">
-                  <span>{taxLabel({ taxRate, pricesIncludeTax })}</span>
-                  <span>${taxes.toLocaleString()}</span>
-                </div>
-                <div className="h-px bg-slate-800 mx-2" />
-                <div className="flex justify-between items-center px-2">
-                  <div>
-                    <div className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-1">Total a Cobrar</div>
-                    <div className="text-4xl font-black">${total.toLocaleString()}</div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Puntos a Sumar</div>
-                    <div className="text-xl font-black text-emerald-400">+{Math.floor(total / 100)} pts</div>
-                  </div>
-                </div>
-              </div>
-
-              <button 
-                onClick={async () => {
-                  try {
-                    await closeOrder(selectedTableId!, paymentMethod, { customerDni: loyaltyId });
-                  } catch (err: any) {
-                    alert(err?.message || 'No se pudo cobrar la mesa.');
-                    return;
-                  }
-                  setIsPaymentModalOpen(false);
-                  setSelectedTableId(null);
-                  setLoyaltyId('');
-                  setPaymentMethod('Efectivo');
-                }}
-                className="w-full h-16 bg-indigo-600 text-white rounded-2xl font-black text-lg shadow-2xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
-              >
-                FINALIZAR Y COBRAR <ArrowRight className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Cobro (una cuenta o dividida, con propina y QR de Mercado Pago) */}
+      {isPaymentModalOpen && selectedTableId && (
+        <PaymentModal
+          tableId={selectedTableId}
+          items={orderItems as OrderItem[]}
+          onClose={() => setIsPaymentModalOpen(false)}
+          onPaid={() => {
+            setIsPaymentModalOpen(false);
+            setSelectedTableId(null);
+            setLoyaltyId('');
+            setPaymentMethod('Efectivo');
+          }}
+        />
       )}
 
       {qrModalTableId && (

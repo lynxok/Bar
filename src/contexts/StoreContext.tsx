@@ -1,5 +1,5 @@
 import { createContext, useContext, ReactNode, useEffect, useLayoutEffect, useState } from 'react';
-import { sumByPaymentBucket } from '../lib/payments';
+import { summarizeShift } from '../lib/payments';
 import { createTrackedStore, useTrackedStore, type TrackedStore } from './trackedStore';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, isHost, Product, TableState as Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, BillingDraft } from '../db/database';
@@ -10,7 +10,7 @@ export type { Table, LoyaltyConfig, LoyaltyTransaction, Shift, ClientOrder, Bill
 
 export type { OrderItem, CloseOrderOptions } from '../services/sales';
 import type { OrderItem, CloseOrderOptions } from '../services/sales';
-import { closeOrder, closePOSOrder, findProductForItem } from '../services/sales';
+import { closeOrder, closeOrderSplit, closePOSOrder, findProductForItem, type SplitPart } from '../services/sales';
 
 export interface Expense {
   id?: number;
@@ -74,6 +74,7 @@ interface StoreContextType {
 
   closeOrder: (tableId: string, paymentMethod: string, options?: string | CloseOrderOptions) => Promise<void>;
   closePOSOrder: (items: OrderItem[], total: number, paymentMethod: string, options?: string | CloseOrderOptions) => Promise<void>;
+  closeOrderSplit: (tableId: string, parts: SplitPart[], options?: { discountPct?: number }) => Promise<{ group: string; totals: number[] }>;
   updateTableOrder: (tableId: string, items: OrderItem[]) => Promise<void>;
   setProducts: (products: Product[]) => Promise<void>;
   addProduct: (product: Omit<Product, 'id'>) => Promise<void>;
@@ -309,9 +310,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       .filter(o => new Date(o.timestamp) >= shiftStart && o.status === 'closed')
       .toArray();
 
-    const totals = sumByPaymentBucket(shiftOrders);
+    const { sales: totals, tips, expectedCash } = summarizeShift(shiftOrders, active.initialCash);
 
-    const expectedCash = active.initialCash + totals.cash;
     const difference = declaredCash - expectedCash;
 
     await db.shifts.update(active.id!, {
@@ -321,6 +321,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       difference,
       cardTotal: totals.card,
       transferTotal: totals.transfer,
+      tipsTotal: tips.total,
+      tipsCash: tips.cash,
       comments,
       status: 'closed',
     });
@@ -599,7 +601,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addCustomer, updateCustomerPoints, redeemPoints,
       addExpense, addPaymentOrder,
       openShift, closeShift,
-      closeOrder, closePOSOrder, updateTableOrder,
+      closeOrder, closePOSOrder, closeOrderSplit, updateTableOrder,
       setProducts, addProduct, updateProduct, deleteProduct,
       moveTable, addTable, removeTable, updateTable,
       updateLoyaltyConfig,

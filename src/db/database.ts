@@ -41,6 +41,15 @@ export interface Order {
   discountAmount?: number;
   /** Usuario que cobró */
   closedBy?: string;
+  /** Propina (no forma parte de la venta ni de la facturación) */
+  tip?: number;
+  /** Referencia del pago externo (Mercado Pago, etc.) */
+  paymentRef?: string;
+  /** Cuenta dividida: id común, número de parte y cantidad de partes */
+  splitGroup?: string;
+  splitIndex?: number;
+  splitCount?: number;
+  splitMode?: 'equal' | 'items';
 }
 
 export interface Expense {
@@ -149,6 +158,9 @@ export interface Shift {
   comments: string;
   initialCash: number; // Fondo inicial de caja
   status: 'active' | 'closed';
+  /** Propinas del turno (total y la parte en efectivo, que queda en la caja) */
+  tipsTotal?: number;
+  tipsCash?: number;
 }
 
 export interface User {

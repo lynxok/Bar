@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { sumByPaymentBucket } from '../lib/payments';
+import { summarizeShift } from '../lib/payments';
 import { useStore } from '../contexts/StoreContext';
 import {
   LockIcon,
@@ -42,16 +42,18 @@ export function CashClose() {
   // Calculate totals
   const totals = useMemo(() => {
     // QR, billetera y Mercado Pago cuentan como digitales (no como efectivo)
-    return sumByPaymentBucket(currentShiftOrders);
+    return summarizeShift(currentShiftOrders, 0);
   }, [currentShiftOrders]);
+  const tips = totals.tips;
 
   const mesasPendientes = tables.filter(t => t.status !== 'available' && t.status !== 'dirty').length;
   
   const declaredCash = parseFloat(declaredCashInput.replace(/[^0-9.-]+/g,"")) || 0;
   const initialCash = activeShift ? activeShift.initialCash : 0;
-  const expectedCash = initialCash + totals.cash;
+  // Las propinas en efectivo también quedan en la caja
+  const expectedCash = initialCash + totals.sales.cash + tips.cash;
   const difference = declaredCash - expectedCash;
-  const totalDeclaredAllMethods = declaredCash + totals.card + totals.transfer;
+  const totalDeclaredAllMethods = declaredCash + totals.sales.card + totals.sales.transfer;
 
   const handleOpenShiftSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -200,20 +202,31 @@ export function CashClose() {
                 <span className="text-slate-600 flex items-center gap-2">
                   <Banknote className="w-4 h-4 text-slate-400" /> Ventas Efectivo Turno
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.cash.toLocaleString()}</span>
+                <span className="font-bold text-slate-800 text-lg">${totals.sales.cash.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
                 <span className="text-slate-600 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-slate-400" /> Tarjetas (Visa, Master)
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.card.toLocaleString()}</span>
+                <span className="font-bold text-slate-800 text-lg">${totals.sales.card.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
                 <span className="text-slate-600 flex items-center gap-2">
                   <Landmark className="w-4 h-4 text-slate-400" /> Transferencias / Pago Móvil
                 </span>
-                <span className="font-bold text-slate-800 text-lg">${totals.transfer.toLocaleString()}</span>
+                <span className="font-bold text-slate-800 text-lg">${totals.sales.transfer.toLocaleString()}</span>
               </div>
+              {tips.total > 0 && (
+                <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
+                  <span className="text-slate-600 flex items-center gap-2">
+                    <Landmark className="w-4 h-4 text-slate-400" /> Propinas (no son venta)
+                  </span>
+                  <span className="text-right">
+                    <span className="font-bold text-slate-800 text-lg">${tips.total.toLocaleString()}</span>
+                    <span className="block text-[11px] text-slate-500">en efectivo: ${tips.cash.toLocaleString()} (incluidas en la caja)</span>
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
                 <span className="text-slate-600 flex items-center gap-2">
                   <Clock className="w-4 h-4 text-slate-400" /> Mesas Activas / Abiertas

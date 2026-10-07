@@ -47,6 +47,7 @@ export function POS() {
   const [cart, setCart] = useState<{ id: string; name: string; price: number; qty: number }[]>([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('Efectivo');
   const [loyaltyId, setLoyaltyId] = useState('');
+  const [tipInput, setTipInput] = useState('');
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [orderType, setOrderType] = useState<'dine-in' | 'takeaway'>('dine-in');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -109,10 +110,11 @@ export function POS() {
   const handleProcessPayment = async () => {
     if (cart.length === 0) return;
     try {
-      await closePOSOrder(cart, total, selectedPaymentMethod, loyaltyId || undefined);
+      await closePOSOrder(cart, total, selectedPaymentMethod, { customerDni: loyaltyId || undefined, tip: Number(tipInput) || 0 });
       await LoggerService.audit('SALE', 'POS', `Venta rápida: $${total.toFixed(2)} (${selectedPaymentMethod})`);
       setCart([]);
       setLoyaltyId('');
+      setTipInput('');
       setIsCheckoutModalOpen(false);
     } catch (err: any) {
       alert(`Error al procesar el pago: ${err.message}`);
@@ -419,10 +421,16 @@ export function POS() {
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Puntos</div>
-                    <div className="text-xl font-black text-emerald-600">+{Math.floor(total / 10)} pts</div>
+                    <div className="text-xl font-black text-emerald-600">+{Math.floor(total / 100)} pts</div>
                   </div>
                 </div>
               </div>
+
+              <label className="block space-y-1">
+                <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Propina ($, se registra aparte)</span>
+                <input type="number" min={0} value={tipInput} onChange={e => setTipInput(e.target.value)} placeholder="0"
+                  className="w-full h-11 px-3 rounded-xl border border-outline-variant bg-surface font-bold outline-none focus:border-primary" />
+              </label>
 
               <button
                 onClick={handleProcessPayment}

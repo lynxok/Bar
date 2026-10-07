@@ -15,3 +15,19 @@ export function sumByPaymentBucket(orders: { paymentMethod?: string; total: numb
     return acc;
   }, { cash: 0, card: 0, transfer: 0 });
 }
+
+/**
+ * Resumen de caja de un turno. Las propinas se informan aparte; las propinas en efectivo
+ * están físicamente en la caja, por eso se suman al efectivo esperado.
+ */
+export function summarizeShift(orders: { paymentMethod?: string; total: number; tip?: number }[], initialCash: number) {
+  const sales = sumByPaymentBucket(orders);
+  const tips = { cash: 0, card: 0, transfer: 0, total: 0 };
+  for (const o of orders) {
+    const t = Number(o.tip) || 0;
+    if (!t) continue;
+    tips[classifyPaymentMethod(o.paymentMethod)] += t;
+    tips.total += t;
+  }
+  return { sales, tips, expectedCash: initialCash + sales.cash + tips.cash };
+}
