@@ -98,14 +98,23 @@ export function Dashboard() {
 
   const handleCloseOrder = async () => {
     if (!checkoutTableId) return;
-    // Distribute loyalty points among registered diners
-    if (pointsPerRegistered > 0) {
+    const splitPoints = pointsPerRegistered > 0;
+    // Primero se cobra (si falla, p. ej. sin turno abierto, no se reparten puntos)
+    try {
+      await closeOrder(checkoutTableId, paymentMethod, {
+        customerDni: registeredDiners[0] || undefined,
+        // Si la cuenta se divide, los puntos se reparten abajo y no se suman dos veces
+        awardPoints: !splitPoints,
+      });
+    } catch (err: any) {
+      alert(err?.message || 'No se pudo cobrar la mesa.');
+      return;
+    }
+    if (splitPoints) {
       await Promise.allSettled(
         registeredDiners.map(dni => updateCustomerPoints(dni.trim(), pointsPerRegistered, `Mesa ${checkoutTableId} - Cuenta Dividida`))
       );
     }
-    // Close order using the first registered loyalty ID (or undefined)
-    await closeOrder(checkoutTableId, paymentMethod, registeredDiners[0] || undefined);
     setCheckoutTableId(null);
   };
 

@@ -32,6 +32,12 @@ export interface Order {
   timestamp: string;
   paymentMethod?: string;
   customerId?: string;
+  /** Suma de ítems antes de descuentos */
+  subtotal?: number;
+  discountPct?: number;
+  discountAmount?: number;
+  /** Usuario que cobró */
+  closedBy?: string;
 }
 
 export interface Expense {
@@ -334,6 +340,28 @@ if (isHost) {
 // Cuando el celular hace una operación de escritura (add, update, delete) en Dexie,
 // se ejecuta localmente (para feedback visual instantáneo) y se envía al Host por HTTP API.
 if (!isHost) {
+  // Dentro de una transacción Dexie no se puede esperar un fetch (la transacción se cierra
+  // antes de tiempo: PrematureCommitError). Las escrituras remotas se encolan y se envían,
+  // en orden, recién cuando la transacción local se confirmó.
+  const txQueues = new WeakMap<object, Array<() => Promise<void>>>();
+  const sendRemote = (fn: () => Promise<void>): Promise<void> => {
+    const tx = (Dexie as any).currentTransaction;
+    if (!tx) return fn();
+    let queue = txQueues.get(tx);
+    if (!queue) {
+      const q: Array<() => Promise<void>> = [];
+      queue = q;
+      txQueues.set(tx, q);
+      tx.on('complete', async () => {
+        for (const send of q) {
+          await send();
+        }
+      });
+    }
+    queue.push(fn);
+    return Promise.resolve();
+  };
+
   const remotePath = (tableName: string, key?: any) =>
     key === undefined ? `/api/db/${tableName}` : `/api/db/${tableName}/${encodeURIComponent(String(key))}`;
 
@@ -350,19 +378,21 @@ if (!isHost) {
         itemWithId[idKey] = localId;
       }
 
-      try {
-        if (isPublicClientRoute()) {
-          // Comensal sin login (carta QR): solo puede enviar pedidos por la ruta pública
-          if (tableName === 'clientOrders') {
-            await apiFetch('/api/public/client-orders', { method: 'POST', body: JSON.stringify(itemWithId) });
-          }
-        } else {
-          await apiFetch(remotePath(tableName), { method: 'POST', body: JSON.stringify(itemWithId) });
+      if (isPublicClientRoute()) {
+        // Comensal sin login (carta QR): solo puede enviar pedidos por la ruta pública.
+        // Si falla, el error se propaga para que el comensal sepa que su pedido no llegó.
+        if (tableName === 'clientOrders') {
+          await apiFetch('/api/public/client-orders', { method: 'POST', body: JSON.stringify(itemWithId) });
         }
-      } catch (err) {
-        console.error(`Error de sincronización (ADD) en tabla ${tableName}:`, err);
-        if (isPublicClientRoute()) throw err; // el comensal tiene que enterarse si su pedido no llegó
+        return localId;
       }
+      await sendRemote(async () => {
+        try {
+          await apiFetch(remotePath(tableName), { method: 'POST', body: JSON.stringify(itemWithId) });
+        } catch (err) {
+          console.error(`Error de sincronización (ADD) en tabla ${tableName}:`, err);
+        }
+      });
       return localId;
     };
 
@@ -372,11 +402,13 @@ if (!isHost) {
     originalTable.update = async function(key: any, changes: any) {
       const localResult = await originalUpdate(key, changes);
       if (isPublicClientRoute()) return localResult;
-      try {
-        await apiFetch(remotePath(tableName, key), { method: 'PUT', body: JSON.stringify(changes) });
-      } catch (err) {
-        console.error(`Error de sincronización (UPDATE) en tabla ${tableName}:`, err);
-      }
+      await sendRemote(async () => {
+        try {
+          await apiFetch(remotePath(tableName, key), { method: 'PUT', body: JSON.stringify(changes) });
+        } catch (err) {
+          console.error(`Error de sincronización (UPDATE) en tabla ${tableName}:`, err);
+        }
+      });
       return localResult;
     };
 
@@ -386,11 +418,13 @@ if (!isHost) {
     originalTable.delete = async function(key: any) {
       const localResult = await originalDelete(key);
       if (isPublicClientRoute()) return localResult;
-      try {
-        await apiFetch(remotePath(tableName, key), { method: 'DELETE' });
-      } catch (err) {
-        console.error(`Error de sincronización (DELETE) en tabla ${tableName}:`, err);
-      }
+      await sendRemote(async () => {
+        try {
+          await apiFetch(remotePath(tableName, key), { method: 'DELETE' });
+        } catch (err) {
+          console.error(`Error de sincronización (DELETE) en tabla ${tableName}:`, err);
+        }
+      });
       return localResult;
     };
   };

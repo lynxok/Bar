@@ -10,19 +10,11 @@ import { useStore, Table } from "../contexts/StoreContext";
 import { useBusiness } from "../contexts/BusinessContext";
 import { db } from "../db/database";
 
-const MENU_ITEMS = [
-  { id: '1', name: 'Burger Simple', price: 1200, category: 'Comida' },
-  { id: '2', name: 'Burger Doble', price: 1500, category: 'Comida' },
-  { id: '3', name: 'Papas Fritas', price: 600, category: 'Acompañamiento' },
-  { id: '4', name: 'Gaseosa Cola', price: 400, category: 'Bebida' },
-  { id: '5', name: 'Cerveza IPA', price: 800, category: 'Bebida' },
-  { id: '6', name: 'Ensalada César', price: 1100, category: 'Comida' },
-];
 
 const isRotatable = (type: Table['type']) => type !== 'round' && type !== 'stool';
 
 export function TableMap() {
-  const { tables, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan, clientOrders, approveClientOrder, rejectClientOrder, comandas } = useStore();
+  const { tables, products, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan, clientOrders, approveClientOrder, rejectClientOrder, comandas } = useStore();
   const { taxRate } = useBusiness();
 
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
@@ -382,6 +374,13 @@ export function TableMap() {
 
   const activeOrderTable = tables.find(t => t.id === selectedTableId);
   const orderItems = activeOrderTable?.order || [];
+
+  // Carta real (productos activos del inventario), con id estable para descontar stock
+  const [menuSearch, setMenuSearch] = useState('');
+  const menuItems = products
+    .filter(p => p.status !== 'inactive' && p.id != null)
+    .filter(p => !menuSearch || p.name.toLowerCase().includes(menuSearch.toLowerCase()) || (p.category || '').toLowerCase().includes(menuSearch.toLowerCase()))
+    .map(p => ({ id: String(p.id), productId: p.id as number, name: p.name, price: p.price, category: p.category }));
 
   const handleAddItem = (item: any) => {
     const exists = orderItems.find(i => i.id === item.id);
@@ -1763,8 +1762,20 @@ export function TableMap() {
                 </div>
                 <button onClick={() => setSelectedTableId(null)} className="p-2 text-slate-400 hover:text-rose-500"><X className="w-8 h-8" /></button>
               </div>
-              <div className="flex-1 overflow-y-auto p-10 grid grid-cols-3 gap-6">
-                {MENU_ITEMS.map(item => (
+              <div className="px-10 pt-6">
+                <input
+                  type="text"
+                  value={menuSearch}
+                  onChange={e => setMenuSearch(e.target.value)}
+                  placeholder="Buscar producto o categoría..."
+                  className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 outline-none focus:border-indigo-500"
+                />
+              </div>
+              <div className="flex-1 overflow-y-auto p-10 grid grid-cols-3 gap-6 content-start">
+                {menuItems.length === 0 && (
+                  <div className="col-span-3 text-center text-slate-400 font-bold py-10">No hay productos activos. Cargalos en Inventario.</div>
+                )}
+                {menuItems.map(item => (
                   <button key={item.id} onClick={() => handleAddItem(item)}
                     className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-500 hover:-translate-y-1 transition-all text-left">
                     <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">{item.category}</div>
@@ -1935,14 +1946,19 @@ export function TableMap() {
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Puntos a Sumar</div>
-                    <div className="text-xl font-black text-emerald-400">+{Math.floor(total / 10)} pts</div>
+                    <div className="text-xl font-black text-emerald-400">+{Math.floor(total / 100)} pts</div>
                   </div>
                 </div>
               </div>
 
               <button 
-                onClick={() => {
-                  closeOrder(selectedTableId!, paymentMethod, loyaltyId);
+                onClick={async () => {
+                  try {
+                    await closeOrder(selectedTableId!, paymentMethod, { customerDni: loyaltyId });
+                  } catch (err: any) {
+                    alert(err?.message || 'No se pudo cobrar la mesa.');
+                    return;
+                  }
                   setIsPaymentModalOpen(false);
                   setSelectedTableId(null);
                   setLoyaltyId('');

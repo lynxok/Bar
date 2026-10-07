@@ -74,7 +74,7 @@ export function POS() {
       if (exists) {
         return prev.map(i => i.id === product.id.toString() ? { ...i, qty: i.qty + 1 } : i);
       }
-      return [...prev, { id: product.id.toString(), name: product.name, price: currentPrice, qty: 1 }];
+      return [...prev, { id: product.id.toString(), productId: product.id, name: product.name, price: currentPrice, qty: 1 }];
     });
   };
 

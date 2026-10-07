@@ -200,6 +200,7 @@ export function WaiterMobile() {
       } else {
         return [...prev, {
           id: product.id?.toString() || `prod-${Date.now()}`,
+          productId: product.id,
           name: product.name,
           price: product.price,
           qty: 1,
@@ -265,7 +266,7 @@ export function WaiterMobile() {
     if (!checkoutTableId) return;
     try {
       const discount = Number(discountInput) || 0;
-      await closeOrder(checkoutTableId, paymentMethod, discount, dniInput, '');
+      await closeOrder(checkoutTableId, paymentMethod, { customerDni: dniInput, discountPct: discount });
       await updateTable(checkoutTableId, { status: 'dirty', waiterName: '', order: [] });
       
       setCheckoutTableId(null);
@@ -273,9 +274,9 @@ export function WaiterMobile() {
       setDniInput('');
       setDiscountInput('0');
       triggerToast(`Mesa ${checkoutTableId.replace('T-', '')} cobrada con éxito.`);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      triggerToast('Error al cobrar la mesa', 'error');
+      triggerToast(e?.message || 'Error al cobrar la mesa', 'error');
     }
   };
 
