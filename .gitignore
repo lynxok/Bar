@@ -8,3 +8,5 @@ coverage/
 !.env.example
 
 dist_electron/
+
+tests/e2e/shots/

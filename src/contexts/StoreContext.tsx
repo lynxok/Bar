@@ -152,15 +152,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     // Los datos iniciales solo se cargan en la PC principal: en celulares/tablets las tablas
     // arrancan vacías hasta la primera sync y no deben sembrar datos de ejemplo en el host.
     if (!isHost) return;
-    const initTables = async () => {
+    // En una sola transacción: si el efecto corre dos veces (StrictMode) no se duplican datos
+    const initTables = () => db.transaction('rw', [db.salonTables, db.floorPlans, db.rewards, db.loyaltyConfig], async () => {
       const tableCount = await db.salonTables.count();
       if (tableCount === 0) {
         const defaultPlan = await db.floorPlans.filter(fp => fp.isDefault === 1).first();
-        if (defaultPlan) {
-          await db.salonTables.bulkAdd(defaultPlan.tables);
-        } else {
-          await db.salonTables.bulkAdd(defaultTables);
-        }
+        await db.salonTables.bulkPut(defaultPlan ? defaultPlan.tables : defaultTables);
       }
 
       const rewardCount = await db.rewards.count();
@@ -173,16 +170,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         ]);
       }
 
-      const configCount = await db.loyaltyConfig.count();
-      if (configCount === 0) {
-        await db.loyaltyConfig.add({
+      if (!(await db.loyaltyConfig.get('global'))) {
+        await db.loyaltyConfig.put({
           id: 'global',
           pointValue: 0.005,
           tierConfig: INITIAL_TIERS,
           promotions: [],
         });
       }
-    };
+    });
     initTables().catch(console.error);
   }, []);
 

@@ -62,6 +62,8 @@ npm run test:server      # API: login, permisos por rol, carta QR
 npm run test:sync        # integración PC principal <-> celular simulados
 ```
 
+Recorrido completo en la app real (Electron + celular + carta QR, con capturas): ver `tests/e2e/smoke.mjs`.
+
 ## Publicar una versión
 
 1. Subir `version` en `package.json`.
