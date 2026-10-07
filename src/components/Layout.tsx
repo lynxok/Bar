@@ -47,6 +47,7 @@ const NAV_ITEMS = [
   { path: "/mapa", label: "Mapa del Salón", icon: Grid },
   { path: "/pos", label: "Punto de Venta (POS)", icon: MonitorCheck },
   { path: "/inventario", label: "Inventario", icon: Package },
+  { path: "/carta", label: "Menú / Carta QR", icon: Utensils },
   { path: "/finanzas", label: "Finanzas", icon: Wallet },
   { path: "/cierre", label: "Cierre de Caja", icon: Banknote },
   { path: "/analitica", label: "Analítica", icon: BarChart },
@@ -325,7 +326,7 @@ export function Layout() {
     <div className="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased overflow-x-hidden flex">
       {/* Sidebar (Soporte Colapsable) */}
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-slate-900 flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
+        "fixed left-0 top-0 h-screen bg-slate-900 hidden md:flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
         isSidebarCollapsed ? "w-20" : "w-64"
       )}>
         <div className="p-6 flex items-center gap-3 overflow-hidden">
@@ -433,15 +434,15 @@ export function Layout() {
 
       {/* Main Content Area */}
       <main className={cn(
-        "flex-1 flex flex-col min-h-screen transition-all duration-300",
-        isSidebarCollapsed ? "ml-20" : "ml-64"
+        "flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-300 ml-0",
+        isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
       )}>
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-8 justify-between sticky top-0 z-40">
+        <header className="h-16 bg-white border-b border-slate-200 flex items-center px-4 md:px-8 justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
-              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all"
+              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-all hidden md:block"
               title={isSidebarCollapsed ? "Expandir menú" : "Colapsar menú"}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
@@ -453,6 +454,14 @@ export function Layout() {
             <h2 className="text-lg font-semibold text-slate-800 hidden md:block">
               Panel de Control
             </h2>
+            <div className="flex items-center gap-2 md:hidden">
+              {logo ? (
+                <img src={logo} alt="Logo" className="w-7 h-7 object-cover rounded-lg" />
+              ) : (
+                <Utensils className="h-5 w-5 text-indigo-600" />
+              )}
+              <span className="font-extrabold text-slate-900 text-base tracking-tight leading-none truncate max-w-[160px]">{businessName}</span>
+            </div>
           </div>
           <div className="flex items-center gap-4 ml-auto">
             {!isHost && (
@@ -512,7 +521,7 @@ export function Layout() {
         </header>
 
         {/* Content Box */}
-        <div className="p-8">
+        <div className="p-4 md:p-8 pb-32 md:pb-8">
           <Outlet />
         </div>
         <ChatWidget />

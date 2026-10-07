@@ -388,13 +388,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Deduct product stock
-      for (const item of table.order) {
-        const product = await db.products.where('name').equals(item.name).first();
+      // Deduct product stock (considering recipes)
+      const deductStock = async (itemName: string, qty: number) => {
+        const product = await db.products.where('name').equals(itemName).first();
         if (product && product.id != null) {
-          const newStock = Math.max(0, (product.stock || 0) - (item.qty || 1));
-          await db.products.update(product.id, { stock: newStock });
+          if (product.recipe && product.recipe.length > 0) {
+            for (const ing of product.recipe) {
+              const ingProduct = ing.ingredientId 
+                ? await db.products.get(ing.ingredientId)
+                : await db.products.where('name').equals(ing.name).first();
+              if (ingProduct && ingProduct.id != null) {
+                const newStock = Math.max(0, (ingProduct.stock || 0) - (ing.quantity * qty));
+                await db.products.update(ingProduct.id, { stock: newStock });
+              }
+            }
+          } else {
+            const newStock = Math.max(0, (product.stock || 0) - qty);
+            await db.products.update(product.id, { stock: newStock });
+          }
         }
+      };
+
+      for (const item of table.order) {
+        await deductStock(item.name, item.qty || 1);
       }
 
       await db.salonTables.update(tableId, {
@@ -472,12 +488,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Deduct product stock
+      // Deduct product stock (considering recipes)
       for (const item of items) {
         const product = await db.products.where('name').equals(item.name).first();
         if (product && product.id != null) {
-          const newStock = Math.max(0, (product.stock || 0) - (item.qty || 1));
-          await db.products.update(product.id, { stock: newStock });
+          if (product.recipe && product.recipe.length > 0) {
+            for (const ing of product.recipe) {
+              const ingProduct = ing.ingredientId 
+                ? await db.products.get(ing.ingredientId)
+                : await db.products.where('name').equals(ing.name).first();
+              if (ingProduct && ingProduct.id != null) {
+                const newStock = Math.max(0, (ingProduct.stock || 0) - (ing.quantity * (item.qty || 1)));
+                await db.products.update(ingProduct.id, { stock: newStock });
+              }
+            }
+          } else {
+            const newStock = Math.max(0, (product.stock || 0) - (item.qty || 1));
+            await db.products.update(product.id, { stock: newStock });
+          }
         }
       }
     });

@@ -42,9 +42,9 @@ export function Inventory() {
   const [newCategoryName, setNewCategoryName] = useState('');
   const [newCategoryInput, setNewCategoryInput] = useState('');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [ingredients, setIngredients] = useState<{id: string, name: string, quantity: number, unit: string}[]>([]);
+  const [ingredients, setIngredients] = useState<{id: string, ingredientId?: number, name: string, quantity: number, unit: string}[]>([]);
   const [hasVariants, setHasVariants] = useState(false);
-  const [newProductVariants, setNewProductVariants] = useState<{id: string, name: string, sku: string, price: number, takeawayPrice: number}[]>([]);
+  const [newProductVariants, setNewProductVariants] = useState<{id: string, name: string, sku: string, price: number, takeawayPrice: number, stock: number}[]>([]);
   const [lowStockThreshold, setLowStockThreshold] = useState(5);
   const { setLowStockCount } = useAlerts();
 
@@ -55,16 +55,25 @@ export function Inventory() {
   const [newProductBarcode, setNewProductBarcode] = useState('');
   const [newProductPrice, setNewProductPrice] = useState<number | ''>('');
   const [newProductTakeawayPrice, setNewProductTakeawayPrice] = useState<number | ''>('');
+  const [newProductCost, setNewProductCost] = useState<number | ''>('');
   const [newProductStock, setNewProductStock] = useState(0);
   const [newProductUnit, setNewProductUnit] = useState('Unidades');
+  const [newProductIsMenuAvailable, setNewProductIsMenuAvailable] = useState(true);
 
   const [categoryFilter, setCategoryFilter] = useState('Todas las Categorías');
   const [stockStatusFilter, setStockStatusFilter] = useState('Todos los Estados');
 
-  const [editingRowId, setEditingRowId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ name: '', sku: '', barcode: '', price: 0, takeawayPrice: 0 });
+  const [editingRowId, setEditingRowId] = useState<number | string | null>(null);
+  const [editForm, setEditForm] = useState({ name: '', sku: '', barcode: '', price: 0, takeawayPrice: 0, stock: 0, unit: 'Unidades', cost: 0, status: 'active' });
   const [expandedProducts, setExpandedProducts] = useState<Record<string, boolean>>({'2': true});
   const [historyModalItem, setHistoryModalItem] = useState<any>(null);
+
+  // Auto-calculated recipe cost based on database product cost
+  const recipeCost = ingredients.reduce((acc, ing) => {
+    const dbProd = products.find(p => p.id === ing.ingredientId || p.name === ing.name);
+    const unitCost = dbProd?.cost || 0;
+    return acc + (ing.quantity * unitCost);
+  }, 0);
 
   useEffect(() => {
     const count = products.filter(p => p.stock < lowStockThreshold).length;
@@ -78,29 +87,62 @@ export function Inventory() {
       sku: product.sku || '',
       barcode: product.barcode || '',
       price: product.price || 0, 
-      takeawayPrice: product.takeawayPrice || 0 
+      takeawayPrice: product.takeawayPrice || 0,
+      stock: product.stock || 0,
+      unit: product.unit || 'Unidades',
+      cost: product.cost || 0,
+      status: product.status || 'active'
     });
   };
 
   const saveEditing = async () => {
     if (editingRowId) {
-      const product = products.find(p => p.id === editingRowId);
-      if (product) {
-        const historyEntry = (product.price !== editForm.price || product.takeawayPrice !== editForm.takeawayPrice) 
-          ? { date: new Date().toISOString(), oldPrice: product.price, newPrice: editForm.price, oldTakeaway: product.takeawayPrice, newTakeaway: editForm.takeawayPrice }
+      const parentProduct = products.find(p => p.id === editingRowId);
+      if (parentProduct) {
+        const historyEntry = (parentProduct.price !== editForm.price || parentProduct.takeawayPrice !== editForm.takeawayPrice) 
+          ? { date: new Date().toISOString(), oldPrice: parentProduct.price, newPrice: editForm.price, oldTakeaway: parentProduct.takeawayPrice, newTakeaway: editForm.takeawayPrice }
           : null;
-        const newHistory = historyEntry ? [historyEntry, ...(product.priceHistory || [])] : (product.priceHistory || []);
+        const newHistory = historyEntry ? [historyEntry, ...(parentProduct.priceHistory || [])] : (parentProduct.priceHistory || []);
         
-        await updateProduct(editingRowId, {
+        await updateProduct(editingRowId as number, {
           name: editForm.name,
           sku: editForm.sku,
           barcode: editForm.barcode,
           price: editForm.price,
           takeawayPrice: editForm.takeawayPrice,
+          stock: editForm.stock,
+          unit: editForm.unit,
+          cost: editForm.cost,
+          status: editForm.status,
           priceHistory: newHistory
         });
+      } else {
+        const productWithVariant = products.find(p => p.variants?.some(v => v.id === editingRowId));
+        if (productWithVariant) {
+          const updatedVariants = productWithVariant.variants?.map(v => {
+            if (v.id === editingRowId) {
+              return {
+                ...v,
+                name: editForm.name,
+                sku: editForm.sku,
+                barcode: editForm.barcode,
+                price: editForm.price,
+                takeawayPrice: editForm.takeawayPrice,
+                stock: editForm.stock,
+                unit: editForm.unit,
+                cost: editForm.cost,
+                status: editForm.status
+              };
+            }
+            return v;
+          }) || [];
+          
+          await updateProduct(productWithVariant.id!, {
+            variants: updatedVariants
+          });
+        }
       }
-      await LoggerService.audit('UPDATE', 'INVENTORY', `Producto actualizado: ${editForm.name}`);
+      await LoggerService.audit('UPDATE', 'INVENTORY', `Producto/Variante actualizado: ${editForm.name}`);
       setEditingRowId(null);
     }
   };
@@ -170,8 +212,16 @@ export function Inventory() {
       barcode: newProductBarcode,
       price: Number(newProductPrice) || 0,
       takeawayPrice: Number(newProductTakeawayPrice) || 0,
+      cost: ingredients.length > 0 ? recipeCost : (Number(newProductCost) || 0),
       stock: newProductStock,
       unit: newProductUnit,
+      status: newProductIsMenuAvailable ? 'active' : 'inactive',
+      recipe: ingredients.length > 0 ? ingredients.map(ing => ({
+        ingredientId: ing.ingredientId || 0,
+        name: ing.name,
+        quantity: ing.quantity,
+        unit: ing.unit
+      })) : [],
       variants: hasVariants ? newProductVariants : [],
       priceHistory: []
     };
@@ -185,33 +235,35 @@ export function Inventory() {
     setNewProductBarcode('');
     setNewProductPrice('');
     setNewProductTakeawayPrice('');
+    setNewProductCost('');
     setNewProductStock(0);
     setIngredients([]);
     setNewProductVariants([]);
     setIsCreateModalOpen(false);
+    setNewProductIsMenuAvailable(true);
   };
 
   return (
     <div className="p-container-padding space-y-8">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-          <h1 className="font-h1 text-h1 text-on-surface mb-1">Gestión de Inventario</h1>
-          <p className="font-body-md text-on-surface-variant">
+          <h1 className="font-h1 text-xl sm:text-2xl md:text-3xl font-black text-on-surface mb-1">Gestión de Inventario</h1>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium">
             Seguimiento de stock en tiempo real y controles de reposición.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 border border-outline rounded-lg font-label-caps text-label-caps text-on-surface hover:bg-surface-container transition-all">
+        <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 border border-outline rounded-lg font-label-caps text-[10px] sm:text-xs font-bold text-on-surface hover:bg-surface-container transition-all">
             <Upload className="h-4 w-4" />
             Importar CSV
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 border border-outline rounded-lg font-label-caps text-label-caps text-on-surface hover:bg-surface-container transition-all">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 border border-outline rounded-lg font-label-caps text-[10px] sm:text-xs font-bold text-on-surface hover:bg-surface-container transition-all">
             <Download className="h-4 w-4" />
             Exportar Reporte
           </button>
           <button 
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg font-label-caps text-label-caps shadow-sm hover:opacity-90 active:scale-95 transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-lg font-label-caps text-[10px] sm:text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
             onClick={() => setIsCreateModalOpen(true)}
           >
             <Plus className="h-4 w-4" />
@@ -358,7 +410,9 @@ export function Inventory() {
                 <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">NOMBRE DEL PRODUCTO</th>
                 <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant">CATEGORÍA</th>
                 <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">STOCK ACTUAL</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">COSTO</th>
                 <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">PRECIOS (LOCAL / LLEVAR)</th>
+                <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-center">MENÚ</th>
                 <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-center">ESTADO</th>
                 <th className="px-6 py-4 font-label-caps text-label-caps text-on-surface-variant text-right">ACCIONES</th>
               </tr>
@@ -366,7 +420,7 @@ export function Inventory() {
             <tbody className="divide-y divide-slate-100">
               {filteredProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-8 text-center text-on-surface-variant">
+                  <td colSpan={8} className="px-6 py-8 text-center text-on-surface-variant">
                     No se encontraron productos que coincidan con los filtros.
                   </td>
                 </tr>
@@ -389,7 +443,7 @@ export function Inventory() {
                          <div className="flex items-center gap-3">
                            {hasVariants ? (
                              <button 
-                               onClick={() => toggleExpand(product.id)}
+                               onClick={() => toggleExpand(product.id as any)}
                                className="p-1 rounded hover:bg-slate-200 text-slate-500 transition-colors"
                              >
                                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
@@ -443,8 +497,45 @@ export function Inventory() {
                          </div>
                       </td>
                       <td className="px-6 py-4 font-body-md text-on-surface-variant">{product.category}</td>
-                      <td className={cn("px-6 py-4 font-body-md text-right", isLowStock && !isEditing ? "text-error font-bold" : "text-on-surface font-medium")}>
-                        {product.stock} {product.unit}
+                      <td className="px-6 py-4 text-right">
+                        {isEditing ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <input 
+                              type="number" 
+                              value={editForm.stock} 
+                              onChange={(e) => setEditForm(prev => ({ ...prev, stock: Number(e.target.value) }))}
+                              className="w-16 bg-white border border-indigo-300 text-slate-800 px-1.5 py-1 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-right font-medium" 
+                            />
+                            <input 
+                              type="text" 
+                              value={editForm.unit} 
+                              onChange={(e) => setEditForm(prev => ({ ...prev, unit: e.target.value }))}
+                              className="w-16 bg-white border border-indigo-300 text-slate-500 px-1 py-1 rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none" 
+                            />
+                          </div>
+                        ) : (
+                          <span className={cn("font-body-md", isLowStock && !isEditing ? "text-error font-bold" : "text-on-surface font-medium")}>
+                            {product.stock} {product.unit}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {isEditing ? (
+                          <div className="relative w-20 ml-auto">
+                            <span className="absolute left-1.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">$</span>
+                            <input 
+                              type="number" 
+                              value={editForm.cost} 
+                              disabled={product.recipe && product.recipe.length > 0}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, cost: Number(e.target.value) }))}
+                              className="w-full bg-white border border-indigo-300 text-slate-800 pl-4 pr-1 py-1 rounded text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-right disabled:bg-slate-100 disabled:text-slate-400" 
+                            />
+                          </div>
+                        ) : (
+                          <span className="font-body-md text-on-surface-variant font-medium">
+                            ${product.cost?.toFixed(2) || '0.00'}
+                          </span>
+                        )}
                       </td>
                       <td className="px-6 py-4 font-body-md text-right whitespace-nowrap">
                         {isEditing && !hasVariants ? (
@@ -472,7 +563,7 @@ export function Inventory() {
                         ) : hasVariants ? (
                           <span className="text-slate-500 italic text-sm">{product.variants?.length} Variantes</span>
                         ) : (
-                          <div className="flex items-center gap-1.5 flex-wrap">
+                          <div className="flex items-center gap-1.5 flex-wrap justify-end">
                             <span className="text-on-surface">${product.price?.toFixed(2)}</span>
                             <span className="text-slate-400 mx-1">/</span>
                             <span className="text-indigo-600 font-medium">${product.takeawayPrice?.toFixed(2)}</span>
@@ -480,6 +571,23 @@ export function Inventory() {
                               <History className="w-4 h-4" />
                             </button>
                           </div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {isEditing ? (
+                          <input 
+                            type="checkbox"
+                            checked={editForm.status === 'active'}
+                            onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.checked ? 'active' : 'inactive' }))}
+                            className="w-4 h-4 text-indigo-600 border-slate-350 rounded focus:ring-indigo-500"
+                          />
+                        ) : (
+                          <span className={cn(
+                            "px-2.5 py-0.5 text-xs font-bold rounded-full",
+                            product.status === 'active' ? "bg-indigo-50 text-indigo-700 border border-indigo-100" : "bg-slate-100 text-slate-400"
+                          )}>
+                            {product.status === 'active' ? 'Disponible' : 'Oculto'}
+                          </span>
                         )}
                       </td>
                       <td className="px-6 py-4 text-center">
@@ -572,8 +680,44 @@ export function Inventory() {
                                 </div>
                              </td>
                           <td className="px-6 py-3 font-body-md text-slate-400 text-sm">--</td>
-                          <td className={cn("px-6 py-3 font-body-md text-right text-sm", isVarLowStock && !isVarEditing ? "text-error font-bold" : "text-on-surface font-medium")}>
-                            {variant.stock} {variant.unit || product.unit}
+                          <td className="px-6 py-3 text-right">
+                            {isVarEditing ? (
+                              <div className="flex items-center justify-end gap-1">
+                                <input 
+                                  type="number" 
+                                  value={editForm.stock} 
+                                  onChange={(e) => setEditForm(prev => ({ ...prev, stock: Number(e.target.value) }))}
+                                  className="w-14 bg-white border border-indigo-300 text-slate-800 px-1.5 py-0.5 rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none text-right font-medium" 
+                                />
+                                <input 
+                                  type="text" 
+                                  value={editForm.unit} 
+                                  onChange={(e) => setEditForm(prev => ({ ...prev, unit: e.target.value }))}
+                                  className="w-14 bg-white border border-indigo-300 text-slate-500 px-1 py-0.5 rounded text-[10px] focus:ring-2 focus:ring-indigo-500 outline-none" 
+                                />
+                              </div>
+                            ) : (
+                              <span className={cn("font-body-md text-sm", isVarLowStock && !isVarEditing ? "text-error font-bold" : "text-on-surface font-medium")}>
+                                {variant.stock} {variant.unit || product.unit}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            {isVarEditing ? (
+                              <div className="relative w-16 ml-auto">
+                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px]">$</span>
+                                <input 
+                                  type="number" 
+                                  value={editForm.cost} 
+                                  onChange={(e) => setEditForm(prev => ({ ...prev, cost: Number(e.target.value) }))}
+                                  className="w-full bg-white border border-indigo-300 text-slate-800 pl-3 pr-1 py-0.5 rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-right" 
+                                />
+                              </div>
+                            ) : (
+                              <span className="font-body-md text-slate-500 text-sm">
+                                ${variant.cost?.toFixed(2) || '0.00'}
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-3 font-body-md text-right whitespace-nowrap text-sm">
                             {isVarEditing ? (
@@ -599,7 +743,7 @@ export function Inventory() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="flex items-center gap-1.5 flex-wrap">
+                              <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                 <span className="text-on-surface">${variant.price?.toFixed(2)}</span>
                                 <span className="text-slate-400 mx-1">/</span>
                                 <span className="text-indigo-600 font-medium">${variant.takeawayPrice?.toFixed(2)}</span>
@@ -607,6 +751,23 @@ export function Inventory() {
                                   <History className="w-3.5 h-3.5" />
                                 </button>
                               </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-3 text-center">
+                            {isVarEditing ? (
+                              <input 
+                                type="checkbox"
+                                checked={editForm.status === 'active'}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.checked ? 'active' : 'inactive' }))}
+                                className="w-3.5 h-3.5 text-indigo-600 border-slate-350 rounded focus:ring-indigo-500"
+                              />
+                            ) : (
+                              <span className={cn(
+                                "px-2 py-0.2 text-[10px] font-bold rounded-full",
+                                variant.status === 'active' ? "bg-indigo-50 text-indigo-700 border border-indigo-100" : "bg-slate-100 text-slate-400"
+                              )}>
+                                {variant.status === 'active' ? 'Disponible' : 'Oculto'}
+                              </span>
                             )}
                           </td>
                           <td className="px-6 py-3 text-center">
@@ -696,7 +857,7 @@ export function Inventory() {
                     />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-3 gap-4">
                     <div>
                       <div className="flex justify-between items-center mb-1">
                         <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Categoría</label>
@@ -713,7 +874,7 @@ export function Inventory() {
                         <div className="flex gap-2">
                           <input 
                             type="text" 
-                            placeholder="Nombre de categoría" 
+                            placeholder="Categoría" 
                             className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
@@ -739,7 +900,7 @@ export function Inventory() {
                               }
                             }}
                           >
-                            Añadir
+                            +
                           </button>
                         </div>
                       ) : (
@@ -754,49 +915,68 @@ export function Inventory() {
                         </select>
                       )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Código (SKU)</label>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Código (SKU)</label>
+                      <input 
+                        type="text" 
+                        placeholder="Ej. BUR-DOB-01" 
+                        value={newProductSKU}
+                        onChange={(e) => setNewProductSKU(e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                        disabled={hasVariants} 
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
+                        Código de Barras
+                        <span className="text-[9px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded">EAN</span>
+                      </label>
+                      <div className="relative">
                         <input 
                           type="text" 
-                          placeholder="BUR-DOB-01" 
-                          value={newProductSKU}
-                          onChange={(e) => setNewProductSKU(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                          placeholder="71234567..." 
+                          value={newProductBarcode}
+                          onChange={(e) => setNewProductBarcode(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-4 pr-8 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
                           disabled={hasVariants} 
                         />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between">
-                          Código de Barras
-                          <span className="text-[10px] bg-indigo-100 text-indigo-600 px-1 py-0.5 rounded">EAN/UPC</span>
-                        </label>
-                        <div className="relative">
-                          <input 
-                            type="text" 
-                            placeholder="712345678901..." 
-                            value={newProductBarcode}
-                            onChange={(e) => setNewProductBarcode(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
-                            disabled={hasVariants} 
-                          />
-                          <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-indigo-600" title="Escanear Producto">
-                            <Search className="w-4 h-4" />
-                          </button>
-                        </div>
+                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-indigo-600" title="Escanear Producto">
+                          <Search className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 mt-4 mb-2">
-                    <input 
-                      type="checkbox" 
-                      id="hasVariants" 
-                      className="w-4 h-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500" 
-                      checked={hasVariants}
-                      onChange={(e) => setHasVariants(e.target.checked)}
-                    />
-                    <label htmlFor="hasVariants" className="text-sm font-semibold text-slate-700">Este producto tiene variantes (ej. tamaños, sabores)</label>
+                  <div className="flex gap-4 p-4 bg-slate-50 border border-slate-200 rounded-2xl my-4">
+                    <div className="flex items-center gap-3 flex-1">
+                      <input 
+                        type="checkbox" 
+                        id="hasVariants" 
+                        className="w-5 h-5 text-indigo-600 border-slate-350 rounded focus:ring-indigo-500 cursor-pointer" 
+                        checked={hasVariants}
+                        onChange={(e) => setHasVariants(e.target.checked)}
+                      />
+                      <label htmlFor="hasVariants" className="text-sm font-bold text-slate-700 cursor-pointer select-none">
+                        Tiene variantes
+                        <span className="block text-[10px] text-slate-450 font-normal">Tamaños, sabores, etc.</span>
+                      </label>
+                    </div>
+
+                    <div className="w-[1px] bg-slate-200 self-stretch" />
+
+                    <div className="flex items-center gap-3 flex-1">
+                      <input 
+                        type="checkbox" 
+                        id="newProductIsMenuAvailable" 
+                        className="w-5 h-5 text-indigo-600 border-slate-350 rounded focus:ring-indigo-500 cursor-pointer" 
+                        checked={newProductIsMenuAvailable}
+                        onChange={(e) => setNewProductIsMenuAvailable(e.target.checked)}
+                      />
+                      <label htmlFor="newProductIsMenuAvailable" className="text-sm font-bold text-slate-700 cursor-pointer select-none">
+                        Disponible en Menú
+                        <span className="block text-[10px] text-slate-450 font-normal">Mostrar en carta digital.</span>
+                      </label>
+                    </div>
                   </div>
 
                   {hasVariants ? (
@@ -805,7 +985,7 @@ export function Inventory() {
                         <h4 className="text-sm font-bold text-slate-800">Variantes</h4>
                         <button 
                           type="button"
-                          onClick={() => setNewProductVariants([...newProductVariants, { id: Date.now().toString(), name: '', sku: '', price: 0, takeawayPrice: 0 }])}
+                          onClick={() => setNewProductVariants([...newProductVariants, { id: Date.now().toString(), name: '', sku: '', price: 0, takeawayPrice: 0, stock: 0 }])}
                           className="flex items-center gap-1.5 px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg text-xs font-bold hover:bg-indigo-200 transition-colors"
                         >
                           <Plus className="w-3.5 h-3.5" /> Añadir Variante
@@ -856,13 +1036,25 @@ export function Inventory() {
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 truncate">Precio P/Llevar</label>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Precio P/Llevar</label>
                                   <input 
                                     type="number" 
                                     placeholder="0.00" 
                                     value={variant.takeawayPrice || ''}
                                     onChange={(e) => {
                                       const nv = [...newProductVariants]; nv[index].takeawayPrice = Number(e.target.value); setNewProductVariants(nv);
+                                    }}
+                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Stock Inicial</label>
+                                  <input 
+                                    type="number" 
+                                    placeholder="0" 
+                                    value={variant.stock || 0}
+                                    onChange={(e) => {
+                                      const nv = [...newProductVariants]; nv[index].stock = Number(e.target.value); setNewProductVariants(nv);
                                     }}
                                     className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
                                   />
@@ -880,26 +1072,75 @@ export function Inventory() {
                       )}
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Precio Local</label>
-                        <div className="relative">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
-                          <input type="number" placeholder="0.00" className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" />
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-3 gap-2">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Precio Local</label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                            <input 
+                              type="number" 
+                              placeholder="0.00" 
+                              value={newProductPrice}
+                              onChange={(e) => setNewProductPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Precio Para Llevar">Precio P/Llevar</label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                            <input 
+                              type="number" 
+                              placeholder="0.00" 
+                              value={newProductTakeawayPrice}
+                              onChange={(e) => setNewProductTakeawayPrice(e.target.value === '' ? '' : Number(e.target.value))}
+                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Costo Unitario</label>
+                          <div className="relative">
+                            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                            <input 
+                              type="number" 
+                              placeholder="0.00" 
+                              value={ingredients.length > 0 ? recipeCost.toFixed(2) : newProductCost}
+                              disabled={ingredients.length > 0}
+                              onChange={(e) => setNewProductCost(e.target.value === '' ? '' : Number(e.target.value))}
+                              className="w-full bg-slate-50 border border-slate-200 text-slate-850 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium disabled:bg-slate-200 disabled:text-slate-500" 
+                            />
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 truncate" title="Precio Para Llevar">Precio P/Llevar</label>
-                        <div className="relative">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
-                          <input type="number" placeholder="0.00" className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" />
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Stock Inicial</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={newProductStock}
+                            onChange={(e) => setNewProductStock(Number(e.target.value))}
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
+                          />
                         </div>
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Costo Estimado</label>
-                        <div className="relative">
-                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
-                          <input type="number" placeholder="0.00" className="w-full bg-slate-200 border border-slate-200 text-slate-500 pl-6 pr-2 py-2.5 rounded-lg text-sm outline-none font-medium" readOnly />
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Unidad de Medida</label>
+                          <select 
+                            value={newProductUnit}
+                            onChange={(e) => setNewProductUnit(e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium appearance-none"
+                          >
+                            <option value="Unidades">Unidades</option>
+                            <option value="g">Gramos (g)</option>
+                            <option value="kg">Kilogramos (kg)</option>
+                            <option value="ml">Mililitros (ml)</option>
+                            <option value="l">Litros (l)</option>
+                            <option value="Porciones">Porciones</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -934,13 +1175,26 @@ export function Inventory() {
                     <div className="space-y-3">
                       {ingredients.map((ing) => (
                         <div key={ing.id} className="flex gap-2 items-start bg-white p-3 border border-slate-200 rounded-xl shadow-sm">
-                          <div className="flex-1 relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
-                            <input 
-                              type="text" 
-                              placeholder="Buscar en inventario..." 
-                              className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium" 
-                            />
+                          <div className="flex-1">
+                            <select
+                              value={ing.ingredientId || ''}
+                              onChange={(e) => {
+                                const selectedId = Number(e.target.value);
+                                const selectedProd = products.find(p => p.id === selectedId);
+                                setIngredients(ingredients.map(i => i.id === ing.id ? {
+                                  ...i,
+                                  ingredientId: selectedId,
+                                  name: selectedProd?.name || '',
+                                  unit: selectedProd?.unit || 'g'
+                                } : i));
+                              }}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium"
+                            >
+                              <option value="">-- Seleccionar Insumo --</option>
+                              {products.filter(p => !p.variants || p.variants.length === 0).map(p => (
+                                <option key={p.id} value={p.id}>{p.name} (${p.cost?.toFixed(2) || '0.00'}/{p.unit})</option>
+                              ))}
+                            </select>
                           </div>
                           <div className="w-24">
                             <input 
@@ -951,18 +1205,8 @@ export function Inventory() {
                               className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-center focus:ring-2 focus:ring-indigo-500 outline-none font-bold" 
                             />
                           </div>
-                          <div className="w-24">
-                            <select 
-                              value={ing.unit}
-                              onChange={(e) => setIngredients(ingredients.map(i => i.id === ing.id ? {...i, unit: e.target.value} : i))}
-                              className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 outline-none font-medium appearance-none"
-                            >
-                              <option value="g">Gramos</option>
-                              <option value="kg">Kg</option>
-                              <option value="ml">ml</option>
-                              <option value="l">Litro</option>
-                              <option value="u">Unidad</option>
-                            </select>
+                          <div className="w-20 pt-2 text-center text-xs font-bold text-slate-500">
+                            {ing.unit}
                           </div>
                           <button 
                             onClick={() => handleRemoveIngredient(ing.id)}
@@ -980,7 +1224,7 @@ export function Inventory() {
                 <div className="mt-4 pt-4 border-t border-slate-200">
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-bold text-slate-500 uppercase tracking-wider">Costo Receta Calculado:</span>
-                    <span className="font-bold text-slate-800 text-lg">$0.00</span>
+                    <span className="font-bold text-indigo-600 text-lg">${recipeCost.toFixed(2)}</span>
                   </div>
                 </div>
 

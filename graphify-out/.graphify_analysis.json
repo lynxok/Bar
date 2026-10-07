@@ -1,0 +1,502 @@
+{
+  "communities": {
+    "0": [
+      "src_app",
+      "src_components_chatwidget",
+      "src_components_chatwidget_chatwidget",
+      "src_components_magneticdock",
+      "src_components_magneticdock_dockitem",
+      "src_components_magneticdock_magneticdock",
+      "src_contexts_businesscontext_usebusiness",
+      "src_contexts_storecontext_usestore",
+      "src_lib_utils",
+      "src_lib_utils_cn",
+      "src_pages_analytics",
+      "src_pages_analytics_analytics",
+      "src_pages_billingdrafts",
+      "src_pages_billingdrafts_billingdrafts",
+      "src_pages_cashclose",
+      "src_pages_cashclose_cashclose",
+      "src_pages_clientsummary",
+      "src_pages_clientsummary_clientsummary",
+      "src_pages_dashboard",
+      "src_pages_dashboard_contextmenustate",
+      "src_pages_dashboard_dashboard",
+      "src_pages_finance",
+      "src_pages_finance_expense_categories",
+      "src_pages_finance_finance",
+      "src_pages_finance_payment_methods",
+      "src_pages_help",
+      "src_pages_help_help",
+      "src_pages_help_help_sections",
+      "src_pages_kitchen",
+      "src_pages_kitchen_kitchen",
+      "src_pages_login",
+      "src_pages_login_login",
+      "src_pages_login_loginprops",
+      "src_pages_menuconfig",
+      "src_pages_menuconfig_menuconfig",
+      "src_pages_pos",
+      "src_pages_pos_pos",
+      "src_pages_security",
+      "src_pages_security_security",
+      "src_pages_settings",
+      "src_pages_settings_settings",
+      "src_pages_tablemap",
+      "src_pages_tablemap_isrotatable",
+      "src_pages_tablemap_menu_items",
+      "src_pages_tablemap_tablemap",
+      "src_pages_waitermobile",
+      "src_pages_waitermobile_waitermobile"
+    ],
+    "1": [
+      "src_contexts_storecontext",
+      "src_contexts_storecontext_expense",
+      "src_contexts_storecontext_initial_tiers",
+      "src_contexts_storecontext_orderitem",
+      "src_contexts_storecontext_paymentorder",
+      "src_contexts_storecontext_storecontext",
+      "src_contexts_storecontext_storecontexttype",
+      "src_db_database",
+      "src_db_database_auditlog",
+      "src_db_database_bardatabase",
+      "src_db_database_bardatabase_constructor",
+      "src_db_database_billingdraft",
+      "src_db_database_businessconfig",
+      "src_db_database_chairsconfig",
+      "src_db_database_clientorder",
+      "src_db_database_comanda",
+      "src_db_database_customer",
+      "src_db_database_db",
+      "src_db_database_expense",
+      "src_db_database_floorplan",
+      "src_db_database_iselectron",
+      "src_db_database_loyaltyconfig",
+      "src_db_database_loyaltytransaction",
+      "src_db_database_message",
+      "src_db_database_order",
+      "src_db_database_paymentorder",
+      "src_db_database_product",
+      "src_db_database_rationale_229",
+      "src_db_database_reward",
+      "src_db_database_shift",
+      "src_db_database_systemlog",
+      "src_db_database_tablestate",
+      "src_db_database_user",
+      "src_lib_loggerservice",
+      "src_pages_logs"
+    ],
+    "2": [
+      "autoprefixer",
+      "concurrently",
+      "electron_builder",
+      "package_dependencies_vite",
+      "package_devdependencies",
+      "package_devdependencies_autoprefixer",
+      "package_devdependencies_concurrently",
+      "package_devdependencies_electron_builder",
+      "package_devdependencies_tailwindcss",
+      "package_devdependencies_tsx",
+      "package_devdependencies_types_express",
+      "package_devdependencies_types_node",
+      "package_devdependencies_typescript",
+      "package_devdependencies_vite",
+      "package_devdependencies_wait_on",
+      "tailwindcss",
+      "tsx",
+      "types_express",
+      "types_node",
+      "typescript",
+      "vite",
+      "wait_on"
+    ],
+    "3": [
+      "src_contexts_alertcontext",
+      "src_contexts_alertcontext_alertcontext",
+      "src_contexts_alertcontext_alertcontexttype",
+      "src_contexts_alertcontext_alertprovider",
+      "src_contexts_alertcontext_usealerts",
+      "src_contexts_businesscontext",
+      "src_contexts_businesscontext_businesscontext",
+      "src_contexts_businesscontext_businesscontexttype",
+      "src_contexts_businesscontext_businessprovider",
+      "src_contexts_storecontext_storeprovider",
+      "src_lib_loggerservice_loggerservice",
+      "src_lib_loggerservice_loggerservice_audit",
+      "src_lib_loggerservice_loggerservice_clearoldlogs",
+      "src_lib_loggerservice_loggerservice_warn",
+      "src_main",
+      "src_pages_inventory",
+      "src_pages_inventory_initial_categories",
+      "src_pages_inventory_inventory",
+      "src_pages_loyalty",
+      "src_pages_loyalty_gettierstyle",
+      "src_pages_loyalty_loyalty"
+    ],
+    "4": [
+      "ref_dom",
+      "ref_dom_iterable",
+      "ref_es2022",
+      "tsconfig",
+      "tsconfig_compileroptions",
+      "tsconfig_compileroptions_allowimportingtsextensions",
+      "tsconfig_compileroptions_allowjs",
+      "tsconfig_compileroptions_experimentaldecorators",
+      "tsconfig_compileroptions_isolatedmodules",
+      "tsconfig_compileroptions_jsx",
+      "tsconfig_compileroptions_lib",
+      "tsconfig_compileroptions_module",
+      "tsconfig_compileroptions_moduledetection",
+      "tsconfig_compileroptions_moduleresolution",
+      "tsconfig_compileroptions_noemit",
+      "tsconfig_compileroptions_paths",
+      "tsconfig_compileroptions_skiplibcheck",
+      "tsconfig_compileroptions_target",
+      "tsconfig_compileroptions_usedefineforclassfields"
+    ],
+    "5": [
+      "src_app_app",
+      "src_components_layout",
+      "src_components_layout_layout",
+      "src_components_layout_nav_items",
+      "src_components_layout_notification",
+      "src_components_notificationspanel",
+      "src_components_notificationspanel_notification",
+      "src_components_notificationspanel_notificationspanel",
+      "src_components_notificationspanel_notificationspanelprops",
+      "src_db_database_ishost",
+      "src_lib_notificationservice",
+      "src_lib_notificationservice_notificationservice",
+      "src_services_syncservice",
+      "src_services_syncservice_onsyncstatechange",
+      "src_services_syncservice_runfullsync",
+      "src_services_syncservice_startsyncservice",
+      "src_services_syncservice_stopsyncservice",
+      "src_services_syncservice_sync_tables",
+      "src_services_syncservice_synctable"
+    ],
+    "6": [
+      "electron",
+      "package_build",
+      "package_build_appid",
+      "package_build_directories",
+      "package_build_files",
+      "package_build_nsis",
+      "package_build_productname",
+      "package_build_publish",
+      "package_build_win",
+      "package_devdependencies_electron",
+      "package_directories_output",
+      "package_nsis_allowtochangeinstallationdirectory",
+      "package_nsis_createdesktopshortcut",
+      "package_nsis_createstartmenushortcut",
+      "package_nsis_oneclick",
+      "package_nsis_shortcutname",
+      "package_win_target",
+      "ref_dist"
+    ],
+    "7": [
+      "electron_main",
+      "electron_main_afip",
+      "electron_main_app_browserwindow_ipcmain_shell_dialog",
+      "electron_main_autoupdater",
+      "electron_main_createwindow",
+      "electron_main_distpath",
+      "electron_main_express",
+      "electron_main_expressapp",
+      "electron_main_forge",
+      "electron_main_fs",
+      "electron_main_generatepdf",
+      "electron_main_getafipinstance",
+      "electron_main_https",
+      "electron_main_path",
+      "electron_main_pendingrequests",
+      "electron_main_qrcode",
+      "electron_main_startexpressserver",
+      "electron_main_userdatapath"
+    ],
+    "8": [
+      "package",
+      "package_main",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_clean",
+      "package_scripts_dev",
+      "package_scripts_electron_build",
+      "package_scripts_electron_dev",
+      "package_scripts_lint",
+      "package_scripts_preview",
+      "package_type",
+      "package_version"
+    ],
+    "9": [
+      "jspdf",
+      "package_dependencies_jspdf",
+      "src_components_invoicedesignsettings",
+      "src_components_invoicedesignsettings_invoicedesignsettings",
+      "src_components_invoicedesignsettings_mockinvoice",
+      "src_lib_loggerservice_loggerservice_error",
+      "src_pages_logs_logs",
+      "src_utils_pdfgenerator",
+      "src_utils_pdfgenerator_generateinvoicepdf",
+      "src_utils_pdfgenerator_getimageratio",
+      "src_utils_pdfgenerator_loadimageasbase64"
+    ],
+    "10": [
+      "afip_ts",
+      "clsx",
+      "package_dependencies",
+      "package_dependencies_afip_ts",
+      "package_dependencies_clsx",
+      "package_dependencies_react_router_dom",
+      "react_router_dom"
+    ],
+    "11": [
+      "date_fns",
+      "package_dependencies_date_fns"
+    ],
+    "12": [
+      "dexie",
+      "package_dependencies_dexie"
+    ],
+    "13": [
+      "dexie_react_hooks",
+      "package_dependencies_dexie_react_hooks"
+    ],
+    "14": [
+      "dotenv",
+      "package_dependencies_dotenv"
+    ],
+    "15": [
+      "electron_is_dev",
+      "package_dependencies_electron_is_dev"
+    ],
+    "16": [
+      "electron_updater",
+      "package_dependencies_electron_updater"
+    ],
+    "17": [
+      "express",
+      "package_dependencies_express"
+    ],
+    "18": [
+      "google_genai",
+      "package_dependencies_google_genai"
+    ],
+    "19": [
+      "html5_qrcode",
+      "package_dependencies_html5_qrcode"
+    ],
+    "20": [
+      "jspdf_autotable",
+      "package_dependencies_jspdf_autotable"
+    ],
+    "21": [
+      "lucide_react",
+      "package_dependencies_lucide_react"
+    ],
+    "22": [
+      "motion",
+      "package_dependencies_motion"
+    ],
+    "23": [
+      "ngrok_ngrok",
+      "package_dependencies_ngrok_ngrok"
+    ],
+    "24": [
+      "node_forge",
+      "package_dependencies_node_forge"
+    ],
+    "25": [
+      "package_dependencies_qrcode",
+      "qrcode"
+    ],
+    "26": [
+      "package_dependencies_react",
+      "react"
+    ],
+    "27": [
+      "package_dependencies_react_dom",
+      "react_dom"
+    ],
+    "28": [
+      "package_dependencies_recharts",
+      "recharts"
+    ],
+    "29": [
+      "package_dependencies_tailwind_merge",
+      "tailwind_merge"
+    ],
+    "30": [
+      "package_dependencies_tailwindcss_vite",
+      "tailwindcss_vite"
+    ],
+    "31": [
+      "package_dependencies_types_qrcode",
+      "types_qrcode"
+    ],
+    "32": [
+      "package_dependencies_vitejs_plugin_react",
+      "vitejs_plugin_react"
+    ],
+    "33": [
+      "package_dependencies_xlsx",
+      "xlsx"
+    ],
+    "34": [
+      "vite_config"
+    ]
+  },
+  "cohesion": {
+    "0": 0.12580943570767808,
+    "1": 0.0907563025210084,
+    "2": 0.09090909090909091,
+    "3": 0.13333333333333333,
+    "4": 0.10526315789473684,
+    "5": 0.15789473684210525,
+    "6": 0.1111111111111111,
+    "7": 0.1111111111111111,
+    "8": 0.14285714285714285,
+    "9": 0.2545454545454545,
+    "10": 0.2857142857142857,
+    "11": 1.0,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0,
+    "15": 1.0,
+    "16": 1.0,
+    "17": 1.0,
+    "18": 1.0,
+    "19": 1.0,
+    "20": 1.0,
+    "21": 1.0,
+    "22": 1.0,
+    "23": 1.0,
+    "24": 1.0,
+    "25": 1.0,
+    "26": 1.0,
+    "27": 1.0,
+    "28": 1.0,
+    "29": 1.0,
+    "30": 1.0,
+    "31": 1.0,
+    "32": 1.0,
+    "33": 1.0,
+    "34": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_lib_utils_cn",
+      "label": "cn()",
+      "degree": 40
+    },
+    {
+      "id": "src_contexts_storecontext_usestore",
+      "label": "useStore()",
+      "degree": 35
+    },
+    {
+      "id": "tsconfig_compileroptions",
+      "label": "compilerOptions",
+      "degree": 15
+    },
+    {
+      "id": "src_contexts_businesscontext_usebusiness",
+      "label": "useBusiness()",
+      "degree": 11
+    },
+    {
+      "id": "src_lib_loggerservice_loggerservice",
+      "label": "LoggerService",
+      "degree": 10
+    },
+    {
+      "id": "src_components_layout_layout",
+      "label": "Layout()",
+      "degree": 9
+    },
+    {
+      "id": "src_db_database_db",
+      "label": "db",
+      "degree": 9
+    },
+    {
+      "id": "package_scripts",
+      "label": "scripts",
+      "degree": 8
+    },
+    {
+      "id": "package_build",
+      "label": "build",
+      "degree": 8
+    },
+    {
+      "id": "src_contexts_storecontext_storecontexttype",
+      "label": "StoreContextType",
+      "degree": 8
+    }
+  ],
+  "surprises": [
+    {
+      "source": "WaiterMobile()",
+      "target": "html5-qrcode",
+      "source_files": [
+        "src/pages/WaiterMobile.tsx",
+        "package.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "Analytics()",
+      "target": "xlsx",
+      "source_files": [
+        "src/pages/Analytics.tsx",
+        "package.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "Finance()",
+      "target": "xlsx",
+      "source_files": [
+        "src/pages/Finance.tsx",
+        "package.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories; bridges separate communities"
+    },
+    {
+      "source": "generateInvoicePDF()",
+      "target": "jspdf",
+      "source_files": [
+        "src/utils/pdfGenerator.ts",
+        "package.json"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "references",
+      "why": "connects across different repos/directories"
+    },
+    {
+      "source": "Layout()",
+      "target": "Settings()",
+      "source_files": [
+        "src/components/Layout.tsx",
+        "src/pages/Settings.tsx"
+      ],
+      "confidence": "INFERRED",
+      "relation": "indirect_call",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

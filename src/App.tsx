@@ -11,6 +11,7 @@ import { Loyalty } from './pages/Loyalty';
 import { BillingDrafts } from './pages/BillingDrafts';
 import { Settings } from './pages/Settings';
 import { ClientSummary } from './pages/ClientSummary';
+import { MenuConfig } from './pages/MenuConfig';
 import { Security } from './pages/Security';
 import { Logs } from './pages/Logs';
 import Kitchen from './pages/Kitchen';
@@ -80,6 +81,7 @@ export default function App() {
             <Route path="fidelizacion" element={<Loyalty />} />
             <Route path="facturacion" element={<BillingDrafts />} />
             <Route path="configuracion" element={<Settings />} />
+            <Route path="carta" element={<MenuConfig />} />
             <Route path="seguridad" element={<Security />} />
             <Route path="logs" element={<Logs />} />
             <Route path="cocina" element={<Kitchen />} />

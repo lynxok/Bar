@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, MonitorCheck, Package, Wallet, Terminal, HelpCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { LayoutDashboard, Users, MonitorCheck, Package, Wallet, Terminal, HelpCircle, ChevronUp, ChevronDown, Utensils } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface DockItem {
@@ -22,6 +22,7 @@ export function MagneticDock() {
     { label: "Salón", icon: Users, path: "/mapa", color: "from-indigo-500 to-purple-600" },
     { label: "Ventas POS", icon: MonitorCheck, path: "/pos", color: "from-emerald-500 to-teal-600" },
     { label: "Inventario", icon: Package, path: "/inventario", color: "from-amber-500 to-orange-600" },
+    { label: "Carta QR", icon: Utensils, path: "/carta", color: "from-indigo-600 to-indigo-800" },
     { label: "Finanzas", icon: Wallet, path: "/finanzas", color: "from-pink-500 to-rose-600" },
     { label: "Técnico", icon: Terminal, path: "/logs", color: "from-slate-700 to-slate-900" },
     { label: "Ayuda", icon: HelpCircle, path: "/ayuda", color: "from-cyan-500 to-sky-600" },
@@ -40,7 +41,7 @@ export function MagneticDock() {
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
+    <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-2">
       {/* Toggle button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
@@ -55,25 +56,25 @@ export function MagneticDock() {
           ref={containerRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="flex items-end gap-3 px-5 py-4 bg-slate-950/70 border border-white/10 rounded-3xl backdrop-blur-2xl shadow-2xl transition-all duration-300 relative"
-          style={{ height: "82px" }}
+          className="flex items-end gap-2 px-3 py-2.5 bg-slate-950/75 border border-white/10 rounded-3xl backdrop-blur-2xl shadow-2xl transition-all duration-300 relative overflow-x-auto max-w-[95vw] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
+          style={{ height: "68px" }}
         >
           {items.map((item, idx) => {
             const isSelected = location.pathname === item.path;
             
-            // Calculate size dynamically based on cursor distance
+            // Calculate size dynamically based on cursor distance (only useful on pointer devices)
             let scale = 1.0;
             if (mouseX !== null && containerRef.current) {
-              const itemWidth = 54; // estimated item width
-              const gap = 12; // gap size
-              const itemCenter = idx * (itemWidth + gap) + itemWidth / 2 + 20; // 20px padding left
+              const itemWidth = 44; // estimated item width
+              const gap = 8; // gap size
+              const itemCenter = idx * (itemWidth + gap) + itemWidth / 2 + 12; // 12px padding left
               const distance = Math.abs(mouseX - itemCenter);
               
-              // Scale function: increases size when closer to the mouse (max 1.42x)
-              const maxDistance = 140; // field of influence
+              // Scale function: increases size when closer to the mouse (max 1.3x)
+              const maxDistance = 120; // field of influence
               if (distance < maxDistance) {
                 const factor = 1 - distance / maxDistance; // 0 to 1
-                scale = 1 + factor * 0.42; // scale between 1 and 1.42
+                scale = 1 + factor * 0.3; // scale between 1 and 1.3
               }
             }
 
@@ -81,10 +82,10 @@ export function MagneticDock() {
               <div
                 key={item.label}
                 onMouseEnter={() => setHoveredIndex(idx)}
-                className="relative flex flex-col items-center group"
+                className="relative flex flex-col items-center group flex-shrink-0"
                 style={{
-                  width: `${54 * scale}px`,
-                  height: `${54 * scale}px`,
+                  width: `${44 * scale}px`,
+                  height: `${44 * scale}px`,
                   transition: mouseX === null ? "all 0.3s cubic-bezier(0.16, 1, 0.3, 1)" : "none",
                 }}
               >

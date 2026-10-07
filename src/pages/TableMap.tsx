@@ -2,7 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from "react";
 import { 
   X, Plus, Minus, Save, Trash2, Layout, Users, RotateCw,
   ZoomIn, ZoomOut, Maximize2, Wallet, CreditCard, ArrowRightLeft,
-  User, ArrowRight, ChefHat, Smartphone, Star
+  User, ArrowRight, ChefHat, Smartphone, Star, ChevronDown
 } from "lucide-react";
 import QRCode from 'qrcode';
 import { cn } from "../lib/utils";
@@ -22,11 +22,29 @@ const MENU_ITEMS = [
 const isRotatable = (type: Table['type']) => type !== 'round' && type !== 'stool';
 
 export function TableMap() {
-  const { tables, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan } = useStore();
+  const { tables, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan, clientOrders, approveClientOrder, rejectClientOrder, comandas } = useStore();
   const { taxRate } = useBusiness();
 
   const [selectedTableId, setSelectedTableId] = useState<string | null>(null);
+  const [isMobileOrdersOpen, setIsMobileOrdersOpen] = useState(false);
   const [hoveredTableId, setHoveredTableId] = useState<string | null>(null);
+  const [expandedMobileTables, setExpandedMobileTables] = useState<Record<string, boolean>>({});
+
+  const lastPendingCountRef = useRef(0);
+  useEffect(() => {
+    const pendingOrders = clientOrders?.filter(o => o.status === 'pending') || [];
+    if (pendingOrders.length > lastPendingCountRef.current) {
+      setIsMobileOrdersOpen(true);
+      try {
+        const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-84.wav');
+        audio.volume = 0.5;
+        audio.play();
+      } catch (e) {
+        console.log("Audio play failed: ", e);
+      }
+    }
+    lastPendingCountRef.current = pendingOrders.length;
+  }, [clientOrders]);
 
   const handleCleanTable = async (tableId: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -342,7 +360,7 @@ export function TableMap() {
     const maxY = Math.max(...tables.map(t => t.y + t.height));
     const contentW = maxX - minX;
     const contentH = maxY - minY;
-    const newZoom = Math.min(3, Math.max(0.2,
+    const newZoom = Math.min(1.1, Math.max(0.3,
       Math.min((rect.width - pad * 2) / contentW, (rect.height - pad * 2) / contentH)
     ));
     setPan({
@@ -758,13 +776,14 @@ export function TableMap() {
           </div>
         ) : (
           <div className={cn(
-            "w-full h-full flex flex-col items-center justify-center relative border shadow-lg transition-all overflow-visible",
+            "w-full h-full flex flex-col items-center justify-center relative border shadow-lg overflow-visible transition-all duration-200",
             (table.type === 'round' || table.type === 'stool') ? "rounded-full" : "rounded-2xl",
-            STATUS_CLASSES[table.status] || "bg-white border-slate-100 text-slate-800"
+            STATUS_CLASSES[table.status] || "bg-white border-slate-100 text-slate-800",
+            !isEditingLayout ? "hover:scale-[1.04] hover:shadow-2xl cursor-pointer" : ""
           )}>
             {/* Glass inner ring reflection */}
             <div className={cn(
-              "absolute inset-1 border pointer-events-none opacity-25 z-0",
+              "absolute inset-1 border pointer-events-none opacity-20 z-0",
               (table.type === 'round' || table.type === 'stool') ? "rounded-full border-white" : "rounded-xl border-white"
             )} />
             {(() => {
@@ -1211,8 +1230,8 @@ export function TableMap() {
         <div className="mb-6 flex justify-between items-center shrink-0">
           <div className="flex items-center gap-6">
             <div>
-              <h2 className="font-black text-4xl text-slate-900 tracking-tight">Diseño del Salón</h2>
-              <div className="flex items-center gap-4 mt-3">
+              <h2 className="font-black text-4xl text-slate-900 tracking-tight">Sala</h2>
+              <div className="flex items-center gap-4 mt-3 flex-wrap">
                 <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
                   <Users className="w-4 h-4 text-indigo-500" />
                   {tables.filter(t => t.type !== 'wall').reduce((acc, t) => acc + (t.capacity || 0), 0)} PLAZAS TOTALES
@@ -1220,6 +1239,28 @@ export function TableMap() {
                 <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold bg-emerald-50 px-4 py-2 rounded-full shadow-sm border border-emerald-100">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   {tables.filter(t => t.status === 'available' && t.type !== 'wall').length} MESAS LIBRES
+                </div>
+                
+                <div className="h-5 w-[1px] bg-slate-200 hidden lg:block" />
+                <div className="hidden lg:flex items-center gap-3 text-[10px] font-bold text-slate-500 bg-white px-4 py-1.5 rounded-full shadow-sm border border-slate-150 flex-wrap">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" /> Disponible
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-sky-500" /> Ocupada
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" /> Espera Cocina
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-indigo-650" /> Consumiendo
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Por Cobrar
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-slate-400" /> Sucia
+                  </div>
                 </div>
               </div>
             </div>
@@ -1300,6 +1341,27 @@ export function TableMap() {
 
           {!isEditingLayout && (
             <div className="flex gap-3">
+              {(() => {
+                const pendingOrders = clientOrders?.filter(o => o.status === 'pending') || [];
+                return (
+                  <button
+                    onClick={() => setIsMobileOrdersOpen(true)}
+                    className={cn(
+                      "flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-black transition-all shadow-sm border active:scale-95 relative",
+                      pendingOrders.length > 0
+                        ? "bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100"
+                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    )}
+                  >
+                    <Smartphone className="w-5 h-5 text-indigo-500" /> PEDIDOS QR
+                    {pendingOrders.length > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-rose-600 text-white rounded-full flex items-center justify-center text-[10px] font-black animate-bounce shadow-md">
+                        {pendingOrders.length}
+                      </span>
+                    )}
+                  </button>
+                );
+              })()}
               {floorPlans.find(p => p.isDefault) && (
                 <button
                   onClick={() => {
@@ -1339,7 +1401,7 @@ export function TableMap() {
         <div
           ref={canvasRef}
           className={cn(
-            "flex-1 w-full bg-slate-50/50 rounded-[3.5rem] border border-slate-200/80 relative overflow-hidden shadow-inner shadow-slate-900/5",
+            "hidden md:block flex-1 w-full bg-slate-50/50 rounded-[3.5rem] border border-slate-200/80 relative overflow-hidden shadow-inner shadow-slate-900/5",
             isEditingLayout ? "ring-[12px] ring-indigo-50 border-indigo-100" : "",
             isPanning ? "cursor-move" : !isEditingLayout ? "cursor-default" : "cursor-default"
           )}
@@ -1382,9 +1444,22 @@ export function TableMap() {
               
               const totalItemsPrice = hoveredTable.order.reduce((acc, i) => acc + (i.price * i.qty), 0);
               
+              // Get active kitchen items status
+              const activeComandas = comandas?.filter(c => c.tableId === hoveredTable.id) || [];
+              const pendingItems = new Set(
+                activeComandas
+                  .filter(c => c.status === 'pending' || c.status === 'cooking')
+                  .flatMap(c => c.items.map(i => i.name))
+              );
+              const readyItems = new Set(
+                activeComandas
+                  .filter(c => c.status === 'ready')
+                  .flatMap(c => c.items.map(i => i.name))
+              );
+
               return (
                 <div 
-                  className="absolute bg-slate-950/90 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-slate-700/50 w-64 z-50 transition-all duration-200 pointer-events-auto flex flex-col gap-2 font-sans text-left"
+                  className="absolute bg-slate-950/95 backdrop-blur-md text-white rounded-2xl p-4 shadow-2xl border border-slate-700/50 w-72 z-50 transition-all duration-200 pointer-events-auto flex flex-col gap-2.5 font-sans text-left"
                   style={{
                     left: hoveredTable.x + hoveredTable.width / 2,
                     top: hoveredTable.y - 12,
@@ -1418,6 +1493,13 @@ export function TableMap() {
                     )}
                   </div>
 
+                  {/* Checkout notification banner */}
+                  {hoveredTable.status === 'checkout' && (
+                    <div className="bg-rose-600/30 border border-rose-500/50 rounded-xl py-2 px-3 text-center text-rose-350 text-[10px] font-black tracking-wider animate-pulse flex items-center justify-center gap-1.5 shrink-0">
+                      🔔 ¡CLIENTE SOLICITÓ LA CUENTA!
+                    </div>
+                  )}
+
                   {/* Details */}
                   <div className="text-[11px] text-slate-300 space-y-1">
                     {hoveredTable.status !== 'available' && hoveredTable.lastUpdate && (
@@ -1441,18 +1523,29 @@ export function TableMap() {
                           {hoveredTable.order.length === 0 ? (
                             <span className="italic text-slate-500 block">Sin ítems aún</span>
                           ) : (
-                            <div className="max-h-24 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
-                              {hoveredTable.order.slice(0, 3).map(i => (
-                                <div key={i.id} className="flex justify-between text-slate-400">
-                                  <span className="truncate max-w-[130px] font-medium">{i.name}</span>
-                                  <span className="font-bold text-white">x{i.qty}</span>
-                                </div>
-                              ))}
-                              {hoveredTable.order.length > 3 && (
-                                <div className="text-[9px] text-slate-500 italic font-semibold">
-                                  + {hoveredTable.order.length - 3} más...
-                                </div>
-                              )}
+                            <div className="max-h-28 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
+                              {hoveredTable.order.map((i, idx) => {
+                                let stateLabel = "🍽 Servido";
+                                let stateColor = "text-slate-450";
+                                if (readyItems.has(i.name)) {
+                                  stateLabel = "🔔 ¡Listo!";
+                                  stateColor = "text-emerald-450 font-black animate-pulse";
+                                } else if (pendingItems.has(i.name)) {
+                                  stateLabel = "🍳 Cocinando";
+                                  stateColor = "text-amber-405 font-bold";
+                                }
+                                return (
+                                  <div key={i.id || idx} className="flex justify-between text-slate-400 items-center">
+                                    <span className="truncate max-w-[120px] font-medium">{i.name}</span>
+                                    <div className="flex gap-2 items-center">
+                                      <span className="font-bold text-white">x{i.qty}</span>
+                                      <span className={cn("text-[8px] uppercase px-1 rounded bg-white/5 font-semibold", stateColor)}>
+                                        {stateLabel}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           )}
                         </div>
@@ -1490,10 +1583,166 @@ export function TableMap() {
             </button>
           </div>
 
-          {/* Zoom indicator */}
-          <div className="absolute bottom-6 left-6 bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl px-3 py-1.5 text-[11px] font-black text-slate-500 shadow">
-            {Math.round(zoom * 100)}%
+          {/* Zoom indicator only */}
+          <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm border border-slate-200/80 rounded-xl px-3 py-1.5 text-[11px] font-black text-slate-500 shadow pointer-events-none z-20">
+            Zoom: {Math.round(zoom * 100)}%
           </div>
+        </div>
+
+        {/* Vista de Lista Optimizada para Móviles */}
+        <div className="md:hidden flex-1 overflow-y-auto w-full space-y-6 pr-1 mt-4">
+          {tables
+            .filter(table => table.type !== 'wall' && (waiterFilter === 'Todos' || table.waiterName === waiterFilter))
+            .map((table) => {
+              const isExpanded = !!expandedMobileTables[table.id];
+              const totalItemsPrice = table.order.reduce((acc, i) => acc + (i.price * i.qty), 0);
+              const elapsedMinutes = table.lastUpdate ? Math.floor((Date.now() - new Date(table.lastUpdate).getTime()) / 60000) : null;
+              
+              // Get active kitchen items status
+              const activeComandas = comandas?.filter(c => c.tableId === table.id) || [];
+              const pendingItems = new Set(
+                activeComandas
+                  .filter(c => c.status === 'pending' || c.status === 'cooking')
+                  .flatMap(c => c.items.map(i => i.name))
+              );
+              const readyItems = new Set(
+                activeComandas
+                  .filter(c => c.status === 'ready')
+                  .flatMap(c => c.items.map(i => i.name))
+              );
+
+              // Map status labels & styles
+              const statusLabels: Record<Table['status'], string> = {
+                available: "Disponible",
+                occupied: "Ocupada",
+                occupied_no_order: "Ocupada (Sin Pedido)",
+                waiting_food: "Espera Cocina",
+                consuming: "Consumiendo",
+                checkout: "Por Cobrar",
+                dirty: "Sucia"
+              };
+
+              const statusColors: Record<Table['status'], string> = {
+                available: "bg-emerald-100 text-emerald-800 border-emerald-250",
+                occupied: "bg-rose-100 text-rose-800 border-rose-200 animate-pulse",
+                occupied_no_order: "bg-sky-100 text-sky-800 border-sky-200",
+                waiting_food: "bg-amber-100 text-amber-800 border-amber-250 animate-pulse",
+                consuming: "bg-indigo-100 text-indigo-800 border-indigo-250",
+                checkout: "bg-red-100 text-red-800 border-red-250 animate-pulse",
+                dirty: "bg-slate-100 text-slate-800 border-slate-200"
+              };
+
+              return (
+                <div 
+                  key={table.id} 
+                  className={cn(
+                    "bg-white rounded-[2rem] border-2 border-slate-200 shadow-md overflow-hidden transition-all duration-200",
+                    table.status === 'checkout' ? "ring-2 ring-red-500/25 border-red-400" : ""
+                  )}
+                >
+                  {/* Card Header Row */}
+                  <div 
+                    onClick={() => setExpandedMobileTables(prev => ({ ...prev, [table.id]: !prev[table.id] }))}
+                    className="p-5 flex items-center justify-between cursor-pointer active:bg-slate-50 select-none"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={cn(
+                        "w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-black text-sm shadow-inner text-white",
+                        table.status === 'available' ? "bg-gradient-to-br from-emerald-400 to-emerald-600" :
+                        table.status === 'dirty' ? "bg-gradient-to-br from-slate-400 to-slate-500" :
+                        table.status === 'checkout' ? "bg-gradient-to-br from-rose-500 to-pink-600 animate-pulse" :
+                        table.status === 'waiting_food' ? "bg-gradient-to-br from-amber-400 to-orange-500 animate-pulse" :
+                        "bg-gradient-to-br from-indigo-500 to-violet-600"
+                      )}>
+                        <span>{table.id}</span>
+                      </div>
+                      <div>
+                        <h4 className="font-black text-slate-800 text-sm">Mesa {table.id.split('-')[1] || table.id}</h4>
+                        <span className={cn("text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border mt-1 inline-block", statusColors[table.status])}>
+                          {statusLabels[table.status]}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <div className="text-right">
+                        {table.status !== 'available' && table.status !== 'dirty' && (
+                          <div className="font-black text-amber-500 text-sm">${totalItemsPrice}</div>
+                        )}
+                        {table.waiterName && (
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">{table.waiterName}</div>
+                        )}
+                      </div>
+                      <ChevronDown className={cn("w-5 h-5 text-slate-400 transition-transform duration-200", isExpanded ? "rotate-180 text-indigo-600" : "")} />
+                    </div>
+                  </div>
+
+                  {/* Collapsible Content */}
+                  {isExpanded && (
+                    <div className="px-5 pb-5 pt-1 border-t border-slate-100 bg-slate-50/40 space-y-4">
+                      {/* Active Time */}
+                      {table.status !== 'available' && elapsedMinutes !== null && (
+                        <div className="flex justify-between items-center text-xs text-slate-500 font-semibold">
+                          <span>Tiempo activa:</span>
+                          <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">⏱ {elapsedMinutes} min</span>
+                        </div>
+                      )}
+
+                      {/* Items details list */}
+                      <div className="space-y-2">
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Productos Comandados</span>
+                        {table.order.length === 0 ? (
+                          <span className="text-xs text-slate-400 italic block">Sin ítems aún</span>
+                        ) : (
+                          <div className="divide-y divide-slate-100 bg-white rounded-2xl border border-slate-150 p-3 space-y-2">
+                            {table.order.map((item, idx) => {
+                              let stateLabel = "🍽 Servido";
+                              let stateColor = "text-slate-400";
+                              if (readyItems.has(item.name)) {
+                                stateLabel = "🔔 Listo";
+                                stateColor = "text-emerald-500 font-black animate-pulse";
+                              } else if (pendingItems.has(item.name)) {
+                                stateLabel = "🍳 Cocina";
+                                stateColor = "text-amber-500 font-semibold";
+                              }
+                              return (
+                                <div key={idx} className="flex justify-between items-center text-xs text-slate-655 pt-2 first:pt-0">
+                                  <span className="font-semibold">{item.name}</span>
+                                  <div className="flex gap-2.5 items-center">
+                                    <span className="font-black text-slate-800">x{item.qty}</span>
+                                    <span className={cn("text-[9px] font-bold uppercase bg-slate-50 px-1.5 py-0.5 rounded", stateColor)}>
+                                      {stateLabel}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Control actions inside card */}
+                      <div className="flex gap-2.5 pt-2">
+                        {table.status === 'dirty' && (
+                          <button 
+                            onClick={(e) => handleCleanTable(table.id, e)}
+                            className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+                          >
+                            🧹 Habilitar
+                          </button>
+                        )}
+                        <button 
+                          onClick={() => setSelectedTableId(table.id)}
+                          className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all shadow-md active:scale-95 flex items-center justify-center gap-1.5"
+                        >
+                          🍳 Comandar / Cobrar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
         </div>
       </div>
 
@@ -1774,6 +2023,98 @@ export function TableMap() {
                 className="py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all"
               >
                 Imprimir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isMobileOrdersOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden border border-slate-200" onClick={(e) => e.stopPropagation()}>
+            
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+              <div>
+                <h2 className="font-bold text-xl text-slate-800 flex items-center gap-2">
+                  <Smartphone className="w-5 h-5 text-indigo-500" /> Pedidos Móviles (Clientes)
+                </h2>
+                <p className="text-sm text-slate-500 font-medium">Pedidos realizados por clientes escaneando el código QR.</p>
+              </div>
+              <button 
+                onClick={() => setIsMobileOrdersOpen(false)}
+                className="p-2 text-slate-400 hover:bg-slate-200 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+              {(!clientOrders || clientOrders.filter(co => co.status === 'pending').length === 0) ? (
+                <div className="text-center py-12 text-slate-400">
+                  <Smartphone className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <p className="font-semibold text-slate-600">No hay pedidos pendientes</p>
+                  <p className="text-xs text-slate-400 mt-1">Los pedidos de los clientes aparecerán aquí automáticamente.</p>
+                </div>
+              ) : (
+                clientOrders.filter(co => co.status === 'pending').map((order) => {
+                  const minutesAgo = Math.floor((Date.now() - new Date(order.timestamp).getTime()) / 60000);
+                  return (
+                    <div key={order.id} className="bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col gap-4">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2.5">
+                          <span className="bg-indigo-600 text-white font-black px-3 py-1 rounded-lg text-sm">
+                            Mesa {order.tableId.replace('T-', '')}
+                          </span>
+                          <span className="text-xs text-slate-400 font-medium">
+                            Hace {minutesAgo} min ({new Date(order.timestamp).toLocaleTimeString()})
+                          </span>
+                        </div>
+                        <span className="font-black text-slate-800">${order.total.toLocaleString()}</span>
+                      </div>
+
+                      <div className="bg-white rounded-lg border border-slate-150 p-3">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Ítems</span>
+                        <div className="divide-y divide-slate-100">
+                          {order.items.map((item: any, idx: number) => (
+                            <div key={idx} className="flex justify-between py-1.5 text-sm text-slate-700">
+                              <span>{item.name}</span>
+                              <span className="font-bold">x{item.qty}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-3 mt-1">
+                        <button
+                          onClick={async () => {
+                            if (confirm('¿Rechazar este pedido del cliente?')) {
+                              await rejectClientOrder(order.id!);
+                            }
+                          }}
+                          className="px-4 py-2 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-100 transition-colors"
+                        >
+                          Rechazar
+                        </button>
+                        <button
+                          onClick={async () => {
+                            await approveClientOrder(order.id!);
+                          }}
+                          className="px-4 py-2 bg-indigo-600 text-white font-bold text-xs rounded-xl hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-colors"
+                        >
+                          Aprobar y Mandar a Cocina
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end shrink-0">
+              <button 
+                onClick={() => setIsMobileOrdersOpen(false)}
+                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition-colors"
+              >
+                Cerrar
               </button>
             </div>
           </div>

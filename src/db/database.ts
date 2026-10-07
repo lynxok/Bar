@@ -12,8 +12,11 @@ export interface Product {
   takeawayPrice: number;
   popular: boolean;
   status: string;
+  cost?: number;
+  recipe?: { ingredientId: number; name: string; quantity: number; unit: string }[];
   prepCount?: number;
   prepTimeTotal?: number;
+  variants?: any[];
 }
 
 export interface Order {
