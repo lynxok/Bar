@@ -4,6 +4,9 @@ import { timeLabel, upcomingForTable } from '../lib/reservations';
 import { PaymentModal } from './tablemap/PaymentModal';
 import type { OrderItem } from '../contexts/StoreContext';
 import { computeTotals, taxLabel } from '../lib/pricing';
+import { TableTile } from './tablemap/TableTile';
+import { OrderPanel } from './tablemap/OrderPanel';
+import { FloorEditorToolbar } from './tablemap/FloorEditorToolbar';
 import { TableQrModal } from './tablemap/TableQrModal';
 import { 
   X, Plus, Minus, Save, Trash2, Layout, Users, RotateCw,
@@ -681,29 +684,20 @@ export function TableMap() {
   const renderTable = (table: Table) => {
     const isDragging = draggingId === table.id;
     const isRotating = rotatingId === table.id;
-    const x = isDragging ? dragPos.x : table.x;
-    const y = isDragging ? dragPos.y : table.y;
-    const rotation = isRotating ? liveRotation : (table.rotation ?? 0);
     const isSelected = selectedTableIds.has(table.id) && (isEditingLayout || isMarqueeMode);
+    const res = upcomingForTable(table.id, reservations);
 
     return (
-      <div
+      <TableTile
         key={table.id}
-        className={cn(
-          "absolute select-none touch-none",
-          isEditingLayout ? "cursor-move" : "cursor-pointer",
-          isDragging ? "z-50" : "z-10",
-        )}
-        style={{
-          left: x,
-          top: y,
-          width: table.width,
-          height: table.height,
-          transform: `rotate(${rotation}deg)`,
-          transformOrigin: 'center center',
-          transition: isDragging || isRotating ? 'none' : 'transform 0.15s ease',
-          filter: isSelected ? 'drop-shadow(0 0 8px rgba(99,102,241,0.9))' : isDragging ? 'drop-shadow(0 8px 20px rgba(0,0,0,0.25))' : 'none',
-        }}
+        table={table}
+        isSelected={isSelected}
+        isDragging={isDragging}
+        isRotating={isRotating}
+        isEditingLayout={isEditingLayout}
+        dragPos={dragPos}
+        liveRotation={liveRotation}
+        reservation={res ? { customerName: res.customerName, partySize: res.partySize, date: res.date } : null}
         onMouseDown={(e) => onMouseDown(e, table)}
         onMouseEnter={() => {
           if (!isEditingLayout && !draggingId && !isPanning) {
@@ -755,96 +749,11 @@ export function TableMap() {
             }
           }
         }}
-      >
-        {table.type === 'wall' ? (
-          <div className="w-full h-full bg-slate-500 border-2 border-slate-600 rounded-sm shadow-lg flex items-center justify-center overflow-hidden">
-            <div className="w-full h-full opacity-10" style={{ backgroundImage: 'repeating-linear-gradient(45deg,#000 0,#000 1px,transparent 0,transparent 50%)', backgroundSize: '10px 10px' }} />
-          </div>
-        ) : table.type === 'bar' ? (
-          <div className={cn(
-            "w-full h-full bg-slate-900 border-l-8 border-amber-500 rounded-l-3xl shadow-2xl flex items-center justify-center overflow-hidden",
-            isSelected ? "ring-4 ring-indigo-500 ring-offset-2" : ""
-          )}>
-            <div className="rotate-90 text-amber-500/20 font-black text-3xl tracking-[0.6em] uppercase whitespace-nowrap select-none">BARRA</div>
-          </div>
-        ) : (
-          <div className={cn(
-            "w-full h-full flex flex-col items-center justify-center relative border shadow-lg overflow-visible transition-all duration-200",
-            (table.type === 'round' || table.type === 'stool') ? "rounded-full" : "rounded-2xl",
-            STATUS_CLASSES[table.status] || "bg-white border-slate-100 text-slate-800",
-            !isEditingLayout ? "hover:scale-[1.04] hover:shadow-2xl cursor-pointer" : ""
-          )}>
-            {/* Glass inner ring reflection */}
-            <div className={cn(
-              "absolute inset-1 border pointer-events-none opacity-20 z-0",
-              (table.type === 'round' || table.type === 'stool') ? "rounded-full border-white" : "rounded-xl border-white"
-            )} />
-            {(() => {
-              const baseSize = Math.min(table.width, table.height);
-              const fontSizeId = Math.max(9, Math.round(baseSize * 0.11));
-              const fontSizeWaiter = Math.max(8, Math.round(baseSize * 0.09));
-              return (
-                <>
-                  <span 
-                    className="font-black uppercase tracking-tight z-10 opacity-70"
-                    style={{ fontSize: `${fontSizeId}px` }}
-                  >
-                    {table.id}
-                  </span>
-                  {table.waiterName && (
-                    <span 
-                      className="font-black bg-black/10 px-1 rounded uppercase scale-90 mt-0.5"
-                      style={{ fontSize: `${fontSizeWaiter}px` }}
-                    >
-                      {table.waiterName}
-                    </span>
-                  )}
-                  {(() => {
-                    const res = upcomingForTable(table.id, reservations);
-                    return res ? (
-                      <span
-                        title={`Reserva: ${res.customerName} (${res.partySize} pers.)`}
-                        className="font-black bg-violet-600 text-white px-1 rounded mt-0.5"
-                        style={{ fontSize: `${fontSizeWaiter}px` }}
-                      >
-                        📅 {timeLabel(res.date)}
-                      </span>
-                    ) : null;
-                  })()}
-                </>
-              );
-            })()}
-            {getTableTimer(table)}
-            {renderChairs(table)}
-          </div>
-        )}
-
-        {isSelected && isEditingLayout && isRotatable(table.type) && (
-          <div
-            title="Rotar"
-            className="absolute -top-12 left-1/2 -translate-x-1/2 w-11 h-11 bg-indigo-600 text-white rounded-full flex items-center justify-center cursor-grab shadow-xl shadow-indigo-400/60 z-20 hover:bg-indigo-700 border-2 border-white transition-all active:scale-95"
-            onMouseDown={(e) => onRotateHandleMouseDown(e, table)}
-          >
-            <RotateCw className="w-5 h-5" />
-          </div>
-        )}
-
-        {isSelected && isEditingLayout && isRotatable(table.type) && (
-          <div className="absolute -top-6 left-1/2 -translate-x-px w-0.5 h-4 bg-indigo-400/60 pointer-events-none z-10" />
-        )}
-
-        {isSelected && isEditingLayout && (
-          <div
-            className="absolute right-0 bottom-0 w-11 h-11 flex items-center justify-center cursor-se-resize translate-x-4 translate-y-4 z-30 group/resize animate-in zoom-in-50 duration-200"
-            style={{ touchAction: 'none' }}
-            onPointerDown={(e) => handleResizeStart(e, table)}
-            onPointerMove={(e) => handleResizeMove(e, table)}
-            onPointerUp={(e) => handleResizeEnd(e, table)}
-          >
-            <div className="w-4 h-4 bg-indigo-600 border-2 border-white rounded-full shadow-md group-hover/resize:scale-125 transition-transform" />
-          </div>
-        )}
-      </div>
+        onRotateHandleMouseDown={(e) => onRotateHandleMouseDown(e, table)}
+        onResizePointerDown={(e) => handleResizeStart(e, table)}
+        onResizePointerMove={(e) => handleResizeMove(e, table)}
+        onResizePointerUp={(e) => handleResizeEnd(e, table)}
+      />
     );
   };
 
@@ -856,364 +765,39 @@ export function TableMap() {
       onMouseLeave={onMouseUp}
     >
       {isEditingLayout && (
-        <div className="w-80 bg-white border-r border-slate-200 flex flex-col shadow-2xl z-30">
-          <div className="p-6 border-b border-slate-100 bg-indigo-50/30">
-            <h3 className="font-bold text-indigo-900 flex items-center gap-2 text-lg">
-              <Layout className="w-5 h-5" /> Editor de Salón
-            </h3>
-            <p className="text-xs text-indigo-600 mt-1 italic">Arrastrá para mover · Icono para rotar</p>
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-5 space-y-8">
-            <div>
-              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Añadir Elementos</h4>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  { id: 'round',     label: 'Mesa Redonda',   icon: <div className="w-10 h-10 rounded-full border-2 border-slate-300 bg-white" /> },
-                  { id: 'square',    label: 'Mesa Cuadrada',  icon: <div className="w-10 h-10 border-2 border-slate-300 rounded-md bg-white" /> },
-                  { id: 'rectangle', label: 'Mesa Rectang.',  icon: <div className="w-14 h-8 border-2 border-slate-300 rounded-md bg-white" /> },
-                  { id: 'stool',     label: 'Butaca Barra',   icon: <div className="w-7 h-7 rounded-full border-2 border-slate-300 bg-white" /> },
-                  { id: 'wall',      label: 'Pared / Divisor',icon: <div className="w-16 h-4 bg-slate-400 rounded-sm" /> },
-                  { id: 'bar',       label: 'Barra / Mostrador', icon: <div className="w-8 h-14 bg-slate-800 border-l-4 border-amber-400 rounded-l-lg" /> },
-                ].map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleCreateNew(item.id as Table['type'])}
-                    className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-slate-100 rounded-2xl hover:border-indigo-500 hover:bg-indigo-50 transition-all active:scale-95 bg-white shadow-sm group"
-                  >
-                    {item.icon}
-                    <span className="text-[10px] font-bold text-slate-500 group-hover:text-indigo-700 uppercase tracking-tighter">{item.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {editingTable ? (
-              <div className="bg-slate-900 text-white p-6 rounded-[2rem] shadow-2xl space-y-5 border border-white/5">
-                <h4 className="text-[10px] font-black uppercase tracking-widest text-indigo-400">Propiedades</h4>
-
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase">Nombre / ID</label>
-                  <input
-                    type="text"
-                    value={editingTable.id}
-                    onChange={(e) => updateTable(editingTable.id, { id: e.target.value })}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 font-bold"
-                  />
-                </div>
-
-                {editingTable.type !== 'stool' && editingTable.type !== 'wall' && (
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase">Sillas</label>
-                    <div className="flex items-center gap-4 bg-white/5 p-1.5 rounded-xl border border-white/10">
-                      <button onClick={() => {
-                        const newCap = Math.max(1, editingTable.capacity - 1);
-                        const half = Math.floor(newCap / 2);
-                        updateTable(editingTable.id, { 
-                          capacity: newCap, 
-                          chairsConfig: editingTable.chairsConfig ? { top: half, bottom: newCap - half, left: 0, right: 0 } : undefined 
-                        });
-                      }} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20"><Minus className="w-4 h-4" /></button>
-                      <span className="flex-1 text-center font-black text-lg">{editingTable.capacity}</span>
-                      <button onClick={() => {
-                        const newCap = editingTable.capacity + 1;
-                        const half = Math.floor(newCap / 2);
-                        updateTable(editingTable.id, { 
-                          capacity: newCap, 
-                          chairsConfig: editingTable.chairsConfig ? { top: half, bottom: newCap - half, left: 0, right: 0 } : undefined 
-                        });
-                      }} className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center hover:bg-white/20"><Plus className="w-4 h-4" /></button>
-                    </div>
-                    {/* Capacity Presets */}
-                    <div className="flex gap-1.5">
-                      {[2, 4, 6, 8].map(cap => {
-                        const half = Math.floor(cap / 2);
-                        return (
-                          <button
-                            key={cap}
-                            onClick={() => {
-                              updateTable(editingTable.id, {
-                                capacity: cap,
-                                chairsConfig: (editingTable.type === 'round' || editingTable.type === 'stool')
-                                  ? undefined
-                                  : { top: half, bottom: cap - half, left: 0, right: 0 }
-                              });
-                            }}
-                            className={cn(
-                              "flex-1 py-1.5 text-[9px] font-black rounded-lg border transition-all",
-                              editingTable.capacity === cap 
-                                ? "bg-indigo-600 border-indigo-500 text-white" 
-                                : "bg-white/5 border-white/10 hover:bg-white/10"
-                            )}
-                          >
-                            {cap} P
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase">Ancho</label>
-                    <input type="number" value={editingTable.width}
-                      onChange={(e) => updateTable(editingTable.id, { width: Math.max(20, parseInt(e.target.value) || 0) })}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-indigo-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase">Alto</label>
-                    <input type="number" value={editingTable.height}
-                      onChange={(e) => updateTable(editingTable.id, { height: Math.max(10, parseInt(e.target.value) || 0) })}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs font-bold outline-none focus:border-indigo-500" />
-                  </div>
-                </div>
-
-                {isRotatable(editingTable.type) && (
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase flex items-center gap-1"><RotateCw className="w-3 h-3" /> Rotación</label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="range" min={0} max={359} step={1}
-                        value={editingTable.rotation ?? 0}
-                        onChange={(e) => updateTable(editingTable.id, { rotation: parseInt(e.target.value) })}
-                        className="flex-1 accent-indigo-500"
-                      />
-                      <span className="text-sm font-black w-10 text-right">{editingTable.rotation ?? 0}°</span>
-                    </div>
-                    <div className="flex gap-2 mt-2">
-                      {[0, 45, 90, 135, 180].map(deg => (
-                        <button key={deg} onClick={() => updateTable(editingTable.id, { rotation: deg })}
-                          className={cn("flex-1 py-1.5 text-[9px] font-black rounded-lg border transition-all",
-                            (editingTable.rotation ?? 0) === deg ? "bg-indigo-600 border-indigo-500 text-white" : "bg-white/5 border-white/10 hover:bg-white/10")}>
-                          {deg}°
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {editingTable.type !== 'wall' && (
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-400 uppercase">Mozo Asignado</label>
-                    <input
-                      type="text"
-                      value={editingTable.waiterName || ''}
-                      onChange={(e) => updateTable(editingTable.id, { waiterName: e.target.value })}
-                      placeholder="Nombre del Mozo..."
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:border-indigo-500 font-bold"
-                    />
-                  </div>
-                )}
-
-                {(editingTable.type === 'square' || editingTable.type === 'rectangle') && (
-                  <div className="space-y-4 bg-white/5 p-4 rounded-2xl border border-white/10">
-                    <h5 className="text-[10px] font-black uppercase text-indigo-400 tracking-wider">Disposición de Sillas</h5>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => {
-                          const cap = editingTable.capacity || 4;
-                          const half = Math.floor(cap / 2);
-                          updateTable(editingTable.id, {
-                            chairsConfig: { top: half, bottom: cap - half, left: 0, right: 0 },
-                            capacity: cap
-                          });
-                        }}
-                        className="py-2 bg-white/10 hover:bg-white/20 text-[9px] font-bold rounded-lg uppercase"
-                      >
-                        Paralelo H
-                      </button>
-                      <button
-                        onClick={() => {
-                          const cap = editingTable.capacity || 4;
-                          const half = Math.floor(cap / 2);
-                          updateTable(editingTable.id, {
-                            chairsConfig: { top: 0, bottom: 0, left: half, right: cap - half },
-                            capacity: cap
-                          });
-                        }}
-                        className="py-2 bg-white/10 hover:bg-white/20 text-[9px] font-bold rounded-lg uppercase"
-                      >
-                        Paralelo V
-                      </button>
-                      <button
-                        onClick={() => {
-                          updateTable(editingTable.id, { chairsConfig: undefined });
-                        }}
-                        className="py-2 bg-white/10 hover:bg-white/20 text-[9px] font-bold rounded-lg uppercase"
-                      >
-                        Radial
-                      </button>
-                      <button
-                        onClick={() => {
-                          updateTable(editingTable.id, {
-                            chairsConfig: { top: 0, bottom: 0, left: 0, right: 0 },
-                            capacity: 0
-                          });
-                        }}
-                        className="py-2 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-[9px] font-bold rounded-lg uppercase"
-                      >
-                        Quitar Todas
-                      </button>
-                    </div>
-
-                    <div className="flex flex-col items-center gap-2 pt-2 border-t border-white/5">
-                      <span className="text-[9px] font-bold text-slate-400 uppercase">Ajuste de Bordes</span>
-                      <div className="relative w-40 h-40 flex items-center justify-center bg-black/20 rounded-full border border-white/5">
-                        
-                        <div className="absolute top-1 flex flex-col items-center">
-                          <span className="text-[8px] font-black text-slate-500">N</span>
-                          <div className="flex gap-1 items-center">
-                            <button onClick={() => adjustChair(editingTable, 'top', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
-                            <span className="w-6 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.top || 0}</span>
-                            <button onClick={() => adjustChair(editingTable, 'top', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
-                          </div>
-                        </div>
-
-                        <div className="flex justify-between w-full px-1">
-                          <div className="flex flex-col items-center">
-                            <span className="text-[8px] font-black text-slate-500">O</span>
-                            <div className="flex items-center gap-1">
-                              <button onClick={() => adjustChair(editingTable, 'left', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
-                              <span className="w-6 text-center text-xs font-black">{editingTable.chairsConfig?.left || 0}</span>
-                              <button onClick={() => adjustChair(editingTable, 'left', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
-                            </div>
-                          </div>
-                          <div className="flex flex-col items-center">
-                            <span className="text-[8px] font-black text-slate-500">E</span>
-                            <div className="flex items-center gap-1">
-                              <button onClick={() => adjustChair(editingTable, 'right', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
-                              <span className="w-6 text-center text-xs font-black">{editingTable.chairsConfig?.right || 0}</span>
-                              <button onClick={() => adjustChair(editingTable, 'right', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="absolute bottom-1 flex flex-col items-center">
-                          <div className="flex gap-1 items-center">
-                            <button onClick={() => adjustChair(editingTable, 'bottom', -1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">-</button>
-                            <span className="w-6 text-center text-xs font-black flex items-center justify-center">{editingTable.chairsConfig?.bottom || 0}</span>
-                            <button onClick={() => adjustChair(editingTable, 'bottom', 1)} className="w-11 h-11 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center font-bold text-sm transition-colors">+</button>
-                          </div>
-                          <span className="text-[8px] font-black text-slate-500 mt-0.5">S</span>
-                        </div>
-
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setQrModalTableId(editingTable.id)}
-                  className="w-full py-3 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-500/20 transition-all flex items-center justify-center gap-2 mb-2"
-                >
-                  <Smartphone className="w-4 h-4" /> Generar Código QR
-                </button>
-
-                <button
-                  onClick={() => { if (confirm('¿Eliminar elemento?')) { removeTable(editingTable.id); setSelectedTableIds(new Set()); } }}
-                  className="w-full py-3 bg-red-500/10 text-red-400 border border-red-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 transition-all flex items-center justify-center gap-2"
-                >
-                  <Trash2 className="w-4 h-4" /> Eliminar
-                </button>
-              </div>
-            ) : (
-              <div className="h-40 flex flex-col items-center justify-center text-slate-300 border-2 border-dashed border-slate-100 rounded-3xl p-6 text-center">
-                <Layout className="w-10 h-10 mb-3 opacity-20" />
-                <p className="text-[10px] font-black uppercase tracking-widest leading-relaxed">Seleccioná un objeto para editar sus propiedades</p>
-              </div>
-            )}
-          </div>
-
-          <div className="px-5 pb-5 space-y-4">
-            <button
-              onClick={() => setShowSavedPlans(!showSavedPlans)}
-              className="w-full py-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 flex items-center justify-center gap-2 transition-all"
-            >
-              {showSavedPlans ? <X className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-              {showSavedPlans ? 'Cerrar Plantillas' : 'Mis Plantillas'}
-            </button>
-
-            {showSavedPlans ? (
-              <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                {floorPlans.length === 0 ? (
-                  <p className="text-[10px] text-slate-400 text-center py-4 italic">No tienes plantillas guardadas</p>
-                ) : (
-                  floorPlans.map(plan => (
-                    <div key={plan.id} className="bg-white border border-slate-100 rounded-xl p-3 flex flex-col gap-2 group hover:border-indigo-200 transition-all shadow-sm">
-                      <div className="flex items-center justify-between">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-1.5">
-                            <p className="text-xs font-bold text-slate-800 truncate">{plan.name}</p>
-                            {plan.isDefault && <Star className="w-3 h-3 fill-amber-400 text-amber-400" />}
-                          </div>
-                          <p className="text-[9px] text-slate-400 font-medium">{new Date(plan.timestamp).toLocaleDateString()}</p>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={() => loadFloorPlan(plan.id)}
-                            className="p-1.5 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                            title="Cargar"
-                          >
-                            <ArrowRight className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => { if(confirm('¿Eliminar esta plantilla?')) deleteFloorPlan(plan.id); }}
-                            className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      {!plan.isDefault && (
-                        <button 
-                          onClick={() => setDefaultFloorPlan(plan.id)}
-                          className="w-full py-1 text-[9px] font-black text-slate-400 hover:text-amber-500 hover:bg-amber-50 rounded-lg transition-all flex items-center justify-center gap-1 border border-dashed border-transparent hover:border-amber-200"
-                        >
-                          <Star className="w-3 h-3" /> MARCAR COMO PREDETERMINADO
-                        </button>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            ) : (
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Nombre del evento..."
-                  value={newLayoutName}
-                  onChange={(e) => setNewLayoutName(e.target.value)}
-                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 text-xs font-bold outline-none focus:border-indigo-500"
-                />
-                <button
-                  onClick={() => {
-                    if (!newLayoutName) return alert('Ingresá un nombre para la configuración');
-                    saveFloorPlan(newLayoutName);
-                    setNewLayoutName("");
-                    alert('Configuración guardada!');
-                  }}
-                  className="p-3 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-xl hover:bg-emerald-100 transition-all"
-                  title="Guardar diseño actual"
-                >
-                  <Save className="w-5 h-5" />
-                </button>
-              </div>
-            )}
-          </div>
-
-          <div className="p-6 border-t border-slate-100">
-            <button
-              onClick={() => { setIsEditingLayout(false); setSelectedTableIds(new Set()); }}
-              className="w-full py-4 bg-indigo-600 text-white rounded-[1.5rem] font-black text-sm shadow-xl hover:bg-indigo-700 transition-all flex items-center justify-center gap-3 active:scale-95"
-            >
-              <Save className="w-5 h-5" /> GUARDAR DISEÑO
-            </button>
-          </div>
-        </div>
+        <FloorEditorToolbar
+          editingTable={editingTable}
+          floorPlans={floorPlans}
+          showSavedPlans={showSavedPlans}
+          newLayoutName={newLayoutName}
+          onSetNewLayoutName={setNewLayoutName}
+          onToggleSavedPlans={() => setShowSavedPlans(!showSavedPlans)}
+          onSaveFloorPlan={(name) => {
+            if (!name) return alert('Ingresá un nombre para la configuración');
+            saveFloorPlan(name);
+            setNewLayoutName('');
+            alert('Configuración guardada!');
+          }}
+          onLoadFloorPlan={loadFloorPlan}
+          onDeleteFloorPlan={(id) => {
+            if (confirm('¿Eliminar esta plantilla?')) deleteFloorPlan(id);
+          }}
+          onSetDefaultFloorPlan={setDefaultFloorPlan}
+          onClose={() => {
+            setIsEditingLayout(false);
+            setSelectedTableIds(new Set());
+          }}
+          onCreateNew={handleCreateNew}
+          onUpdateTable={updateTable}
+          onDeleteSelected={() => {
+            if (editingTable && confirm('¿Eliminar elemento?')) {
+              removeTable(editingTable.id);
+              setSelectedTableIds(new Set());
+            }
+          }}
+          onOpenQrModal={(id) => setQrModalTableId(id)}
+          adjustChair={adjustChair}
+        />
       )}
 
       {/* Main Map */}
@@ -1247,24 +831,24 @@ export function TableMap() {
                 </div>
                 
                 <div className="h-5 w-[1px] bg-slate-200 hidden lg:block" />
-                <div className="hidden lg:flex items-center gap-3 text-[10px] font-bold text-slate-500 bg-white px-4 py-1.5 rounded-full shadow-sm border border-slate-150 flex-wrap">
+                <div className="hidden lg:flex items-center gap-3 text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#182C24] px-4 py-2 rounded-xl shadow-xs border border-slate-200 dark:border-white/10 flex-wrap">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500" /> Disponible
+                    <span className="w-2.5 h-2.5 rounded-full border border-[#0F6B41] bg-white" /> Disponible
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-sky-500" /> Ocupada
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-100 border border-emerald-400" /> Sin pedido
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-amber-500" /> Espera Cocina
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Cocina
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-indigo-650" /> Consumiendo
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#0F6B41]" /> Consumiendo
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" /> Por Cobrar
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#FA4515] animate-pulse" /> Por cobrar
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-slate-400" /> Sucia
+                    <span className="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-white/30" /> Sucia
                   </div>
                 </div>
               </div>
@@ -1752,88 +1336,23 @@ export function TableMap() {
         </div>
       </div>
 
-      {/* POS Modal */}
+      {/* Order Panel Modal */}
       {selectedTableId && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6">
-          <div className="bg-white rounded-[3.5rem] shadow-2xl w-full max-w-7xl h-[85vh] flex overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex-1 bg-slate-50/50 flex flex-col border-r border-slate-100">
-              <div className="p-10 bg-white border-b border-slate-100 flex justify-between items-center">
-                <div className="flex items-center gap-4">
-                  <h3 className="font-black text-3xl text-slate-900">Mesa {selectedTableId}</h3>
-                  <button
-                    onClick={() => setQrModalTableId(selectedTableId)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-black transition-all"
-                  >
-                    <Smartphone className="w-4 h-4" /> QR Mesa
-                  </button>
-                </div>
-                <button onClick={() => setSelectedTableId(null)} className="p-2 text-slate-400 hover:text-rose-500"><X className="w-8 h-8" /></button>
-              </div>
-              <div className="px-10 pt-6">
-                <input
-                  type="text"
-                  value={menuSearch}
-                  onChange={e => setMenuSearch(e.target.value)}
-                  placeholder="Buscar producto o categoría..."
-                  className="w-full h-12 px-4 bg-slate-50 border border-slate-200 rounded-2xl font-bold text-slate-900 outline-none focus:border-indigo-500"
-                />
-              </div>
-              <div className="flex-1 overflow-y-auto p-10 grid grid-cols-3 gap-6 content-start">
-                {menuItems.length === 0 && (
-                  <div className="col-span-3 text-center text-slate-400 font-bold py-10">No hay productos activos. Cargalos en Inventario.</div>
-                )}
-                {menuItems.map(item => (
-                  <button key={item.id} onClick={() => handleAddItem(item)}
-                    className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:border-indigo-500 hover:-translate-y-1 transition-all text-left">
-                    <div className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1">{item.category}</div>
-                    <div className="font-black text-slate-900 text-lg mb-4">{item.name}</div>
-                    <div className="font-black text-2xl text-slate-900">${item.price}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="w-[450px] bg-white flex flex-col p-10">
-              <h3 className="font-black text-2xl mb-8">Pedido Actual</h3>
-              <div className="flex-1 overflow-y-auto space-y-4">
-                {orderItems.map((item: any) => (
-                  <div key={item.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-3xl">
-                    <div className="flex-1">
-                      <div className="font-black text-slate-900">{item.name}</div>
-                      <div className="text-xs text-slate-400 font-bold">${item.price} × {item.qty}</div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => handleRemoveItem(item.id)} className="w-8 h-8 rounded-xl bg-white flex items-center justify-center hover:text-rose-500"><Minus className="w-4 h-4" /></button>
-                      <span className="font-black w-4 text-center">{item.qty}</span>
-                      <button onClick={() => handleAddItem(item)} className="w-8 h-8 rounded-xl bg-white flex items-center justify-center hover:text-indigo-600"><Plus className="w-4 h-4" /></button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-10 pt-10 border-t border-slate-100">
-                <div className="flex justify-between items-center mb-8">
-                  <span className="font-black text-slate-400 uppercase tracking-widest text-xs">Total</span>
-                  <span className="text-4xl font-black text-slate-900">${total.toLocaleString()}</span>
-                </div>
-                <button 
-                  className="w-full py-5 bg-indigo-600 text-white rounded-[1.5rem] font-black text-lg shadow-xl hover:bg-indigo-700 transition-all active:scale-95 mb-4 flex items-center justify-center gap-2" 
-                  onClick={() => {
-                    addComanda(selectedTableId!, orderItems);
-                    setSelectedTableId(null);
-                  }}
-                >
-                  <ChefHat className="w-6 h-6" />
-                  ENVIAR A COCINA
-                </button>
-                <button 
-                  className="w-full py-4 bg-slate-900 text-white rounded-[1.5rem] font-bold text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-lg" 
-                  onClick={() => setIsPaymentModalOpen(true)}
-                >
-                  Cobrar Cuenta
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <OrderPanel
+          tableId={selectedTableId}
+          orderItems={orderItems}
+          menuItems={menuItems}
+          total={total}
+          onClose={() => setSelectedTableId(null)}
+          onAddItem={handleAddItem}
+          onRemoveItem={handleRemoveItem}
+          onSendToKitchen={() => {
+            addComanda(selectedTableId!, orderItems);
+            setSelectedTableId(null);
+          }}
+          onOpenPayment={() => setIsPaymentModalOpen(true)}
+          onOpenQr={() => setQrModalTableId(selectedTableId)}
+        />
       )}
       {/* Visual Table Merge Confirmation Modal */}
       {isMergeMode && mergeSourceId && mergeTargetId && (
