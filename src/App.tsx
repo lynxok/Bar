@@ -23,6 +23,7 @@ import { WaiterMobile } from './pages/WaiterMobile';
 import { useState, useEffect } from 'react';
 import { startSyncService, stopSyncService } from './services/syncService';
 import { runAutoBackupIfNeeded } from './lib/backup';
+import { startCloudSync, stopCloudSync } from './lib/cloud/cloudSync';
 import { isHost } from './db/database';
 import {
   getStoredUser, verifySession, onUnauthorized, isPublicClientRoute,
@@ -51,6 +52,13 @@ export default function App() {
     startSyncService();
     return () => stopSyncService();
   }, [isAuthenticated, isClientRoute, checkingSession]);
+
+  // Copia en la nube (Supabase del cliente): solo la PC principal, si está configurada
+  useEffect(() => {
+    if (!isHost) return;
+    startCloudSync();
+    return () => stopCloudSync();
+  }, []);
 
   // Copia de seguridad automática diaria (solo en la PC principal)
   useEffect(() => {

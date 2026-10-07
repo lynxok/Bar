@@ -3,6 +3,7 @@ import { getIpc } from '../lib/ipc';
 import { useBusiness } from "../contexts/BusinessContext";
 import { useStore } from "../contexts/StoreContext";
 import { useToast } from "../components/ui/Toast";
+import { CloudSyncPanel } from "../components/cloud/CloudSyncPanel";
 import { cn } from "../lib/utils";
 import { Store, Upload, Save, Image as ImageIcon, X, Users, Shield, Trash2, Key, Plus, CheckCircle, Circle, Edit2, Cloud, Database, RefreshCw, DownloadCloud, Wifi, Globe, Copy, Eye, EyeOff, QrCode, Network, Server, AlertCircle } from "lucide-react";
 import { LoggerService } from "../lib/LoggerService";
@@ -28,7 +29,6 @@ export function Settings() {
     permissions: ['tables', 'pos'] as string[] 
   });
   
-  const [isMigrating, setIsMigrating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<'idle' | 'checking' | 'available' | 'downloading' | 'downloaded'>('idle');
   const [downloadProgress, setDownloadProgress] = useState(0);
@@ -47,10 +47,6 @@ export function Settings() {
   const [showToken, setShowToken] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const [syncMode, setSyncMode] = useState<'local' | 'supabase'>((localStorage.getItem('sync_mode') as 'local' | 'supabase') || 'local');
-  const [supabaseUrl, setSupabaseUrl] = useState(localStorage.getItem('supabase_url') || '');
-  const [supabaseAnonKey, setSupabaseAnonKey] = useState(localStorage.getItem('supabase_anon_key') || '');
-  const [isSavingSync, setIsSavingSync] = useState(false);
 
   // ARCA/AFIP Configuration & Diagnostic States
   const [arcaSettings, setArcaSettings] = useState(() => {
@@ -79,12 +75,6 @@ export function Settings() {
           setTunnelStatus('active');
           setTunnelUrl(status.url);
         }
-      });
-      // Registrar config de Supabase inicial en el proceso principal
-      ipc.send('set-supabase-config', {
-        active: syncMode === 'supabase',
-        url: supabaseUrl,
-        anonKey: supabaseAnonKey
       });
     }
   }, [ipc]);
@@ -138,24 +128,6 @@ export function Settings() {
     }
   };
 
-  const handleSaveSyncConfig = async () => {
-    setIsSavingSync(true);
-    localStorage.setItem('sync_mode', syncMode);
-    localStorage.setItem('supabase_url', supabaseUrl);
-    localStorage.setItem('supabase_anon_key', supabaseAnonKey);
-
-    if (ipc) {
-      ipc.send('set-supabase-config', {
-        active: syncMode === 'supabase',
-        url: supabaseUrl,
-        anonKey: supabaseAnonKey
-      });
-    }
-
-    await new Promise(r => setTimeout(r, 1000));
-    showToast("Configuración de sincronización guardada correctamente.", "success");
-    setIsSavingSync(false);
-  };
 
   useEffect(() => {
     if (!ipc) return;
@@ -202,13 +174,6 @@ export function Settings() {
     };
   }, [ipc]);
 
-  const handleMigrateToCloud = async () => {
-    setIsMigrating(true);
-    // Simulate migration delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    showToast("Migración iniciada. El sistema cambiará a modo híbrido.", "info");
-    setIsMigrating(false);
-  };
 
   const handleCheckUpdates = () => {
     if (!ipc) {
@@ -583,42 +548,8 @@ export function Settings() {
 
       {activeTab === 'updates' && (
         <div className="space-y-8 animate-in fade-in duration-200">
+          <CloudSyncPanel />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Cloud Migration Section */}
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-              <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
-                <Cloud className="w-5 h-5 text-sky-500" />
-                <h2 className="font-bold text-lg text-slate-800">Sincronización en la Nube</h2>
-              </div>
-              <div className="p-8 flex-1 flex flex-col justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 mb-4 leading-relaxed">
-                    Actualmente el sistema está funcionando en modo <strong>100% Local (Offline)</strong>. Todos los datos están seguros en esta computadora.
-                  </p>
-                  <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                    Migrar a la nube (Supabase) te permitirá ver el estado del restaurante, mesas y facturación <strong>desde tu teléfono en tiempo real</strong>.
-                  </p>
-                  
-                  <div className="bg-sky-50 border border-sky-100 rounded-xl p-4 mb-6 flex items-start gap-3">
-                    <Database className="w-5 h-5 text-sky-600 shrink-0 mt-0.5" />
-                    <div>
-                      <h4 className="text-xs font-bold text-sky-900 uppercase tracking-wider mb-1">Costo Estimado</h4>
-                      <p className="text-xs text-sky-700">Supabase ofrece un plan gratuito (hasta 500MB y 2 conexiones concurrentes). Ideal para monitoreo remoto.</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <button 
-                  onClick={handleMigrateToCloud}
-                  disabled={isMigrating}
-                  className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md hover:bg-slate-800 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
-                >
-                  {isMigrating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Cloud className="w-4 h-4" />}
-                  {isMigrating ? 'Migrando Base de Datos...' : 'Migrar a Supabase'}
-                </button>
-              </div>
-            </div>
-
             {/* System Updates Section */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
               <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
@@ -887,102 +818,6 @@ export function Settings() {
             </div>
           </div>
 
-          {/* Sync Mode Switch Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center gap-3 bg-slate-50">
-              <Server className="w-5 h-5 text-[#0F6B41]" />
-              <h2 className="font-bold text-lg text-slate-800">Modo de Base de Datos y Sincronización</h2>
-            </div>
-            
-            <div className="p-8 space-y-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                
-                {/* Option Local */}
-                <button
-                  onClick={() => setSyncMode('local')}
-                  className={cn(
-                    "flex-1 p-6 rounded-2xl border-2 text-left transition-all flex items-start gap-4",
-                    syncMode === 'local'
-                      ? "border-[#0F6B41] bg-emerald-50/20"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  )}
-                >
-                  <div className={cn(
-                    "p-3 rounded-xl shrink-0",
-                    syncMode === 'local' ? "bg-emerald-100 text-[#0F6B41]" : "bg-slate-100 text-slate-500"
-                  )}>
-                    <Server className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-base mb-1">Local Compartido (PC Base)</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Por defecto. Los celulares se sincronizan directamente con esta PC mediante la red WiFi o el túnel de ngrok. Los datos se almacenan físicamente en este equipo.
-                    </p>
-                  </div>
-                </button>
-
-                {/* Option Supabase */}
-                <button
-                  onClick={() => setSyncMode('supabase')}
-                  className={cn(
-                    "flex-1 p-6 rounded-2xl border-2 text-left transition-all flex items-start gap-4",
-                    syncMode === 'supabase'
-                      ? "border-[#0F6B41] bg-emerald-50/20"
-                      : "border-slate-200 hover:border-slate-300 bg-white"
-                  )}
-                >
-                  <div className={cn(
-                    "p-3 rounded-xl shrink-0",
-                    syncMode === 'supabase' ? "bg-emerald-100 text-[#0F6B41]" : "bg-slate-100 text-slate-500"
-                  )}>
-                    <Cloud className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-slate-800 text-base mb-1">Nube Sincronizada (Supabase)</h3>
-                    <p className="text-xs text-slate-500 leading-relaxed">
-                      Los datos se sincronizan con una base de datos segura en internet. Los celulares pueden operar incluso con esta PC apagada.
-                    </p>
-                  </div>
-                </button>
-              </div>
-
-              {syncMode === 'supabase' && (
-                <div className="p-6 bg-slate-50 border border-slate-200 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-6 animate-in slide-in-from-top-4 duration-200">
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Supabase Project URL</label>
-                    <input 
-                      type="text"
-                      value={supabaseUrl}
-                      onChange={(e) => setSupabaseUrl(e.target.value)}
-                      placeholder="https://xyzabc.supabase.co" 
-                      className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Supabase Anon API Key</label>
-                    <input 
-                      type="password"
-                      value={supabaseAnonKey}
-                      onChange={(e) => setSupabaseAnonKey(e.target.value)}
-                      placeholder="eyJhbGciOi..." 
-                      className="w-full bg-white border border-slate-300 text-slate-800 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex justify-end pt-4 border-t border-slate-100">
-                <button
-                  onClick={handleSaveSyncConfig}
-                  disabled={isSavingSync}
-                  className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md hover:bg-slate-800 transition-all disabled:opacity-50"
-                >
-                  {isSavingSync ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Guardar Configuración de Sincronización
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
       )}
 
