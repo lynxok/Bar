@@ -116,29 +116,29 @@ export function CashClose() {
   if (!activeShift) {
     return (
       <div className="p-container-padding flex flex-col items-center justify-center max-w-xl mx-auto min-h-[calc(100vh-64px)] py-12">
-        <div className="bg-white rounded-3xl border border-slate-200 p-8 w-full shadow-lg space-y-6 text-center">
-          <div className="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2">
+        <div className="bg-white dark:bg-[#182C24] rounded-3xl border border-slate-200 dark:border-white/10 p-8 w-full shadow-lg space-y-6 text-center">
+          <div className="w-16 h-16 bg-emerald-50 dark:bg-[#0F6B41]/20 text-[#0F6B41] dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-2">
             <PlayCircle className="w-8 h-8" />
           </div>
           <div>
-            <h1 className="font-bold text-2xl text-slate-900">Apertura de Caja</h1>
-            <p className="text-sm text-slate-500 mt-1">Declara el fondo inicial antes de iniciar las ventas del turno.</p>
+            <h1 className="font-bold text-2xl text-slate-900 dark:text-white">Apertura de caja</h1>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Declarar el fondo inicial antes de iniciar las ventas del turno.</p>
           </div>
 
           <form onSubmit={handleOpenShiftSubmit} className="space-y-4 text-left pt-4">
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Nombre del Operador (Cajero)</label>
+              <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Nombre del operador (cajero)</label>
               <input
                 required
                 type="text"
                 value={cashierNameInput}
                 onChange={(e) => setCashierNameInput(e.target.value)}
-                className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                className="w-full h-12 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 font-semibold text-slate-900 dark:text-white focus:border-[#0F6B41] focus:ring-2 focus:ring-[#0F6B41]/20 outline-none transition-all"
                 placeholder="Nombre del cajero..."
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Fondo de Caja Inicial (Efectivo)</label>
+              <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Fondo de caja inicial (efectivo)</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">$</span>
                 <input
@@ -148,7 +148,7 @@ export function CashClose() {
                   min="0"
                   value={initialCashInput}
                   onChange={(e) => setInitialCashInput(e.target.value)}
-                  className="w-full h-12 pl-8 pr-4 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                  className="w-full h-12 pl-8 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-bold text-slate-900 dark:text-white focus:border-[#0F6B41] focus:ring-2 focus:ring-[#0F6B41]/20 outline-none transition-all"
                   placeholder="0.00"
                 />
               </div>
@@ -156,9 +156,9 @@ export function CashClose() {
 
             <button
               type="submit"
-              className="w-full h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-sm uppercase tracking-wider shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 pt-1"
+              className="w-full h-14 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-semibold text-sm uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 pt-1 cursor-pointer"
             >
-              Iniciar Turno / Abrir Caja
+              Iniciar turno / Abrir caja
             </button>
           </form>
         </div>
@@ -185,14 +185,14 @@ export function CashClose() {
           </div>
           
           <div className="p-6 space-y-6 bg-white">
-            <div className="flex justify-between items-center p-4 rounded-xl border border-indigo-100 bg-indigo-50/20">
+            <div className="flex justify-between items-center p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600">
+                <div className="w-12 h-12 bg-emerald-50 dark:bg-[#0F6B41]/20 rounded-lg flex items-center justify-center text-[#0F6B41] dark:text-emerald-400">
                   <Banknote className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-bold text-slate-800">Efectivo Físico Contado</h4>
-                  <p className="text-sm text-slate-500">Entrada manual requerida</p>
+                  <h4 className="font-semibold text-slate-800 dark:text-white">Efectivo físico contado</h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Entrada manual requerida</p>
                 </div>
               </div>
               <div className="text-right flex items-center gap-2">
@@ -202,7 +202,7 @@ export function CashClose() {
                   placeholder="0.00"
                   value={declaredCashInput}
                   onChange={(e) => setDeclaredCashInput(e.target.value)}
-                  className="font-bold text-[24px] text-slate-800 bg-white border-2 border-indigo-200 rounded-lg px-4 py-2 w-48 text-right outline-none focus:border-indigo-500 transition-all"
+                  className="font-bold text-[24px] text-slate-800 dark:text-white bg-white dark:bg-[#182C24] border-2 border-slate-300 dark:border-white/20 rounded-lg px-4 py-2 w-48 text-right outline-none focus:border-[#0F6B41] transition-all"
                 />
               </div>
             </div>
@@ -334,23 +334,23 @@ export function CashClose() {
 
           
           <div className="pt-6 border-t border-slate-100">
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Comentarios de Cierre (Obligatorio si hay dif.)</label>
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Comentarios de cierre (obligatorio si hay diferencia)</label>
             <textarea 
               value={comments}
               onChange={(e) => setComments(e.target.value)}
-              className="w-full h-24 p-3 border border-slate-300 rounded-lg text-sm bg-slate-50 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all placeholder:text-slate-400 font-medium"
+              className="w-full h-24 p-3 border border-slate-300 dark:border-white/10 rounded-xl text-sm bg-slate-50 dark:bg-white/5 focus:ring-2 focus:ring-[#0F6B41]/20 focus:border-[#0F6B41] focus:bg-white dark:focus:bg-[#182C24] text-slate-800 dark:text-white outline-none transition-all placeholder:text-slate-400 font-medium"
               placeholder="Ej: Faltante de 7.50 por error en dar vuelto mesa 12."
             ></textarea>
           </div>
 
           <div className="grid grid-cols-2 gap-3 pt-4">
-             <button onClick={handlePrintZ} className="flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition-colors">
+             <button onClick={handlePrintZ} className="flex items-center justify-center gap-2 py-3 rounded-xl border border-slate-300 dark:border-white/10 text-slate-700 dark:text-slate-200 font-semibold hover:bg-slate-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
                <Printer className="w-5 h-5" /> Imprimir Z
              </button>
              <button 
                 onClick={handleConfirmClose}
-                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-rose-600 text-white font-bold hover:brightness-110 shadow-md transition-all active:scale-95 text-sm uppercase tracking-wider">
-               <FileCheck2 className="w-5 h-5" /> Confirmar Cierre
+                className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#C62828] hover:bg-[#a82020] text-white font-semibold shadow-sm transition-all active:scale-95 text-sm uppercase tracking-wider cursor-pointer">
+               <FileCheck2 className="w-5 h-5" /> Confirmar cierre
              </button>
           </div>
         </div>

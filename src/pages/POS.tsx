@@ -30,6 +30,7 @@ import { useToast } from "../components/ui/Toast";
 
 
 export function POS() {
+  const { showToast } = useToast();
   const { closePOSOrder, addComanda, customers, rewards, redeemPoints, comandas, products } = useStore();
 
   const getEstimatedWaitTime = () => {
@@ -324,18 +325,18 @@ export function POS() {
 
           <div className="grid grid-cols-2 gap-3">
             <button
-              onClick={() => { addComanda('POS', cart); alert("Pedido enviado a cocina"); }}
+              onClick={() => { addComanda('POS', cart); showToast('Pedido enviado a cocina', 'success'); }}
               disabled={cart.length === 0}
-              className="w-full h-14 bg-surface-container border border-outline text-on-surface text-sm font-bold rounded-xl shadow-sm hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+              className="w-full min-h-[48px] h-14 bg-surface-container border border-outline text-on-surface text-sm font-semibold rounded-xl shadow-xs hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
             >
-              <ChefHat className="h-5 w-5 text-primary" /> COCINA
+              <ChefHat className="h-5 w-5 text-[#0F6B41]" /> Cocina
             </button>
             <button
               onClick={() => setIsCheckoutModalOpen(true)}
               disabled={cart.length === 0}
-              className="w-full h-14 bg-primary text-on-primary text-sm font-bold rounded-xl shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40"
+              className="w-full min-h-[48px] h-14 bg-[#FA4515] hover:bg-[#e03a0e] text-white text-sm font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
             >
-              <Wallet className="h-5 w-5" /> COBRAR
+              <Wallet className="h-5 w-5" /> Cobrar
             </button>
           </div>
         </div>

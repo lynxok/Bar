@@ -137,7 +137,7 @@ export function Login({ onLogin }: LoginProps) {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full min-h-[44px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl shadow-sm text-sm font-semibold text-white bg-[#0F6B41] hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0F6B41] focus:ring-offset-slate-900 transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+              className="w-full min-h-[44px] flex items-center justify-center gap-2 py-3 px-4 rounded-xl shadow-sm text-sm font-semibold text-white bg-[#0F6B41] hover:bg-[#0C5734] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0F6B41] focus:ring-offset-[#1C1C1C] transition-all group disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isLoading ? (
                 <>
@@ -149,7 +149,7 @@ export function Login({ onLogin }: LoginProps) {
                 </>
               ) : (
                 <>
-                  {setupMode ? 'Crear Superadmin' : 'Iniciar Sesión'}
+                  {setupMode ? 'Crear Superadmin' : 'Iniciar sesión'}
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </>
               )}

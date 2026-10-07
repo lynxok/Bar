@@ -1,47 +1,162 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --color-surface: #ffffff;
-  --color-surface-dim: #f8fafc;
-  --color-surface-bright: #ffffff;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-low: #f1f5f9;
-  --color-surface-container: #f8fafc;
-  --color-surface-container-high: #e2e8f0;
-  --color-surface-container-highest: #cbd5e1;
-  --color-on-surface: #0f172a;
-  --color-on-surface-variant: #64748b;
-  --color-inverse-surface: #1e293b;
-  --color-inverse-on-surface: #f8fafc;
-  --color-outline: #cbd5e1;
-  --color-outline-variant: #e2e8f0;
-  --color-surface-tint: #4f46e5;
-  --color-primary: #4f46e5;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #eef2ff;
-  --color-on-primary-container: #4f46e5;
-  --color-inverse-primary: #818cf8;
-  --color-secondary: #f59e0b;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #fffbeb;
-  --color-on-secondary-container: #b45309;
-  --color-tertiary: #10b981;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #ecfdf5;
-  --color-on-tertiary-container: #047857;
-  --color-error: #ef4444;
-  --color-on-error: #ffffff;
-  --color-error-container: #fef2f2;
-  --color-on-error-container: #b91c1c;
-  --color-background: #f8fafc;
-  --color-on-background: #0f172a;
+@font-face {
+  font-family: 'Archivo';
+  src: url('./assets/fonts/Archivo-Variable.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
 
-  --spacing-unit: 8px;
-  --spacing-container-padding: 32px;
-  --spacing-gutter: 24px;
-  --spacing-sidebar-width: 256px;
-  --spacing-card-gap: 24px;
+@font-face {
+  font-family: 'Archivo';
+  src: url('./assets/fonts/Archivo-Italic-Variable.ttf') format('truetype-variations');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* ==========================================================================
+     LYNX BarOS Design System Tokens (WCAG AA Compliant)
+     - Brand Green: #0F6B41 (Contrast on white ~6.5:1)
+     - Brand Dark: #1E4437 (Contrast on white ~10.4:1)
+     - Accent Orange: #FA4515 (High energy, used on CTA / badges)
+     - Ink: #1C1C1C (Primary text)
+     - Paper: #FFFFFF (Base surface)
+     - Semantic Danger: #C62828 (Error / delete)
+     ========================================================================== */
+  --font-sans: 'Archivo', system-ui, -apple-system, sans-serif;
+
+  /* Brand Palette */
+  --color-brand: #0F6B41;
+  --color-brand-hover: #0C5734;
+  --color-brand-active: #094328;
+  --color-brand-light: #E7F3EC;
+  --color-brand-dark: #1E4437;
+  --color-brand-dark-surface: #142E25;
+
+  /* Accent Palette */
+  --color-accent: #FA4515;
+  --color-accent-hover: #E03A0E;
+  --color-accent-light: #FFEDE8;
+
+  /* Neutral Scale (Warm-tinted to complement #1C1C1C) */
+  --color-ink: #1C1C1C;
+  --color-ink-muted: #575757;
+  --color-ink-subtle: #8A8A8A;
+  --color-paper: #FFFFFF;
+  --color-paper-subtle: #F9F9F8;
+  --color-paper-muted: #F2F2F0;
+  --color-paper-border: #E5E5E2;
+
+  /* Semantic Statuses */
+  --color-success: #1B8755;
+  --color-success-bg: #E8F5EE;
+  --color-warning: #D97706;
+  --color-warning-bg: #FEF3C7;
+  --color-danger: #C62828;
+  --color-danger-bg: #FFEBEE;
+  --color-info: #0284C7;
+  --color-info-bg: #E0F2FE;
+
+  /* Table Statuses */
+  --table-available-bg: #FFFFFF;
+  --table-available-border: #0F6B41;
+  --table-occupied-bg: #E7F3EC;
+  --table-occupied-border: #A3D4BA;
+  --table-kitchen-bg: #FEF3C7;
+  --table-kitchen-border: #F59E0B;
+  --table-consuming-bg: #0F6B41;
+  --table-consuming-text: #FFFFFF;
+  --table-billing-bg: #FA4515;
+  --table-billing-text: #FFFFFF;
+  --table-dirty-bg: #E5E5E2;
+  --table-dirty-border: #8A8A8A;
+
+  /* Base Application Variables (Light Mode) */
+  --bg-app: #F9F9F8;
+  --bg-surface: #FFFFFF;
+  --bg-surface-elevated: #FFFFFF;
+  --bg-sidebar: #1E4437;
+  --text-main: #1C1C1C;
+  --text-muted: #575757;
+  --border-main: #E5E5E2;
+}
+
+/* ==========================================================================
+   Real Dark Mode via .dark / [data-theme="dark"]
+   - Backgrounds built on #142E25 and #1C1C1C
+   - Preserves images, QRs, charts, and colors without invert() filters
+   ========================================================================== */
+html.dark {
+  --bg-app: #121E19;
+  --bg-surface: #182C24;
+  --bg-surface-elevated: #203A30;
+  --bg-sidebar: #0F231B;
+  --text-main: #F4F6F5;
+  --text-muted: #B2C0B9;
+  --border-main: #2A483D;
+
+  --color-paper: #182C24;
+  --color-paper-subtle: #14261F;
+  --color-paper-muted: #203A30;
+  --color-paper-border: #2A483D;
+  --color-ink: #F4F6F5;
+  --color-ink-muted: #B2C0B9;
+  --color-ink-subtle: #7A8F85;
+
+  --color-brand-light: #16362A;
+  --color-accent-light: #3D1C13;
+  --color-danger-bg: #381616;
+  --color-warning-bg: #382B10;
+  --color-success-bg: #143522;
+}
+
+@theme {
+  --font-sans: 'Archivo', system-ui, -apple-system, sans-serif;
+
+  /* Brand Colors */
+  --color-brand: var(--color-brand);
+  --color-brand-hover: var(--color-brand-hover);
+  --color-brand-active: var(--color-brand-active);
+  --color-brand-light: var(--color-brand-light);
+  --color-brand-dark: var(--color-brand-dark);
+  --color-brand-dark-surface: var(--color-brand-dark-surface);
+
+  --color-accent: var(--color-accent);
+  --color-accent-hover: var(--color-accent-hover);
+  --color-accent-light: var(--color-accent-light);
+
+  --color-ink: var(--color-ink);
+  --color-ink-muted: var(--color-ink-muted);
+  --color-ink-subtle: var(--color-ink-subtle);
+  --color-paper: var(--color-paper);
+  --color-paper-subtle: var(--color-paper-subtle);
+  --color-paper-muted: var(--color-paper-muted);
+  --color-paper-border: var(--color-paper-border);
+
+  --color-danger: var(--color-danger);
+  --color-danger-bg: var(--color-danger-bg);
+  --color-warning: var(--color-warning);
+  --color-warning-bg: var(--color-warning-bg);
+  --color-success: var(--color-success);
+  --color-success-bg: var(--color-success-bg);
+
+  /* Primary alias to facilitate transition from old indigo */
+  --color-primary: var(--color-brand);
+  --color-primary-container: var(--color-brand-light);
+  --color-on-primary-container: var(--color-brand-dark);
+  --color-surface: var(--bg-surface);
+  --color-on-surface: var(--text-main);
+  --color-outline: var(--border-main);
+  --color-outline-variant: var(--border-main);
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
 
   @keyframes bell-swing {
     0%, 100% { transform: rotate(0); }
@@ -62,84 +177,20 @@
     to { transform: scale(1); }
   }
 
-  @keyframes blob-one {
-    0%, 100% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(60px, -90px) scale(1.15); }
-    66% { transform: translate(-40px, 40px) scale(0.9); }
-  }
-  @keyframes blob-two {
-    0%, 100% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(-80px, 80px) scale(0.85); }
-    66% { transform: translate(80px, -40px) scale(1.2); }
-  }
-  @keyframes blob-three {
-    0%, 100% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(40px, 60px) scale(0.9); }
-    66% { transform: translate(-60px, -80px) scale(1.1); }
-  }
-
   @keyframes marquee {
     0% { transform: translate3d(0, 0, 0); }
     100% { transform: translate3d(-50%, 0, 0); }
   }
-  @keyframes scan-line {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(220px); }
-    100% { transform: translateY(0); }
-  }
 }
 
-@layer utilities {
-  .font-h1 { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 700; }
-  .text-h1 { font-size: 24px; line-height: 32px; letter-spacing: -0.02em; }
-  
-  .font-h2 { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 700; }
-  .text-h2 { font-size: 20px; line-height: 28px; letter-spacing: -0.01em; }
-  
-  .font-h3 { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
-  .text-h3 { font-size: 16px; line-height: 24px; }
-  
-  .font-body-lg { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 400; }
-  .text-body-lg { font-size: 16px; line-height: 24px; }
-  
-  .font-body-md { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 400; }
-  .text-body-md { font-size: 14px; line-height: 20px; }
-  
-  .font-label-caps { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 700; text-transform: uppercase; }
-  .text-label-caps { font-size: 12px; line-height: 16px; letter-spacing: 0.05em; }
-  
-  .font-status-badge { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; font-weight: 600; }
-  .text-status-badge { font-size: 12px; line-height: 16px; }
-
-  .animate-in {
-    animation-duration: 200ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    animation-fill-mode: forwards;
-  }
-  .fade-in { animation-name: fade-in; }
-  .zoom-in { animation-name: zoom-in; }
-  
-  .animate-blob-one {
-    animation: blob-one 20s infinite alternate ease-in-out;
-  }
-  .animate-blob-two {
-    animation: blob-two 25s infinite alternate ease-in-out;
-  }
-  .animate-blob-three {
-    animation: blob-three 18s infinite alternate ease-in-out;
-  }
-  
-  .animate-marquee {
-    animation: marquee 30s linear infinite;
-  }
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
 }
 
-html.dark {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-html.dark img,
-html.dark video,
-html.dark [data-theme-ignore] {
-  filter: invert(1) hue-rotate(180deg);
+/* Tabular figures for monetary amounts */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }

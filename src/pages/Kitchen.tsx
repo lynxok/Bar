@@ -138,7 +138,7 @@ export default function Kitchen() {
       return <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase", customClass)}>{label}</span>;
     }
     switch (status) {
-      case 'pending': return <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-[10px] font-bold uppercase">Pendiente</span>;
+      case 'pending': return <span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded text-[10px] font-bold uppercase border border-amber-200">Pendiente</span>;
       case 'preparing': return <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-[10px] font-bold uppercase animate-pulse">Preparando</span>;
       case 'ready': return <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase">Listo</span>;
       default: return null;
@@ -148,14 +148,14 @@ export default function Kitchen() {
   return (
     <div className="space-y-6">
       {/* Header & Stats */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#182C24] p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-indigo-50 rounded-2xl flex items-center justify-center text-indigo-600">
+          <div className="w-12 h-12 bg-emerald-50 dark:bg-[#0F6B41]/20 rounded-2xl flex items-center justify-center text-[#0F6B41] dark:text-emerald-400">
             <ChefHat className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-800">Monitor de Cocina (KDS)</h1>
-            <p className="text-slate-500 text-xs font-semibold uppercase tracking-wider mt-0.5">Estación activa: <span className="text-indigo-600">{selectedStation}</span></p>
+            <h1 className="text-xl font-bold text-slate-800 dark:text-white">Monitor de cocina (KDS)</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mt-0.5">Estación activa: <span className="text-[#0F6B41] dark:text-emerald-400">{selectedStation}</span></p>
           </div>
         </div>
 
@@ -164,8 +164,8 @@ export default function Kitchen() {
           <button
             onClick={() => setSoundEnabled(!soundEnabled)}
             className={cn(
-              "p-3 rounded-xl border transition-all shadow-sm active:scale-95",
-              soundEnabled ? "bg-emerald-50 border-emerald-200 text-emerald-600 hover:bg-emerald-100" : "bg-slate-50 border-slate-200 text-slate-400"
+              "p-3 rounded-xl border transition-all shadow-sm active:scale-95 cursor-pointer",
+              soundEnabled ? "bg-emerald-50 border-emerald-200 text-[#0F6B41] hover:bg-emerald-100" : "bg-slate-50 border-slate-200 text-slate-400"
             )}
             title={soundEnabled ? "Silenciar notificaciones" : "Activar sonido"}
           >
@@ -173,29 +173,29 @@ export default function Kitchen() {
           </button>
 
           {/* Dynamic Station/Category selection dropdown */}
-          <div className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 gap-2">
+          <div className="relative flex items-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 gap-2">
             <Filter className="w-4 h-4 text-slate-400" />
             <select
               value={selectedStation}
               onChange={(e) => setSelectedStation(e.target.value)}
-              className="bg-transparent outline-none cursor-pointer pr-4 font-bold"
+              className="bg-transparent outline-none cursor-pointer pr-4 font-semibold"
             >
               {stations.map(st => (
-                <option key={st} value={st}>{st}</option>
+                <option key={st} value={st} className="dark:bg-[#182C24]">{st}</option>
               ))}
             </select>
           </div>
 
-          <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl border border-slate-200 dark:border-white/10">
             <button 
               onClick={() => setFilter('pending')}
               className={cn(
-                "px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-bold text-xs uppercase tracking-wide",
-                filter === 'pending' ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" : "text-slate-600 hover:bg-slate-200"
+                "px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-semibold text-xs uppercase tracking-wide cursor-pointer",
+                filter === 'pending' ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10"
               )}
             >
               Pendientes
-              <span className={cn("px-1.5 rounded text-[10px] font-black", filter === 'pending' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700")}>{stats.pending}</span>
+              <span className={cn("px-1.5 rounded text-[10px] font-bold", filter === 'pending' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700")}>{stats.pending}</span>
             </button>
             <button 
               onClick={() => setFilter('preparing')}
@@ -281,14 +281,14 @@ export default function Kitchen() {
                     </div>
 
                   {/* Footer Actions */}
-                  <div className="p-4 bg-white/50 mt-auto border-t border-inherit">
+                  <div className="p-4 bg-white/50 dark:bg-black/20 mt-auto border-t border-inherit">
                     {order.status === 'pending' && (
                       <button 
                         onClick={() => updateComandaStatus(order.id, 'preparing')}
-                        className="w-full py-3 bg-indigo-600 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-100"
+                        className="w-full py-3 bg-[#0F6B41] text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#0C5734] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                       >
                         <Play className="w-4 h-4 fill-current" />
-                        Empezar Preparación
+                        Empezar preparación
                       </button>
                     )}
                     {order.status === 'preparing' && (

@@ -332,17 +332,17 @@ export function WaiterMobile() {
   };
 
   const statusColors: Record<Table['status'], string> = {
-    available: "bg-emerald-500/25 text-emerald-400 border-emerald-500/30",
-    occupied: "bg-rose-500/25 text-rose-400 border-rose-500/30 animate-pulse",
-    occupied_no_order: "bg-sky-500/25 text-sky-400 border-sky-500/30",
-    waiting_food: "bg-amber-500/25 text-amber-400 border-amber-500/30 animate-pulse",
-    consuming: "bg-indigo-500/25 text-indigo-400 border-indigo-500/30",
-    checkout: "bg-red-500/25 text-red-400 border-red-500/30 animate-pulse",
-    dirty: "bg-slate-500/25 text-slate-400 border-slate-500/30"
+    available: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+    occupied: "bg-emerald-500/25 text-emerald-200 border-emerald-500/40",
+    occupied_no_order: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+    waiting_food: "bg-amber-500/25 text-amber-300 border-amber-500/40 animate-pulse",
+    consuming: "bg-[#0F6B41]/40 text-emerald-200 border-[#0F6B41]",
+    checkout: "bg-[#FA4515]/30 text-orange-200 border-[#FA4515] animate-pulse",
+    dirty: "bg-slate-500/20 text-slate-400 border-slate-500/30"
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-950 text-slate-100 max-w-[430px] mx-auto border-x border-slate-800 shadow-2xl relative font-sans">
+    <div className="flex flex-col min-h-screen bg-[#142E25] text-slate-100 max-w-[430px] mx-auto border-x border-[#1E4437] shadow-2xl relative font-sans">
       
       {/* Toast Notification */}
       {toast && (
@@ -352,23 +352,23 @@ export function WaiterMobile() {
             ? 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200' 
             : 'bg-red-950/95 border-red-500/50 text-red-200'
         )}>
-          <div className="text-xs font-black uppercase tracking-wider">{toast.message}</div>
+          <div className="text-xs font-bold uppercase tracking-wider">{toast.message}</div>
           <button onClick={() => setToast(null)} className="text-[10px] uppercase font-bold opacity-60">X</button>
         </div>
       )}
 
       {/* Header */}
-      <header className="h-16 bg-slate-950/90 backdrop-blur-md flex items-center justify-between px-5 border-b border-slate-900 sticky top-0 z-40 shrink-0">
+      <header className="h-16 bg-[#1E4437]/90 backdrop-blur-md flex items-center justify-between px-5 border-b border-white/10 sticky top-0 z-40 shrink-0">
         <div className="flex items-center gap-2">
-          <Utensils className="h-5 w-5 text-indigo-500" />
-          <h1 className="text-base font-black text-white tracking-tight">
-            LYNX <span className="text-indigo-400">MOZO</span>
+          <Utensils className="h-5 w-5 text-[#FA4515]" />
+          <h1 className="text-base font-bold text-white tracking-tight">
+            LYNX <span className="text-emerald-400">Mozo</span>
           </h1>
         </div>
         <SyncStatusBadge className="ml-auto mr-3" />
         <button 
           onClick={handleLogout}
-          className="p-2 bg-slate-900 border border-slate-850 rounded-xl text-slate-400 hover:text-red-400 transition-colors"
+          className="p-2 bg-white/5 border border-white/10 rounded-xl text-slate-300 hover:text-red-400 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4" />
         </button>
@@ -507,9 +507,9 @@ export function WaiterMobile() {
                             {table.status !== 'available' && table.status !== 'dirty' && table.status !== 'checkout' && (
                               <button 
                                 onClick={() => handleSolicitarCuenta(table.id)}
-                                className="flex-1 py-2 bg-rose-650 hover:bg-rose-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                className="flex-1 min-h-[44px] py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                               >
-                                🔔 Pedir Cuenta
+                                🔔 Pedir cuenta
                               </button>
                             )}
                             <button 
@@ -517,14 +517,14 @@ export function WaiterMobile() {
                                 setOrderingTableId(table.id);
                                 setComandaItems([]);
                               }}
-                              className="flex-1 py-2 bg-indigo-600 hover:bg-indigo-650 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                              className="flex-1 min-h-[44px] py-2 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               🍳 Comandar
                             </button>
                             {table.status !== 'available' && table.status !== 'dirty' && (
                               <button 
                                 onClick={() => setCheckoutTableId(table.id)}
-                                className="flex-1 py-2 bg-amber-600 hover:bg-amber-650 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                className="flex-1 min-h-[44px] py-2 bg-[#FA4515] hover:bg-[#e03a0e] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                               >
                                 💵 Cobrar
                               </button>
@@ -568,21 +568,21 @@ export function WaiterMobile() {
                           placeholder="Nota (sin cebolla, cocido...)"
                           value={item.note}
                           onChange={(e) => handleUpdateNote(item.name, e.target.value)}
-                          className="w-full bg-slate-950 border border-slate-850 rounded px-2 py-1 text-[9px] mt-1 outline-none text-slate-400 focus:border-indigo-600"
+                          className="w-full bg-[#121E19] border border-white/10 rounded px-2 py-1 text-[11px] mt-1 outline-none text-slate-300 focus:border-[#0F6B41]"
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <button onClick={() => handleUpdateQty(item.name, -1)} className="p-1 bg-slate-800 rounded hover:bg-slate-705"><Minus className="w-3.5 h-3.5" /></button>
-                        <span className="font-black text-sm px-1 text-white">{item.qty}</span>
-                        <button onClick={() => handleUpdateQty(item.name, 1)} className="p-1 bg-slate-850 rounded hover:bg-slate-800"><Plus className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleUpdateQty(item.name, -1)} className="p-1.5 bg-white/10 rounded-lg hover:bg-white/15 cursor-pointer"><Minus className="w-3.5 h-3.5" /></button>
+                        <span className="font-bold text-sm px-1 text-white tabular-nums">{item.qty}</span>
+                        <button onClick={() => handleUpdateQty(item.name, 1)} className="p-1.5 bg-white/10 rounded-lg hover:bg-white/15 cursor-pointer"><Plus className="w-3.5 h-3.5" /></button>
                       </div>
                     </div>
                   ))}
                   <button 
                     onClick={handleSendComanda}
-                    className="w-full mt-3 py-3 bg-indigo-600 hover:bg-indigo-650 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                    className="w-full min-h-[44px] mt-3 py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                   >
-                    <ShoppingBag className="w-4 h-4" /> Enviar Comanda a Cocina
+                    <ShoppingBag className="w-4 h-4" /> Enviar comanda a cocina
                   </button>
                 </div>
               )}
@@ -595,7 +595,7 @@ export function WaiterMobile() {
                 placeholder="Buscar plato o bebida..."
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-2xl px-4 py-3 text-xs outline-none focus:border-indigo-600 transition-all font-semibold"
+                className="w-full bg-[#182C24] border border-white/10 rounded-xl px-4 py-3 text-xs outline-none focus:border-[#0F6B41] focus:ring-1 focus:ring-[#0F6B41]/30 transition-all font-medium text-white placeholder:text-slate-400"
               />
               <div className="grid grid-cols-1 gap-2.5 max-h-[300px] overflow-y-auto pr-1">
                 {products
@@ -838,8 +838,8 @@ export function WaiterMobile() {
                         key={method}
                         onClick={() => setPaymentMethod(method)}
                         className={cn(
-                          "py-2 text-[10px] font-black uppercase rounded-lg transition-all",
-                          paymentMethod === method ? "bg-indigo-650 text-white shadow" : "text-slate-500 hover:text-slate-350"
+                          "py-2 text-xs font-semibold uppercase rounded-lg transition-all cursor-pointer",
+                          paymentMethod === method ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
                         )}
                       >
                         {method === 'cash' ? 'Efectivo' : method === 'card' ? 'Tarjeta' : 'QR'}
@@ -849,18 +849,18 @@ export function WaiterMobile() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-500 uppercase block">DNI Cliente (Opcional - Puntos)</label>
+                  <label className="text-[10px] font-semibold text-slate-400 uppercase block">DNI Cliente (Opcional - Puntos)</label>
                   <input 
                     type="text" 
                     placeholder="DNI del cliente..."
                     value={dniInput}
                     onChange={(e) => setDniInput(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs font-bold outline-none text-white focus:border-indigo-600"
+                    className="w-full bg-[#121E19] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-[#0F6B41]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-500 uppercase block">Descuento (%)</label>
+                  <label className="text-[10px] font-semibold text-slate-400 uppercase block">Descuento (%)</label>
                   <input 
                     type="number" 
                     min="0" 
@@ -868,19 +868,19 @@ export function WaiterMobile() {
                     placeholder="Descuento..."
                     value={discountInput}
                     onChange={(e) => setDiscountInput(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs font-bold outline-none text-white focus:border-indigo-600"
+                    className="w-full bg-[#121E19] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-[#0F6B41]"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-500 uppercase block">Propina ($, no suma a la venta)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={tipInput}
-                    onChange={(e) => setTipInput(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-850 rounded-xl px-3 py-2 text-xs font-bold outline-none text-white focus:border-emerald-600"
+                  <label className="text-[10px] font-semibold text-slate-400 uppercase block">Propina ($, no suma a la venta)</label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    placeholder="0" 
+                    value={tipInput} 
+                    onChange={(e) => setTipInput(e.target.value)} 
+                    className="w-full bg-[#121E19] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-[#0F6B41]" 
                   />
                 </div>
               </div>
@@ -908,7 +908,7 @@ export function WaiterMobile() {
                     });
                     triggerToast(err || 'Cuenta enviada a la impresora', err ? 'error' : 'success');
                   }}
-                  className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-2xl text-xs font-black uppercase tracking-wider"
+                  className="w-full min-h-[44px] py-2.5 bg-white/10 hover:bg-white/15 text-slate-200 rounded-xl text-xs font-semibold uppercase tracking-wider cursor-pointer"
                 >
                   Imprimir cuenta
                 </button>
@@ -916,9 +916,9 @@ export function WaiterMobile() {
 
               {!showMpQr && <button 
                 onClick={() => handleCheckoutClose()}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/20 active:scale-95"
+                className="w-full min-h-[48px] py-3 bg-[#FA4515] hover:bg-[#e03a0e] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
               >
-                <Wallet className="w-4 h-4" /> {paymentMethod === 'qr' && mpEnabled ? 'Generar QR de Mercado Pago' : 'Confirmar Pago y Cerrar'}
+                <Wallet className="w-4 h-4" /> {paymentMethod === 'qr' && mpEnabled ? 'Generar QR de Mercado Pago' : 'Confirmar pago y cerrar'}
               </button>}
             </div>
           </div>
@@ -926,12 +926,12 @@ export function WaiterMobile() {
       })()}
 
       {/* Navigation Footer Bar */}
-      <footer className="h-16 bg-slate-950 border-t border-slate-900 flex items-center justify-around px-2 sticky bottom-0 z-40 shrink-0 select-none">
+      <footer className="h-16 bg-[#1E4437] border-t border-white/10 flex items-center justify-around px-2 sticky bottom-0 z-40 shrink-0 select-none">
         <button 
           onClick={() => { setActiveTab('tables'); setOrderingTableId(null); }}
           className={cn(
-            "flex flex-col items-center gap-1 text-[10px] font-bold uppercase transition-colors py-1.5 px-3.5 rounded-xl",
-            activeTab === 'tables' ? "text-indigo-400 bg-slate-900 border border-slate-850" : "text-slate-500 hover:text-slate-300"
+            "flex flex-col items-center gap-1 text-[11px] font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
+            activeTab === 'tables' ? "text-white bg-[#0F6B41] shadow-sm" : "text-slate-300 hover:text-white"
           )}
         >
           <Utensils className="w-5 h-5" />
@@ -940,8 +940,8 @@ export function WaiterMobile() {
         <button 
           onClick={() => { setActiveTab('menu'); setOrderingTableId(null); }}
           className={cn(
-            "flex flex-col items-center gap-1 text-[10px] font-bold uppercase transition-colors py-1.5 px-3.5 rounded-xl",
-            activeTab === 'menu' ? "text-indigo-400 bg-slate-900 border border-slate-850" : "text-slate-500 hover:text-slate-300"
+            "flex flex-col items-center gap-1 text-[11px] font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
+            activeTab === 'menu' ? "text-white bg-[#0F6B41] shadow-sm" : "text-slate-300 hover:text-white"
           )}
         >
           <ShoppingBag className="w-5 h-5" />
@@ -950,8 +950,8 @@ export function WaiterMobile() {
         <button 
           onClick={() => { setActiveTab('scan'); setOrderingTableId(null); }}
           className={cn(
-            "flex flex-col items-center gap-1 text-[10px] font-bold uppercase transition-colors py-1.5 px-3.5 rounded-xl",
-            activeTab === 'scan' ? "text-indigo-400 bg-slate-900 border border-slate-850" : "text-slate-500 hover:text-slate-300"
+            "flex flex-col items-center gap-1 text-[11px] font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
+            activeTab === 'scan' ? "text-white bg-[#0F6B41] shadow-sm" : "text-slate-300 hover:text-white"
           )}
         >
           <QrCode className="w-5 h-5" />
