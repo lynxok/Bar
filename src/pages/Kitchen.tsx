@@ -135,12 +135,12 @@ export default function Kitchen() {
   const getStatusBadge = (status: string, customClass?: string) => {
     if (customClass) {
       const label = status === 'pending' ? 'Pendiente' : status === 'preparing' ? 'Preparando' : 'Listo';
-      return <span className={cn("px-2 py-0.5 rounded text-[10px] font-bold uppercase", customClass)}>{label}</span>;
+      return <span className={cn("px-2 py-0.5 rounded text-xs font-bold uppercase", customClass)}>{label}</span>;
     }
     switch (status) {
-      case 'pending': return <span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded text-[10px] font-bold uppercase border border-amber-200">Pendiente</span>;
-      case 'preparing': return <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-[10px] font-bold uppercase animate-pulse">Preparando</span>;
-      case 'ready': return <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase">Listo</span>;
+      case 'pending': return <span className="px-2 py-0.5 bg-amber-50 text-amber-800 rounded text-xs font-bold uppercase border border-amber-200">Pendiente</span>;
+      case 'preparing': return <span className="px-2 py-0.5 bg-orange-100 text-orange-700 rounded text-xs font-bold uppercase animate-pulse">Preparando</span>;
+      case 'ready': return <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold uppercase">Listo</span>;
       default: return null;
     }
   };
@@ -148,14 +148,14 @@ export default function Kitchen() {
   return (
     <div className="space-y-6">
       {/* Header & Stats */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#182C24] p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-dark-card p-6 rounded-3xl border border-slate-200 dark:border-white/10 shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-emerald-50 dark:bg-[#0F6B41]/20 rounded-2xl flex items-center justify-center text-[#0F6B41] dark:text-emerald-400">
+          <div className="w-12 h-12 bg-emerald-50 dark:bg-brand/20 rounded-2xl flex items-center justify-center text-brand dark:text-emerald-400">
             <ChefHat className="w-7 h-7" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-800 dark:text-white">Monitor de cocina (KDS)</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider mt-0.5">Estación activa: <span className="text-[#0F6B41] dark:text-emerald-400">{selectedStation}</span></p>
+            <h1 className="font-light text-[28px] tracking-tight text-slate-800 dark:text-white">Monitor de cocina (KDS)</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-medium tracking-wide mt-0.5">Estación activa: <span className="text-brand dark:text-emerald-400 font-semibold">{selectedStation}</span></p>
           </div>
         </div>
 
@@ -165,7 +165,7 @@ export default function Kitchen() {
             onClick={() => setSoundEnabled(!soundEnabled)}
             className={cn(
               "p-3 rounded-xl border transition-all shadow-sm active:scale-95 cursor-pointer",
-              soundEnabled ? "bg-emerald-50 border-emerald-200 text-[#0F6B41] hover:bg-emerald-100 dark:text-emerald-400" : "bg-slate-50 border-slate-200 text-slate-400 dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-400"
+              soundEnabled ? "bg-emerald-50 border-emerald-200 text-brand hover:bg-emerald-100 dark:text-emerald-400" : "bg-slate-50 border-slate-200 text-slate-400 dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-400"
             )}
             title={soundEnabled ? "Silenciar notificaciones" : "Activar sonido"}
           >
@@ -181,7 +181,7 @@ export default function Kitchen() {
               className="bg-transparent outline-none cursor-pointer pr-4 font-semibold"
             >
               {stations.map(st => (
-                <option key={st} value={st} className="dark:bg-[#182C24]">{st}</option>
+                <option key={st} value={st} className="dark:bg-dark-card">{st}</option>
               ))}
             </select>
           </div>
@@ -191,11 +191,11 @@ export default function Kitchen() {
               onClick={() => setFilter('pending')}
               className={cn(
                 "px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-semibold text-xs uppercase tracking-wide cursor-pointer",
-                filter === 'pending' ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10"
+                filter === 'pending' ? "bg-brand text-white shadow-sm" : "text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/10"
               )}
             >
               Pendientes
-              <span className={cn("px-1.5 rounded text-[10px] font-bold", filter === 'pending' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.pending}</span>
+              <span className={cn("px-1.5 rounded text-xs font-bold", filter === 'pending' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.pending}</span>
             </button>
             <button 
               onClick={() => setFilter('preparing')}
@@ -205,7 +205,7 @@ export default function Kitchen() {
               )}
             >
               En Marcha
-              <span className={cn("px-1.5 rounded text-[10px] font-black", filter === 'preparing' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.preparing}</span>
+              <span className={cn("px-1.5 rounded text-xs font-black", filter === 'preparing' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.preparing}</span>
             </button>
             <button 
               onClick={() => setFilter('ready')}
@@ -215,7 +215,7 @@ export default function Kitchen() {
               )}
             >
               Listos
-              <span className={cn("px-1.5 rounded text-[10px] font-black", filter === 'ready' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.ready}</span>
+              <span className={cn("px-1.5 rounded text-xs font-black", filter === 'ready' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.ready}</span>
             </button>
           </div>
         </div>
@@ -251,7 +251,7 @@ export default function Kitchen() {
                         <h3 className={cn("font-black text-lg leading-none mb-1", styles.title)}>
                           {order.tableId.startsWith('T-') ? `MESA ${order.tableId.split('-')[1]}` : 'POS / LLEVAR'}
                         </h3>
-                        <div className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase", styles.clock)}>
+                        <div className={cn("flex items-center gap-1.5 text-xs font-bold uppercase", styles.clock)}>
                           <Clock className="w-3 h-3" />
                           {formatDistanceToNow(new Date(order.timestamp), { addSuffix: true, locale: es })}
                         </div>
@@ -285,7 +285,7 @@ export default function Kitchen() {
                     {order.status === 'pending' && (
                       <button 
                         onClick={() => updateComandaStatus(order.id, 'preparing')}
-                        className="w-full py-3 bg-[#0F6B41] text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-[#0C5734] transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
+                        className="w-full py-3 bg-brand text-white rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-brand-hover transition-all flex items-center justify-center gap-2 shadow-sm cursor-pointer"
                       >
                         <Play className="w-4 h-4 fill-current" />
                         Empezar preparación

@@ -49,20 +49,20 @@ export function OrderPanel({
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[100] flex items-center justify-center p-4 md:p-6 animate-in fade-in duration-200">
       <div 
-        className="bg-white dark:bg-[#182C24] rounded-3xl shadow-2xl w-full max-w-7xl h-[88vh] flex flex-col md:flex-row overflow-hidden border border-slate-200 dark:border-white/10"
+        className="bg-white dark:bg-dark-card rounded-3xl shadow-2xl w-full max-w-7xl h-[88vh] flex flex-col md:flex-row overflow-hidden border border-slate-200 dark:border-white/10"
         onClick={e => e.stopPropagation()}
       >
         {/* Left catalog area */}
-        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-[#14261F]">
+        <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-dark-subtle">
           {/* Header */}
-          <div className="p-6 bg-white dark:bg-[#182C24] border-b border-slate-200 dark:border-white/10 flex justify-between items-center shrink-0">
+          <div className="p-6 bg-white dark:bg-dark-card border-b border-slate-200 dark:border-white/10 flex justify-between items-center shrink-0">
             <div className="flex items-center gap-3">
-              <h3 className="font-bold text-2xl text-[#1C1C1C] dark:text-white tracking-tight">
+              <h3 className="font-bold text-2xl text-ink dark:text-white tracking-tight">
                 Mesa {tableId.replace('M-', '').replace('T-', '')}
               </h3>
               <button
                 onClick={onOpenQr}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-[#0F6B41]/20 hover:bg-emerald-100 text-[#0F6B41] dark:text-emerald-400 rounded-xl text-xs font-semibold transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 dark:bg-brand/20 hover:bg-emerald-100 text-brand dark:text-emerald-400 rounded-xl text-xs font-semibold transition-all cursor-pointer"
               >
                 <Smartphone className="w-4 h-4" /> QR mesa
               </button>
@@ -82,7 +82,7 @@ export function OrderPanel({
           </div>
 
           {/* Search bar & Categories tabs */}
-          <div className="p-6 pb-3 space-y-3 shrink-0 bg-white/60 dark:bg-[#182C24]/60 border-b border-slate-200 dark:border-white/10">
+          <div className="p-6 pb-3 space-y-3 shrink-0 bg-white/60 dark:bg-dark-card/60 border-b border-slate-200 dark:border-white/10">
             <div className="relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 dark:text-zinc-400" />
               <input
@@ -90,7 +90,7 @@ export function OrderPanel({
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Buscar plato, bebida o categoría..."
-                className="w-full h-11 pl-10 pr-4 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl font-medium text-sm text-slate-900 dark:text-white outline-none focus:border-[#0F6B41] focus:ring-2 focus:ring-[#0F6B41]/20 transition-all"
+                className="w-full h-11 pl-10 pr-4 bg-white dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl font-medium text-sm text-slate-900 dark:text-white outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all"
               />
             </div>
 
@@ -102,7 +102,7 @@ export function OrderPanel({
                   className={cn(
                     "px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer",
                     selectedCategory === cat
-                      ? "bg-[#0F6B41] border-[#0F6B41] text-white shadow-xs"
+                      ? "bg-brand border-brand text-white shadow-xs"
                       : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/10"
                   )}
                 >
@@ -130,17 +130,17 @@ export function OrderPanel({
                     disabled={isOutOfStock}
                     onClick={() => onAddItem(item)}
                     className={cn(
-                      "bg-white dark:bg-[#182C24] p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs hover:shadow-md hover:border-[#0F6B41] transition-all text-left flex flex-col justify-between min-h-[110px] cursor-pointer group disabled:opacity-40 disabled:cursor-not-allowed",
+                      "bg-white dark:bg-dark-card p-3.5 rounded-2xl border border-slate-200 dark:border-white/10 shadow-xs hover:shadow-md hover:border-brand transition-all text-left flex flex-col justify-between min-h-[110px] cursor-pointer group disabled:opacity-40 disabled:cursor-not-allowed",
                       isOutOfStock && "opacity-50"
                     )}
                   >
                     <div>
                       <div className="flex items-center justify-between gap-1 mb-1">
-                        <span className="text-[10px] font-semibold text-[#0F6B41] dark:text-emerald-400 uppercase tracking-wider truncate">
+                        <span className="text-xs font-semibold text-brand dark:text-emerald-400 uppercase tracking-wider truncate">
                           {item.category}
                         </span>
                         {isPopular && (
-                          <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 px-1.5 py-0.5 rounded-md">
+                          <span className="inline-flex items-center gap-0.5 text-xs font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 px-1.5 py-0.5 rounded-md">
                             <Flame className="w-2.5 h-2.5" /> Top
                           </span>
                         )}
@@ -151,11 +151,11 @@ export function OrderPanel({
                     </div>
 
                     <div className="mt-2 flex items-baseline justify-between pt-2 border-t border-slate-100 dark:border-white/5">
-                      <span className="font-bold text-[#1C1C1C] dark:text-white text-sm tabular-nums">
+                      <span className="font-bold text-ink dark:text-white text-sm tabular-nums">
                         {formatMoney(item.price)}
                       </span>
                       {isLowStock && (
-                        <span className="text-[9px] font-bold text-[#FA4515] flex items-center gap-0.5">
+                        <span className="text-xs font-bold text-accent flex items-center gap-0.5">
                           <AlertTriangle className="w-2.5 h-2.5" /> {item.stock} u.
                         </span>
                       )}
@@ -168,9 +168,9 @@ export function OrderPanel({
         </div>
 
         {/* Right order ticket area */}
-        <div className="w-full md:w-[420px] bg-white dark:bg-[#182C24] flex flex-col p-6 shrink-0 border-t md:border-t-0 md:border-l border-slate-200 dark:border-white/10">
+        <div className="w-full md:w-[420px] bg-white dark:bg-dark-card flex flex-col p-6 shrink-0 border-t md:border-t-0 md:border-l border-slate-200 dark:border-white/10">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-white/10">
-            <h3 className="font-bold text-lg text-[#1C1C1C] dark:text-white">Pedido actual</h3>
+            <h3 className="font-bold text-lg text-ink dark:text-white">Pedido actual</h3>
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               {orderItems.reduce((acc, it) => acc + it.qty, 0)} ítems
             </span>
@@ -192,7 +192,7 @@ export function OrderPanel({
                     <div className="font-semibold text-slate-800 dark:text-white text-xs truncate">
                       {item.name}
                     </div>
-                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium tabular-nums">
+                    <div className="text-xs text-slate-500 dark:text-slate-400 font-medium tabular-nums">
                       {formatMoney(item.price)} × {item.qty}
                     </div>
                   </div>
@@ -224,7 +224,7 @@ export function OrderPanel({
               <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
                 Total consumido
               </span>
-              <span className="text-2xl font-bold text-[#1C1C1C] dark:text-white tabular-nums">
+              <span className="text-2xl font-bold text-ink dark:text-white tabular-nums">
                 {formatMoney(total)}
               </span>
             </div>
@@ -232,7 +232,7 @@ export function OrderPanel({
             <button
               disabled={orderItems.length === 0}
               onClick={onSendToKitchen}
-              className="w-full min-h-[46px] py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+              className="w-full min-h-[46px] py-3 bg-brand hover:bg-brand-hover text-white rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
             >
               <ChefHat className="w-4 h-4" /> Enviar a cocina
             </button>
@@ -240,7 +240,7 @@ export function OrderPanel({
             <button
               disabled={orderItems.length === 0}
               onClick={onOpenPayment}
-              className="w-full min-h-[48px] py-3 bg-[#FA4515] hover:bg-[#e03a0e] text-white rounded-xl font-bold text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+              className="w-full min-h-[48px] py-3 bg-accent hover:bg-accent-hover text-white rounded-xl font-bold text-sm uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
             >
               <Wallet className="w-4 h-4" /> Cobrar cuenta
             </button>

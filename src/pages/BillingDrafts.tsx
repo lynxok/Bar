@@ -235,7 +235,7 @@ export function BillingDrafts() {
       
       {/* Title */}
       <div>
-        <h1 className="text-3xl font-black tracking-tight text-on-surface">Borradores de Facturación</h1>
+        <h1 className="font-light text-[28px] md:text-3xl tracking-tight text-on-surface">Borradores de Facturación</h1>
         <p className="text-sm font-medium text-on-surface-variant mt-1">Revisa transacciones locales del salón y POS para registrarlas ante ARCA/AFIP.</p>
       </div>
 
@@ -246,7 +246,7 @@ export function BillingDrafts() {
             <Clock className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Pendiente de Facturar</span>
+            <span className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">Pendiente de Facturar</span>
             <span className="text-2xl font-black text-on-surface tabular-nums">{formatMoney(totalPendingAmount)}</span>
             <span className="text-xs text-amber-600 block mt-0.5 font-medium">{pendingCount} borradores</span>
           </div>
@@ -257,7 +257,7 @@ export function BillingDrafts() {
             <CheckCircle2 className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Facturado Consolidado</span>
+            <span className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">Facturado Consolidado</span>
             <span className="text-2xl font-black text-on-surface tabular-nums">{formatMoney(totalBilledAmount)}</span>
             <span className="text-xs text-emerald-600 block mt-0.5 font-medium">{billedCount} facturas emitidas</span>
           </div>
@@ -265,13 +265,13 @@ export function BillingDrafts() {
 
 
         <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-emerald-500/10 text-[#0F6B41] dark:text-emerald-400 rounded-xl">
+          <div className="p-3 bg-emerald-500/10 text-brand dark:text-emerald-400 rounded-xl">
             <FileText className="w-6 h-6" />
           </div>
           <div>
-            <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Total Registrados</span>
+            <span className="text-xs font-bold text-on-surface-variant block uppercase tracking-wider">Total Registrados</span>
             <span className="text-2xl font-black text-on-surface">{billingDrafts.length}</span>
-            <span className="text-xs text-[#0F6B41] dark:text-emerald-400 block mt-0.5 font-medium">Borradores + facturas</span>
+            <span className="text-xs text-brand dark:text-emerald-400 block mt-0.5 font-medium">Borradores + facturas</span>
           </div>
         </div>
       </div>
@@ -397,7 +397,7 @@ export function BillingDrafts() {
                     {draft.concept}
                   </td>
                   <td className="px-6 py-4 text-on-surface-variant text-xs">
-                    <span className="px-2.5 py-1 rounded-md bg-surface-container-high border border-outline-variant font-bold uppercase tracking-wider text-[10px]">
+                    <span className="px-2.5 py-1 rounded-md bg-surface-container-high border border-outline-variant font-bold uppercase tracking-wider text-xs">
                       {draft.paymentMethod}
                     </span>
                   </td>
@@ -408,15 +408,15 @@ export function BillingDrafts() {
                           <p className="font-bold text-emerald-600">
                             {draft.billingData.isConsumidorFinal ? "Consumidor Final" : "Factura Nominada"}
                           </p>
-                          <p className="text-[10px] font-mono">
+                          <p className="text-xs font-mono">
                             Nro: {draft.billingData.invoiceNumber ? draft.billingData.invoiceNumber.toString().padStart(8, '0') : 'S/N'}
                           </p>
                           {draft.billingData.identificador && (
-                            <p className="text-[10px] font-mono">
+                            <p className="text-xs font-mono">
                               Doc: {draft.billingData.identificador}
                             </p>
                           )}
-                          <p className="text-[9px] opacity-75">
+                          <p className="text-xs opacity-75">
                             CAE: {draft.billingData.cae || 'Simulado'}
                           </p>
                         </div>
@@ -593,7 +593,7 @@ export function BillingDrafts() {
               <div className="flex justify-between text-on-surface-variant">
                 <span>ESTADO:</span>
                 <span className={cn(
-                  "font-bold px-2 py-0.5 rounded text-[10px] uppercase",
+                  "font-bold px-2 py-0.5 rounded text-xs uppercase",
                   previewDraft.billed 
                     ? "bg-emerald-500/10 text-emerald-600" 
                     : "bg-amber-500/10 text-amber-600"
@@ -625,7 +625,7 @@ export function BillingDrafts() {
 
               {previewDraft.billed && previewDraft.billingData && (
                 <div className="border-t border-outline-variant pt-3 space-y-2">
-                  <span className="text-emerald-600 block font-bold text-[10px]">INFORMACIÓN FISCAL ASOCIADA (AFIP):</span>
+                  <span className="text-emerald-600 block font-bold text-xs">INFORMACIÓN FISCAL ASOCIADA (AFIP):</span>
                   <div className="flex justify-between">
                     <span>NRO COMPROBANTE:</span>
                     <span className="font-bold">{previewDraft.billingData.invoiceNumber?.toString().padStart(8, '0')}</span>

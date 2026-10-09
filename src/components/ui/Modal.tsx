@@ -40,7 +40,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         className={cn(
-          'relative w-full bg-white dark:bg-[#182C24] rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl p-6 z-10 max-h-[90vh] overflow-y-auto animate-in zoom-in duration-200',
+          'relative w-full bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-white/10 shadow-2xl p-6 z-10 max-h-[90vh] overflow-y-auto animate-in zoom-in duration-200',
           maxWidths[maxWidth],
           className
         )}
@@ -48,7 +48,7 @@ export function Modal({
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-white/10 mb-4">
           <div>
             {title && (
-              <h3 className="text-lg font-bold text-[#1C1C1C] dark:text-white tracking-tight">
+              <h3 className="text-lg font-bold text-ink dark:text-white tracking-tight">
                 {title}
               </h3>
             )}

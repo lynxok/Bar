@@ -24,16 +24,16 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           id={inputId}
           className={cn(
             'min-h-[44px] px-3.5 py-2.5 rounded-xl border text-sm font-medium transition-all outline-none',
-            'bg-white dark:bg-[#182C24] text-slate-900 dark:text-white',
+            'bg-white dark:bg-dark-card text-slate-900 dark:text-white',
             'border-slate-300 dark:border-white/15',
-            'focus:border-[#0F6B41] focus:ring-2 focus:ring-[#0F6B41]/20',
-            error && 'border-[#C62828] focus:border-[#C62828] focus:ring-[#C62828]/20',
+            'focus:border-brand focus:ring-2 focus:ring-brand/20',
+            error && 'border-danger focus:border-danger focus:ring-danger/20',
             className
           )}
           {...props}
         />
         {error && (
-          <span className="text-xs font-semibold text-[#C62828]">{error}</span>
+          <span className="text-xs font-semibold text-danger">{error}</span>
         )}
         {helperText && !error && (
           <span className="text-xs text-slate-500 dark:text-slate-400">{helperText}</span>

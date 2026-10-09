@@ -41,7 +41,7 @@ export function PurchaseListModal({ products, threshold, onClose }: { products: 
       <div className="bg-white rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
         <div className="p-6 border-b border-slate-100 flex items-center justify-between">
           <div>
-            <h3 className="font-black text-xl text-slate-900 flex items-center gap-2"><ShoppingCart className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> Lista de compra sugerida</h3>
+            <h3 className="font-black text-xl text-slate-900 flex items-center gap-2"><ShoppingCart className="w-5 h-5 text-brand dark:text-emerald-400" /> Lista de compra sugerida</h3>
             <p className="text-xs text-slate-500">Productos e insumos por debajo de su stock mínimo. Se sugiere reponer hasta el doble del mínimo.</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-400 hover:text-rose-500"><X className="w-6 h-6" /></button>
@@ -51,13 +51,13 @@ export function PurchaseListModal({ products, threshold, onClose }: { products: 
             <div className="text-center text-slate-400 font-bold py-10">No hay nada para reponer. 🎉</div>
           ) : (
             <table className="w-full text-sm">
-              <thead><tr className="text-left text-[10px] uppercase text-slate-400">
+              <thead><tr className="text-left text-xs uppercase text-slate-400">
                 <th className="py-2">Producto</th><th>Stock</th><th>Mínimo</th><th>Comprar</th><th className="text-right">Subtotal</th>
               </tr></thead>
               <tbody className="divide-y divide-slate-100">
                 {lines.map(l => (
                   <tr key={`${l.id}-${l.name}`}>
-                    <td className="py-2"><div className="font-bold text-slate-800">{l.name}</div><div className="text-[11px] text-slate-400">{l.category}</div></td>
+                    <td className="py-2"><div className="font-bold text-slate-800">{l.name}</div><div className="text-xs text-slate-400">{l.category}</div></td>
                     <td className="text-rose-600 font-bold">{l.stock} {l.unit}</td>
                     <td>{l.min}</td>
                     <td className="font-black">{l.qty}</td>

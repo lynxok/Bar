@@ -82,16 +82,16 @@ export function ChatWidget({
              setPopupMessage(null);
           }}
           className={cn(
-            "absolute bottom-20 w-72 bg-[#1C1C1C] text-white p-4 rounded-2xl shadow-2xl cursor-pointer hover:bg-black transition-colors animate-in fade-in duration-300 border border-white/15",
+            "absolute bottom-20 w-72 bg-ink text-white p-4 rounded-2xl shadow-2xl cursor-pointer hover:bg-black transition-colors animate-in fade-in duration-300 border border-white/15",
             isMapRoute ? "left-0" : "right-0"
           )}
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#0F6B41] rounded-full flex items-center justify-center flex-shrink-0 shadow-inner">
+            <div className="w-10 h-10 bg-brand rounded-full flex items-center justify-center flex-shrink-0 shadow-inner">
               <MessageSquare className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Nuevo mensaje de {popupMessage.senderRole}</p>
+              <p className="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-0.5">Nuevo mensaje de {popupMessage.senderRole}</p>
               <p className="text-sm font-medium truncate text-slate-200">{popupMessage.text}</p>
             </div>
             <button 
@@ -109,17 +109,17 @@ export function ChatWidget({
 
       {/* Chat Window */}
       {isOpen && (
-        <div className="bg-white dark:bg-[#182C24] w-[350px] h-[500px] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
+        <div className="bg-white dark:bg-dark-card w-[350px] h-[500px] rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 flex flex-col overflow-hidden animate-in slide-in-from-bottom-5 duration-200">
           
           {/* Header */}
-          <div className="bg-[#1E4437] p-4 text-white flex items-center justify-between">
+          <div className="bg-brand-dark p-4 text-white flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[#0F6B41] rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-brand rounded-full flex items-center justify-center">
                 <MessageSquare className="w-4 h-4 text-white" />
               </div>
               <div>
                 <h3 className="font-bold text-sm leading-tight">Chat Interno</h3>
-                <div className="flex gap-2 text-[10px] text-slate-300">
+                <div className="flex gap-2 text-xs text-slate-300">
                   <button 
                     onClick={() => setMyRole('Caja')}
                     className={cn("px-2 py-0.5 rounded", myRole === 'Caja' ? "bg-white/20 text-white font-bold" : "hover:bg-white/10")}
@@ -144,7 +144,7 @@ export function ChatWidget({
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 bg-slate-50 dark:bg-[#14261F] p-4 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
+          <div className="flex-1 bg-slate-50 dark:bg-dark-subtle p-4 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
             {messages.length === 0 ? (
               <div className="m-auto text-center">
                 <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
@@ -156,19 +156,19 @@ export function ChatWidget({
                 return (
                   <div key={msg.id || idx} className={cn("flex flex-col max-w-[85%]", isMe ? "self-end items-end" : "self-start items-start")}>
                     
-                    {!isMe && <span className="text-[10px] font-bold text-slate-400 ml-1 mb-0.5 uppercase tracking-wider">{msg.senderRole}</span>}
+                    {!isMe && <span className="text-xs font-bold text-slate-400 ml-1 mb-0.5 uppercase tracking-wider">{msg.senderRole}</span>}
                     
                     <div className={cn(
                       "px-4 py-2 rounded-2xl text-sm relative group",
                       isMe 
-                        ? "bg-[#0F6B41] text-white rounded-tr-sm" 
-                        : "bg-white dark:bg-[#1E4437] text-slate-700 dark:text-slate-100 border border-slate-200 dark:border-white/10 rounded-tl-sm"
+                        ? "bg-brand text-white rounded-tr-sm" 
+                        : "bg-white dark:bg-brand-dark text-slate-700 dark:text-slate-100 border border-slate-200 dark:border-white/10 rounded-tl-sm"
                     )}>
                       {msg.text}
                       
                       {/* Timestamp tooltip */}
                       <div className={cn(
-                        "absolute top-1/2 -translate-y-1/2 text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap",
+                        "absolute top-1/2 -translate-y-1/2 text-xs text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap",
                         isMe ? "right-full mr-2" : "left-full ml-2"
                       )}>
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -177,7 +177,7 @@ export function ChatWidget({
                     
                     {isMe && (
                       <div className="flex items-center gap-1 mt-1 mr-1">
-                        <span className="text-[9px] text-slate-400 font-medium">
+                        <span className="text-xs text-slate-400 font-medium">
                            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                         {msg.status === 'read' ? (
@@ -196,18 +196,18 @@ export function ChatWidget({
           </div>
 
           {/* Input Area */}
-          <form onSubmit={handleSend} className="p-3 bg-white dark:bg-[#182C24] border-t border-slate-100 dark:border-white/10 flex gap-2">
+          <form onSubmit={handleSend} className="p-3 bg-white dark:bg-dark-card border-t border-slate-100 dark:border-white/10 flex gap-2">
             <input 
               type="text" 
               value={text}
               onChange={e => setText(e.target.value)}
               placeholder="Escribe un mensaje..."
-              className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 text-sm outline-none focus:border-[#0F6B41] text-slate-900 dark:text-white transition-colors"
+              className="flex-1 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-4 text-sm outline-none focus:border-brand text-slate-900 dark:text-white transition-colors"
             />
             <button 
               type="submit" 
               disabled={!text.trim()}
-              className="w-10 h-10 bg-[#0F6B41] text-white rounded-xl flex items-center justify-center hover:bg-[#0C5734] transition-colors disabled:opacity-50"
+              className="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center hover:bg-brand-hover transition-colors disabled:opacity-50"
             >
               <Send className="w-4 h-4 ml-0.5" />
             </button>

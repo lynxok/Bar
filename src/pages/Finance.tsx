@@ -141,13 +141,13 @@ export function Finance() {
       {/* Header */}
       <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm dark:bg-[var(--bg-surface)] dark:border-white/10">
         <div>
-          <h1 className="font-bold text-2xl text-slate-900 mb-2 dark:text-zinc-100">Finanzas</h1>
+          <h1 className="font-light text-[28px] tracking-tight text-slate-900 mb-2 dark:text-zinc-100">Finanzas</h1>
           <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Control de flujo de caja y gestión de proveedores.</p>
         </div>
         <div className="flex gap-4">
           <button 
             onClick={() => setIsExpenseModalOpen(true)}
-            className="px-6 py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl text-xs font-bold uppercase tracking-wide shadow-md transition-all flex items-center gap-2"
+            className="px-6 py-3 bg-brand hover:bg-brand-hover text-white rounded-xl text-xs font-bold uppercase tracking-wide shadow-md transition-all flex items-center gap-2"
           >
             <Plus className="w-5 h-5" /> Registrar Gasto
           </button>
@@ -158,25 +158,25 @@ export function Finance() {
         {/* KPI Cards */}
         <div 
           onClick={() => setIsSalesModalOpen(true)}
-          className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-[#0F6B41] hover:shadow-md transition-all cursor-pointer group dark:bg-[var(--bg-surface)] dark:border-white/10"
+          className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:border-brand hover:shadow-md transition-all cursor-pointer group dark:bg-[var(--bg-surface)] dark:border-white/10"
         >
           <div className="flex justify-between items-start">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 group-hover:text-emerald-700 transition-colors dark:text-zinc-400">Ventas Totales</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 group-hover:text-emerald-700 transition-colors dark:text-zinc-400">Ventas Totales</p>
             <ArrowUpRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-700 transition-colors" />
           </div>
-          <h3 className="text-3xl font-bold text-[#0F6B41] tabular-nums dark:text-emerald-400">{formatMoney(salesRevenue)}</h3>
+          <h3 className="text-3xl font-bold text-brand tabular-nums dark:text-emerald-400">{formatMoney(salesRevenue)}</h3>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm dark:bg-[var(--bg-surface)] dark:border-white/10">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Gastos Pagados</p>
-          <h3 className="text-3xl font-bold text-[#C62828] tabular-nums">{formatMoney(totalExpenses)}</h3>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Gastos Pagados</p>
+          <h3 className="text-3xl font-bold text-danger tabular-nums">{formatMoney(totalExpenses)}</h3>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm dark:bg-[var(--bg-surface)] dark:border-white/10">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Cuentas x Pagar</p>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Cuentas x Pagar</p>
           <h3 className="text-3xl font-bold text-amber-500 tabular-nums">{formatMoney(totalPayables)}</h3>
         </div>
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm dark:bg-[var(--bg-surface)] dark:border-white/10">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Balance Operativo</p>
-          <h3 className={cn("text-3xl font-bold tabular-nums", balance >= 0 ? "text-[#0F6B41] dark:text-emerald-400" : "text-[#C62828]")}>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Balance Operativo</p>
+          <h3 className={cn("text-3xl font-bold tabular-nums", balance >= 0 ? "text-brand dark:text-emerald-400" : "text-danger")}>
             {formatMoney(balance)}
           </h3>
         </div>
@@ -194,9 +194,9 @@ export function Finance() {
                 <div key={exp.id} className="flex justify-between items-center p-3 rounded-xl bg-slate-50 border border-slate-100 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
                   <div>
                     <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-100">{exp.provider}</h4>
-                    <p className="text-[10px] text-slate-500 dark:text-zinc-400">{exp.description}</p>
+                    <p className="text-xs text-slate-500 dark:text-zinc-400">{exp.description}</p>
                   </div>
-                  <span className="font-bold text-[#C62828] tabular-nums">-{formatMoney(exp.amount)}</span>
+                  <span className="font-bold text-danger tabular-nums">-{formatMoney(exp.amount)}</span>
                 </div>
               ))
             )}
@@ -209,13 +209,13 @@ export function Finance() {
           <div className="flex bg-slate-100 p-1 rounded-xl w-fit dark:bg-white/5">
             <button 
               onClick={() => setActiveTab('payables')}
-              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'payables' ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-500 dark:text-zinc-400")}
+              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'payables' ? "bg-brand text-white shadow-sm" : "text-slate-500 dark:text-zinc-400")}
             >
               Cuentas x Pagar
             </button>
             <button 
               onClick={() => setActiveTab('receivables')}
-              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'receivables' ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-500 dark:text-zinc-400")}
+              className={cn("px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all", activeTab === 'receivables' ? "bg-brand text-white shadow-sm" : "text-slate-500 dark:text-zinc-400")}
             >
               Cuentas x Cobrar
             </button>
@@ -224,7 +224,7 @@ export function Finance() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden dark:bg-[var(--bg-surface)] dark:border-white/10">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-400">
+                <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-widest dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-400">
                   <th className="px-6 py-4">Fecha</th>
                   <th className="px-6 py-4">Entidad</th>
                   <th className="px-6 py-4 text-right">Monto</th>
@@ -239,7 +239,7 @@ export function Finance() {
                       <td className="px-6 py-4 font-bold">{po.provider}</td>
                       <td className="px-6 py-4 text-right font-bold">{formatMoney(po.amount)}</td>
                       <td className="px-6 py-4">
-                        <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold uppercase", po.status === 'Pagado' ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
+                        <span className={cn("px-2 py-1 rounded-full text-xs font-bold uppercase", po.status === 'Pagado' ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
                           {po.status}
                         </span>
                       </td>
@@ -252,7 +252,7 @@ export function Finance() {
                       <td className="px-6 py-4 font-bold">{inv.client}</td>
                       <td className="px-6 py-4 text-right font-bold">{formatMoney(inv.amount)}</td>
                       <td className="px-6 py-4">
-                        <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold uppercase", inv.status === 'Pagado' ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
+                        <span className={cn("px-2 py-1 rounded-full text-xs font-bold uppercase", inv.status === 'Pagado' ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
                           {inv.status}
                         </span>
                       </td>
@@ -276,16 +276,16 @@ export function Finance() {
             <div className="p-6 space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 dark:text-zinc-400">Proveedor</label>
-                <input type="text" value={expenseProvider} onChange={e => setExpenseProvider(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--color-paper-subtle)] dark:border-white/10" placeholder="Nombre del proveedor..." />
+                <input type="text" value={expenseProvider} onChange={e => setExpenseProvider(e.target.value)} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand dark:bg-[var(--color-paper-subtle)] dark:border-white/10" placeholder="Nombre del proveedor..." />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 dark:text-zinc-400">Descripción</label>
-                <input type="text" value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--color-paper-subtle)] dark:border-white/10" placeholder="¿Qué se compró?" />
+                <input type="text" value={expenseDescription} onChange={e => setExpenseDescription(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand dark:bg-[var(--color-paper-subtle)] dark:border-white/10" placeholder="¿Qué se compró?" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 dark:text-zinc-400">Monto</label>
-                  <input type="number" value={expenseAmount} onChange={e => setExpenseAmount(Number(e.target.value))} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--color-paper-subtle)] dark:border-white/10" placeholder="0.00" />
+                  <input type="number" value={expenseAmount} onChange={e => setExpenseAmount(Number(e.target.value))} required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-brand dark:bg-[var(--color-paper-subtle)] dark:border-white/10" placeholder="0.00" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 dark:text-zinc-400">Categoría</label>
@@ -297,7 +297,7 @@ export function Finance() {
             </div>
             <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
               <button type="button" onClick={() => setIsExpenseModalOpen(false)} className="flex-1 py-3 bg-white border border-slate-200 rounded-xl font-bold text-slate-600 dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-300">Cancelar</button>
-              <button type="submit" className="flex-1 py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-bold shadow-md transition-colors">Guardar Gasto</button>
+              <button type="submit" className="flex-1 py-3 bg-brand hover:bg-brand-hover text-white rounded-xl font-bold shadow-md transition-colors">Guardar Gasto</button>
             </div>
           </form>
         </div>
@@ -323,11 +323,11 @@ export function Finance() {
             <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50 shrink-0 gap-4 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]">
               <div className="flex flex-col gap-3 w-full sm:w-auto">
                 <div className="flex flex-wrap gap-2">
-                  <button onClick={() => setSalesPeriod('all')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'all' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Todo</button>
-                  <button onClick={() => setSalesPeriod('day')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'day' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Hoy</button>
-                  <button onClick={() => setSalesPeriod('week')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'week' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Esta Semana</button>
-                  <button onClick={() => setSalesPeriod('month')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'month' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Este Mes</button>
-                  <button onClick={() => setSalesPeriod('custom')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'custom' ? "bg-[#0F6B41] text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Personalizado</button>
+                  <button onClick={() => setSalesPeriod('all')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'all' ? "bg-brand text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Todo</button>
+                  <button onClick={() => setSalesPeriod('day')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'day' ? "bg-brand text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Hoy</button>
+                  <button onClick={() => setSalesPeriod('week')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'week' ? "bg-brand text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Esta Semana</button>
+                  <button onClick={() => setSalesPeriod('month')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'month' ? "bg-brand text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Este Mes</button>
+                  <button onClick={() => setSalesPeriod('custom')} className={cn("px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-colors", salesPeriod === 'custom' ? "bg-brand text-white" : "bg-white text-slate-600 border border-slate-200 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:border-white/10")}>Personalizado</button>
                 </div>
                 
                 {salesPeriod === 'custom' && (
@@ -336,14 +336,14 @@ export function Finance() {
                       type="date" 
                       value={customDateRange.start}
                       onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--bg-surface)] dark:border-white/10"
+                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-brand dark:bg-[var(--bg-surface)] dark:border-white/10"
                     />
                     <span className="text-slate-400 text-sm dark:text-zinc-400">a</span>
                     <input 
                       type="date" 
                       value={customDateRange.end}
                       onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--bg-surface)] dark:border-white/10"
+                      className="px-3 py-1.5 text-sm bg-white border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-brand dark:bg-[var(--bg-surface)] dark:border-white/10"
                     />
                   </div>
                 )}
@@ -360,7 +360,7 @@ export function Finance() {
             <div className="flex-1 overflow-y-auto p-6">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-400">
+                  <tr className="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-400 uppercase tracking-widest dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-400">
                     <th className="px-6 py-4 rounded-tl-xl">Fecha y Hora</th>
                     <th className="px-6 py-4">Método de Pago</th>
                     <th className="px-6 py-4 text-right rounded-tr-xl">Monto</th>
@@ -376,7 +376,7 @@ export function Finance() {
                       <tr key={sale.id} className="text-sm hover:bg-slate-50 transition-colors dark:hover:bg-white/5">
                         <td className="px-6 py-4 text-slate-600 dark:text-zinc-300">{new Date(sale.timestamp).toLocaleString('es-AR')}</td>
                         <td className="px-6 py-4 font-bold text-slate-800 dark:text-zinc-100">{sale.paymentMethod || 'Efectivo'}</td>
-                        <td className="px-6 py-4 text-right font-bold text-[#0F6B41] tabular-nums dark:text-emerald-400">{formatMoney(sale.total)}</td>
+                        <td className="px-6 py-4 text-right font-bold text-brand tabular-nums dark:text-emerald-400">{formatMoney(sale.total)}</td>
                       </tr>
                     ))
                   )}
@@ -386,7 +386,7 @@ export function Finance() {
 
             <div className="p-6 bg-slate-50 border-t border-slate-200 flex justify-end shrink-0 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
                <h3 className="text-lg text-slate-600 font-bold dark:text-zinc-300">
-                 Total Filtrado: <span className="text-[#0F6B41] text-2xl ml-2 tabular-nums dark:text-emerald-400">{formatMoney(filteredSales.reduce((acc, s) => acc + s.total, 0))}</span>
+                 Total Filtrado: <span className="text-brand text-2xl ml-2 tabular-nums dark:text-emerald-400">{formatMoney(filteredSales.reduce((acc, s) => acc + s.total, 0))}</span>
                </h3>
             </div>
 

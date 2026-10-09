@@ -283,7 +283,7 @@ export function Settings() {
     <div className="max-w-4xl space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-800 dark:text-zinc-100 tracking-tight">Configuración del Negocio</h1>
+        <h1 className="font-light text-[28px] md:text-3xl text-slate-800 dark:text-zinc-100 tracking-tight">Configuración del Negocio</h1>
         <p className="text-slate-500 dark:text-zinc-400 mt-2">Personaliza la apariencia, gestiona usuarios y administra el sistema.</p>
       </div>
 
@@ -294,7 +294,7 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all whitespace-nowrap",
             activeTab === 'general'
-              ? "border-[#0F6B41] dark:border-emerald-500 text-[#0F6B41] dark:text-emerald-400"
+              ? "border-brand dark:border-emerald-500 text-brand dark:text-emerald-400"
               : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
@@ -305,7 +305,7 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all whitespace-nowrap",
             activeTab === 'users'
-              ? "border-[#0F6B41] dark:border-emerald-500 text-[#0F6B41] dark:text-emerald-400"
+              ? "border-brand dark:border-emerald-500 text-brand dark:text-emerald-400"
               : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
@@ -317,7 +317,7 @@ export function Settings() {
             className={cn(
               "px-6 py-3 font-bold text-sm border-b-2 transition-all whitespace-nowrap",
               activeTab === 'printers'
-                ? "border-[#0F6B41] dark:border-emerald-500 text-[#0F6B41] dark:text-emerald-400"
+                ? "border-brand dark:border-emerald-500 text-brand dark:text-emerald-400"
                 : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
             )}
           >
@@ -329,7 +329,7 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all whitespace-nowrap",
             activeTab === 'updates'
-              ? "border-[#0F6B41] dark:border-emerald-500 text-[#0F6B41] dark:text-emerald-400"
+              ? "border-brand dark:border-emerald-500 text-brand dark:text-emerald-400"
               : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
@@ -340,7 +340,7 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all whitespace-nowrap",
             activeTab === 'network'
-              ? "border-[#0F6B41] dark:border-emerald-500 text-[#0F6B41] dark:text-emerald-400"
+              ? "border-brand dark:border-emerald-500 text-brand dark:text-emerald-400"
               : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
@@ -351,7 +351,7 @@ export function Settings() {
           className={cn(
             "px-6 py-3 font-bold text-sm border-b-2 transition-all whitespace-nowrap",
             activeTab === 'arca'
-              ? "border-[#0F6B41] dark:border-emerald-500 text-[#0F6B41] dark:text-emerald-400"
+              ? "border-brand dark:border-emerald-500 text-brand dark:text-emerald-400"
               : "border-transparent text-slate-500 dark:text-zinc-400 hover:text-slate-700 dark:hover:text-zinc-200"
           )}
         >
@@ -360,9 +360,9 @@ export function Settings() {
       </div>
 
       {activeTab === 'general' && (
-        <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
-            <Store className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
+        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-dark-subtle">
+            <Store className="w-5 h-5 text-brand dark:text-emerald-400" />
             <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Información General</h2>
           </div>
 
@@ -405,7 +405,7 @@ export function Settings() {
                     />
                     <button 
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1E342B] border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-zinc-200 rounded-lg hover:bg-slate-50 dark:hover:bg-[#243E33] hover:text-[#0F6B41] transition-colors font-semibold text-sm shadow-sm"
+                      className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-dark-muted border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-zinc-200 rounded-lg hover:bg-slate-50 dark:hover:bg-dark-muted hover:text-brand transition-colors font-semibold text-sm shadow-sm"
                     >
                       <Upload className="w-4 h-4" />
                       Seleccionar Archivo
@@ -425,7 +425,7 @@ export function Settings() {
                   value={tempName}
                   onChange={(e) => setTempName(e.target.value)}
                   placeholder="Ej. Mi Restaurante" 
-                  className="w-full bg-white dark:bg-[#1E342B] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 px-4 py-3 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm transition-all"
+                  className="w-full bg-white dark:bg-dark-muted border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 px-4 py-3 rounded-xl text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none font-medium shadow-sm transition-all"
                 />
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                   Se utilizará en el panel superior y en los tickets de impresión.
@@ -441,7 +441,7 @@ export function Settings() {
                     value={tempTax}
                     onChange={(e) => setTempTax(Number(e.target.value))}
                     placeholder="21" 
-                    className="w-full bg-white dark:bg-[#1E342B] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm transition-all"
+                    className="w-full bg-white dark:bg-dark-muted border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none font-medium shadow-sm transition-all"
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg dark:text-zinc-400">%</span>
                 </div>
@@ -450,7 +450,7 @@ export function Settings() {
                     type="checkbox"
                     checked={pricesIncludeTax}
                     onChange={(e) => setPricesIncludeTax(e.target.checked)}
-                    className="mt-0.5 w-4 h-4 accent-[#0F6B41]"
+                    className="mt-0.5 w-4 h-4 accent-brand"
                   />
                   <span className="text-xs text-slate-600 dark:text-zinc-400">
                     <b>Los precios de la carta ya incluyen el impuesto</b> (precio final al consumidor).
@@ -462,7 +462,7 @@ export function Settings() {
 
           </div>
 
-          <div className="px-8 py-5 bg-slate-50 dark:bg-[#14261F] border-t border-slate-100 dark:border-slate-800 flex justify-end">
+          <div className="px-8 py-5 bg-slate-50 dark:bg-dark-subtle border-t border-slate-100 dark:border-slate-800 flex justify-end">
             <Button 
               onClick={handleSave}
               disabled={tempName.trim() === ''}
@@ -478,15 +478,15 @@ export function Settings() {
       )}
 
       {activeTab === 'users' && (
-        <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-[#14261F]">
+        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-dark-subtle">
             <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
+              <Users className="w-5 h-5 text-brand dark:text-emerald-400" />
               <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Gestión de Usuarios</h2>
             </div>
             <button 
               onClick={() => setIsUserModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0F6B41] text-white rounded-xl font-bold text-xs shadow-md hover:bg-[#0C5734] transition-all active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl font-bold text-xs shadow-md hover:bg-brand-hover transition-all active:scale-95"
             >
               <Plus className="w-4 h-4" />
               Nuevo Usuario
@@ -508,7 +508,7 @@ export function Settings() {
                   <tr key={user.id} className="hover:bg-slate-50/50 dark:bg-white/5 dark:hover:bg-white/[0.02] transition-colors">
                     <td className="px-8 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-[#0F6B41] dark:text-emerald-400 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-brand dark:text-emerald-400 font-bold text-xs">
                           {user.name.charAt(0)}
                         </div>
                         <span className="font-bold text-sm text-slate-800 dark:text-zinc-100">{user.name}</span>
@@ -527,7 +527,7 @@ export function Settings() {
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => handleEditUser(user)}
-                          className="p-2 text-slate-400 hover:text-[#0F6B41] hover:bg-emerald-50 dark:hover:bg-white/5 rounded-lg transition-all dark:text-zinc-400"
+                          className="p-2 text-slate-400 hover:text-brand hover:bg-emerald-50 dark:hover:bg-white/5 rounded-lg transition-all dark:text-zinc-400"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
@@ -554,8 +554,8 @@ export function Settings() {
           <CloudSyncPanel />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* System Updates Section */}
-            <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
+            <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-dark-subtle">
                 <DownloadCloud className="w-5 h-5 text-emerald-500" />
                 <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Actualizaciones del Sistema</h2>
               </div>
@@ -584,7 +584,7 @@ export function Settings() {
                   <button 
                     onClick={handleCheckUpdates}
                     disabled={isUpdating}
-                    className="w-full py-3 bg-white dark:bg-[#1E342B] border-2 border-emerald-600 text-emerald-700 dark:text-emerald-300 rounded-xl font-bold text-sm shadow-sm hover:bg-emerald-50 dark:hover:bg-[#243E33] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3 bg-white dark:bg-dark-muted border-2 border-emerald-600 text-emerald-700 dark:text-emerald-300 rounded-xl font-bold text-sm shadow-sm hover:bg-emerald-50 dark:hover:bg-dark-muted transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {isUpdating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
                     {isUpdating ? 'Buscando actualizaciones...' : 'Buscar Actualización en GitHub'}
@@ -592,7 +592,7 @@ export function Settings() {
                 ) : updateStatus === 'available' ? (
                   <button 
                     onClick={handleStartDownload}
-                    className="w-full py-3 bg-[#0F6B41] text-white rounded-xl font-bold text-sm shadow-md hover:bg-[#0C5734] transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 bg-brand text-white rounded-xl font-bold text-sm shadow-md hover:bg-brand-hover transition-all flex items-center justify-center gap-2"
                   >
                     <DownloadCloud className="w-4 h-4" />
                     Descargar Versión {latestVersion}
@@ -605,7 +605,7 @@ export function Settings() {
                     </div>
                     <div className="w-full h-2 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-[#0F6B41] transition-all duration-300" 
+                        className="h-full bg-brand transition-all duration-300" 
                         style={{ width: `${downloadProgress}%` }}
                       />
                     </div>
@@ -668,9 +668,9 @@ export function Settings() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* ngrok Control Card */}
-            <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
-                <Network className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
+            <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-dark-subtle">
+                <Network className="w-5 h-5 text-brand dark:text-emerald-400" />
                 <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Túnel de Acceso Remoto (ngrok)</h2>
               </div>
               
@@ -690,7 +690,7 @@ export function Settings() {
                         onChange={(e) => setNgrokToken(e.target.value)}
                         placeholder="Pegar authtoken de ngrok.com" 
                         disabled={tunnelStatus === 'active' || tunnelStatus === 'starting'}
-                        className="w-full bg-white dark:bg-[#1E342B] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm disabled:opacity-60 transition-all"
+                        className="w-full bg-white dark:bg-dark-muted border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none font-medium shadow-sm disabled:opacity-60 transition-all"
                       />
                       <button
                         type="button"
@@ -702,7 +702,7 @@ export function Settings() {
                       </button>
                     </div>
                     <p className="text-xs text-slate-400 dark:text-zinc-400">
-                      Consigue tu token gratuito registrándote en <a href="https://dashboard.ngrok.com/get-started/your-authtoken" target="_blank" rel="noopener noreferrer" className="text-[#0F6B41] dark:text-emerald-400 hover:underline">ngrok.com</a>.
+                      Consigue tu token gratuito registrándote en <a href="https://dashboard.ngrok.com/get-started/your-authtoken" target="_blank" rel="noopener noreferrer" className="text-brand dark:text-emerald-400 hover:underline">ngrok.com</a>.
                     </p>
                   </div>
 
@@ -715,7 +715,7 @@ export function Settings() {
                         value={tunnelPort}
                         onChange={(e) => setTunnelPort(Number(e.target.value))}
                         disabled={tunnelStatus === 'active' || tunnelStatus === 'starting'}
-                        className="w-full bg-white dark:bg-[#1E342B] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm disabled:opacity-60 transition-all"
+                        className="w-full bg-white dark:bg-dark-muted border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 px-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand focus:border-brand outline-none font-medium shadow-sm disabled:opacity-60 transition-all"
                       />
                     </div>
                     <div>
@@ -749,7 +749,7 @@ export function Settings() {
                     "w-full py-3.5 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2",
                     tunnelStatus === 'active'
                       ? "bg-rose-600 hover:bg-rose-700 text-white"
-                      : "bg-[#0F6B41] hover:bg-[#0C5734] text-white"
+                      : "bg-brand hover:bg-brand-hover text-white"
                   )}
                 >
                   {tunnelStatus === 'starting' ? (
@@ -770,9 +770,9 @@ export function Settings() {
             </div>
 
             {/* QR and URL display card */}
-            <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col justify-between">
-              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
-                <QrCode className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
+            <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col justify-between">
+              <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-dark-subtle">
+                <QrCode className="w-5 h-5 text-brand dark:text-emerald-400" />
                 <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Conexión QR de Mesa y Mozo</h2>
               </div>
 
@@ -782,7 +782,7 @@ export function Settings() {
                     <p className="text-xs text-slate-500 dark:text-zinc-400">
                       Escanea este código QR con cualquier celular o tablet para cargar la aplicación y sincronizarse automáticamente.
                     </p>
-                    <div className="p-4 bg-slate-50 dark:bg-[#14261F] border border-slate-100 dark:border-slate-800 rounded-3xl shadow-inner animate-in zoom-in-95 duration-200">
+                    <div className="p-4 bg-slate-50 dark:bg-dark-subtle border border-slate-100 dark:border-slate-800 rounded-3xl shadow-inner animate-in zoom-in-95 duration-200">
                       <img src={qrCodeUrl} alt="Conexión QR" className="w-[180px] h-[180px] rounded-2xl" />
                     </div>
                     <div className="w-full space-y-2">
@@ -798,7 +798,7 @@ export function Settings() {
                             navigator.clipboard.writeText(tunnelUrl);
                             showToast("Enlace copiado al portapapeles.", "success");
                           }}
-                          className="p-1.5 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-[#0F6B41] dark:text-emerald-400 rounded-lg transition-colors"
+                          className="p-1.5 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-brand dark:text-emerald-400 rounded-lg transition-colors"
                           title="Copiar"
                         >
                           <Copy className="w-3.5 h-3.5" />
@@ -826,9 +826,9 @@ export function Settings() {
 
       {/* Add/Edit User Modal */}
       {isUserModalOpen && (
-        <div className="fixed inset-0 bg-[#1C1C1C]/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#182C24] rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
-            <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-[#14261F]">
+        <div className="fixed inset-0 bg-ink/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-dark-card rounded-[2.5rem] shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-800 animate-in zoom-in-95 duration-200">
+            <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-dark-subtle">
               <div>
                 <h3 className="font-black text-xl text-slate-900 dark:text-zinc-100">{editingUserId ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
                 <p className="text-xs text-slate-500 dark:text-zinc-400 font-bold uppercase tracking-wider mt-1">Configurar acceso al sistema</p>
@@ -847,7 +847,7 @@ export function Settings() {
                     type="text" 
                     value={newUser.name}
                     onChange={e => setNewUser({...newUser, name: e.target.value})}
-                    className="w-full h-12 px-4 bg-slate-50 dark:bg-[#14261F] border-2 border-transparent focus:border-[#0F6B41] rounded-xl font-bold text-slate-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1E342B] outline-none transition-all"
+                    className="w-full h-12 px-4 bg-slate-50 dark:bg-dark-subtle border-2 border-transparent focus:border-brand rounded-xl font-bold text-slate-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-dark-muted outline-none transition-all"
                     placeholder="Ej: lgonzalez o laura.g"
                   />
                 </div>
@@ -861,7 +861,7 @@ export function Settings() {
                         onClick={() => setNewUser({...newUser, role})}
                         className={`py-2.5 px-3 rounded-xl border font-bold text-xs uppercase tracking-wider transition-all ${
                           newUser.role === role 
-                            ? 'bg-[#0F6B41] border-[#0F6B41] text-white shadow-sm' 
+                            ? 'bg-brand border-brand text-white shadow-sm' 
                             : 'bg-slate-50 dark:bg-white/5 border-transparent text-slate-600 dark:text-zinc-300 hover:border-slate-200 dark:hover:border-slate-700'
                         }`}
                       >
@@ -877,7 +877,7 @@ export function Settings() {
                     type="password" 
                     value={newUser.pin}
                     onChange={e => setNewUser({...newUser, pin: e.target.value})}
-                    className="w-full h-12 px-4 bg-slate-50 dark:bg-[#14261F] border-2 border-transparent focus:border-[#0F6B41] rounded-xl font-bold text-slate-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-[#1E342B] outline-none transition-all"
+                    className="w-full h-12 px-4 bg-slate-50 dark:bg-dark-subtle border-2 border-transparent focus:border-brand rounded-xl font-bold text-slate-900 dark:text-zinc-100 focus:bg-white dark:focus:bg-dark-muted outline-none transition-all"
                     placeholder={editingUserId ? "Dejar vacío para no cambiarla" : "••••••••"}
                   />
                 </div>
@@ -902,13 +902,13 @@ export function Settings() {
                       className={cn(
                         "w-full flex items-center justify-between p-4 rounded-2xl border-2 transition-all",
                         newUser.permissions.includes(module.id)
-                          ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-[#0F6B41] dark:text-emerald-300"
-                          : "bg-white dark:bg-[#14261F] border-slate-100 dark:border-slate-800 text-slate-500 dark:text-zinc-400 hover:border-slate-200 dark:hover:border-slate-700"
+                          ? "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800/60 text-brand dark:text-emerald-300"
+                          : "bg-white dark:bg-dark-subtle border-slate-100 dark:border-slate-800 text-slate-500 dark:text-zinc-400 hover:border-slate-200 dark:hover:border-slate-700"
                       )}
                     >
                       <span className="text-xs font-bold uppercase tracking-wider">{module.label}</span>
                       {newUser.permissions.includes(module.id) 
-                        ? <CheckCircle className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> 
+                        ? <CheckCircle className="w-5 h-5 text-brand dark:text-emerald-400" /> 
                         : <Circle className="w-5 h-5 text-slate-200 dark:text-zinc-700" />}
                     </button>
                   ))}
@@ -921,7 +921,7 @@ export function Settings() {
 
       {activeTab === 'arca' && (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-6 text-slate-800 dark:text-zinc-100">
+          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 space-y-6 text-slate-800 dark:text-zinc-100">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
                 <h3 className="text-lg font-black text-slate-950 dark:text-white">Facturación Electrónica (ARCA / AFIP)</h3>
@@ -929,7 +929,7 @@ export function Settings() {
               </div>
               <button
                 onClick={() => setShowHelpModal(true)}
-                className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-[#0F6B41] dark:bg-[#142E25] dark:text-emerald-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
+                className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-brand dark:bg-brand-dark-surface dark:text-emerald-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
                 ¿CÓMO CONFIGURAR?
               </button>
@@ -943,7 +943,7 @@ export function Settings() {
                   placeholder="Ej: 20-38472938-9"
                   value={arcaSettings.cuit}
                   onChange={e => setArcaSettings({...arcaSettings, cuit: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -954,7 +954,7 @@ export function Settings() {
                   placeholder="Ej: Ignacio Valente"
                   value={arcaSettings.nombreEmisor}
                   onChange={e => setArcaSettings({...arcaSettings, nombreEmisor: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -965,7 +965,7 @@ export function Settings() {
                   placeholder="Ej: Av. Siempre Viva 123, CABA"
                   value={arcaSettings.domicilioComercial}
                   onChange={e => setArcaSettings({...arcaSettings, domicilioComercial: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -975,7 +975,7 @@ export function Settings() {
                   type="date"
                   value={arcaSettings.monotributoStartDate}
                   onChange={e => setArcaSettings({...arcaSettings, monotributoStartDate: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -986,7 +986,7 @@ export function Settings() {
                   placeholder="Ej: 2"
                   value={arcaSettings.puntoVenta}
                   onChange={e => setArcaSettings({...arcaSettings, puntoVenta: Number(e.target.value)})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -998,11 +998,11 @@ export function Settings() {
                       type="checkbox"
                       checked={arcaSettings.productionMode}
                       onChange={e => setArcaSettings({...arcaSettings, productionMode: e.target.checked})}
-                      className="w-4 h-4 rounded text-[#0F6B41] border-slate-300 focus:ring-[#0F6B41] dark:border-white/15 dark:text-emerald-400"
+                      className="w-4 h-4 rounded text-brand border-slate-300 focus:ring-brand dark:border-white/15 dark:text-emerald-400"
                     />
                     Modo Producción (Real)
                   </label>
-                  <span className="text-[10px] text-slate-400 block dark:text-zinc-400">Si está desactivado, usará el servidor de Homologación (Pruebas)</span>
+                  <span className="text-xs text-slate-400 block dark:text-zinc-400">Si está desactivado, usará el servidor de Homologación (Pruebas)</span>
                 </div>
               </div>
 
@@ -1013,7 +1013,7 @@ export function Settings() {
                   placeholder="Haga clic en 'Generar' o coloque la ruta absoluta al archivo .crt"
                   value={arcaSettings.certPath}
                   onChange={e => setArcaSettings({...arcaSettings, certPath: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1024,7 +1024,7 @@ export function Settings() {
                   placeholder="Haga clic en 'Generar' o coloque la ruta absoluta al archivo .key"
                   value={arcaSettings.keyPath}
                   onChange={e => setArcaSettings({...arcaSettings, keyPath: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
 
@@ -1035,7 +1035,7 @@ export function Settings() {
                   placeholder="Ruta absoluta para guardar PDFs (Dejar vacío para usar predeterminada)"
                   value={arcaSettings.invoicePath || ''}
                   onChange={e => setArcaSettings({...arcaSettings, invoicePath: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-transparent text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all text-slate-950 dark:text-white"
                 />
               </div>
             </div>
@@ -1046,7 +1046,7 @@ export function Settings() {
                   localStorage.setItem('bar_arca_settings', JSON.stringify(arcaSettings));
                   showToast("¡Configuración de ARCA guardada con éxito!", "success");
                 }}
-                className="flex items-center gap-2 px-5 py-2.5 bg-[#0F6B41] text-white rounded-xl font-bold text-xs shadow-lg shadow-sm hover:bg-[#0C5734] transition-all cursor-pointer"
+                className="flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold text-xs shadow-lg shadow-sm hover:bg-brand-hover transition-all cursor-pointer"
               >
                 <Save className="w-4 h-4" /> Guardar Configuración
               </button>
@@ -1134,7 +1134,7 @@ export function Settings() {
                   <div className="space-y-1">
                     <p className="font-sans text-rose-700 dark:text-rose-400 font-bold">{arcaDiagnosticResult.error}</p>
                     {arcaDiagnosticResult.detailed && (
-                      <pre className="p-3 bg-slate-950 text-slate-400 rounded-lg overflow-x-auto text-[10px] leading-relaxed max-h-40 dark:text-zinc-400">{arcaDiagnosticResult.detailed}</pre>
+                      <pre className="p-3 bg-slate-950 text-slate-400 rounded-lg overflow-x-auto text-xs leading-relaxed max-h-40 dark:text-zinc-400">{arcaDiagnosticResult.detailed}</pre>
                     )}
                   </div>
                 )}
@@ -1151,10 +1151,10 @@ export function Settings() {
 
       {/* HELP MODAL AFIP */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-[#1C1C1C]/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 text-slate-800 dark:text-zinc-100">
-          <div className="bg-white dark:bg-[#182C24] rounded-3xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto space-y-6">
+        <div className="fixed inset-0 bg-ink/80 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200 text-slate-800 dark:text-zinc-100">
+          <div className="bg-white dark:bg-dark-card rounded-3xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto space-y-6">
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="text-lg font-black text-[#0F6B41] dark:text-emerald-400 flex items-center gap-2">
+              <h3 className="text-lg font-black text-brand dark:text-emerald-400 flex items-center gap-2">
                 Guía de Configuración ARCA (AFIP)
               </h3>
               <button 
@@ -1167,7 +1167,7 @@ export function Settings() {
 
             <div className="space-y-6 text-sm leading-relaxed">
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 1: Generar Archivos Técnicos</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-brand">Paso 1: Generar Archivos Técnicos</h4>
                 <p>Haz clic en el botón <span className="font-bold">"Generar KEY y CSR"</span> en esta configuración. Selecciona una carpeta segura en tu PC. La app creará dos archivos:</p>
                 <ul className="list-disc list-inside ml-3 mt-1.5 space-y-1">
                   <li><span className="font-bold">privada.key:</span> Tu clave criptográfica privada. Manténla segura en tu computadora.</li>
@@ -1176,7 +1176,7 @@ export function Settings() {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 2: Obtener el Certificado en AFIP</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-brand">Paso 2: Obtener el Certificado en AFIP</h4>
                 <ol className="list-decimal list-inside ml-3 mt-1.5 space-y-1">
                   <li>Ingresa al portal de AFIP con tu clave fiscal.</li>
                   <li>Busca y abre el servicio <span className="font-bold">"Administración de Certificados Digitales"</span>.</li>
@@ -1186,7 +1186,7 @@ export function Settings() {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 3: Alta del Punto de Venta</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-brand">Paso 3: Alta del Punto de Venta</h4>
                 <ol className="list-decimal list-inside ml-3 mt-1.5 space-y-1">
                   <li>Busca el servicio <span className="font-bold">"Regcom" &gt; "Puntos de venta"</span> en AFIP.</li>
                   <li>Crea un nuevo punto de venta electrónico.</li>
@@ -1195,7 +1195,7 @@ export function Settings() {
               </div>
 
               <div>
-                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-[#0F6B41]">Paso 4: Relación de Clave Fiscal</h4>
+                <h4 className="font-bold text-slate-900 dark:text-white uppercase text-xs mb-1 tracking-wider text-brand">Paso 4: Relación de Clave Fiscal</h4>
                 <ol className="list-decimal list-inside ml-3 mt-1.5 space-y-1">
                   <li>Entra a <span className="font-bold">"Administrador de Relaciones de Clave Fiscal"</span>.</li>
                   <li>Selecciona <span className="font-bold">"Nueva Relación"</span> &gt; <span className="font-bold">"Buscar"</span> &gt; <span className="font-bold">"AFIP"</span> &gt; <span className="font-bold">"WebServices"</span>.</li>

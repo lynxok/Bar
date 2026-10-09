@@ -119,7 +119,7 @@ export function Analytics() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 dark:bg-[var(--bg-surface)] dark:border-white/10">
         <div>
-          <h1 className="font-bold text-[28px] text-slate-900 leading-tight mb-1 dark:text-zinc-100">Analítica y Rendimiento</h1>
+          <h1 className="font-light text-[28px] tracking-tight text-slate-900 leading-tight mb-1 dark:text-zinc-100">Analítica y Rendimiento</h1>
           <p className="text-slate-500 text-sm dark:text-zinc-400">Visualización avanzada de ventas y rentabilidad real.</p>
         </div>
         <div className="flex gap-3">
@@ -127,7 +127,7 @@ export function Analytics() {
              <select 
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-4 py-2.5 pr-10 hover:bg-slate-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/10"
+                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-4 py-2.5 pr-10 hover:bg-slate-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-brand dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/10"
               >
                <option value="Hoy">Hoy</option>
                <option value="Últimos 7 Días">Últimos 7 Días</option>
@@ -137,7 +137,7 @@ export function Analytics() {
           </div>
           <button 
             onClick={handleDownloadReport}
-            className="px-4 py-2.5 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-lg flex items-center gap-2 font-bold text-sm shadow-md transition-colors"
+            className="px-4 py-2.5 bg-brand hover:bg-brand-hover text-white rounded-lg flex items-center gap-2 font-bold text-sm shadow-md transition-colors"
           >
             <Download className="w-4 h-4" /> Exportar a Excel
           </button>
@@ -162,7 +162,7 @@ export function Analytics() {
           </div>
         </div>
 
-        <div className="bg-[#0F6B41] p-6 rounded-2xl shadow-xl relative overflow-hidden group text-white">
+        <div className="bg-brand p-6 rounded-2xl shadow-xl relative overflow-hidden group text-white">
           <p className="text-emerald-200 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Utilidad Operativa</p>
           <h3 className="text-[36px] font-bold mb-2 relative z-10 tabular-nums">{formatMoney(netProfit)}</h3>
           <div className="flex items-center gap-2 font-bold text-sm relative z-10">

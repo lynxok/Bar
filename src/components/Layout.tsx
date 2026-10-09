@@ -381,7 +381,7 @@ export function Layout() {
     <div className="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased overflow-x-hidden flex">
       {/* Sidebar (Soporte Colapsable) */}
       <aside className={cn(
-        "fixed left-0 top-0 h-screen bg-[#1E4437] hidden md:flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
+        "fixed left-0 top-0 h-screen bg-brand-dark hidden md:flex flex-col text-slate-300 shadow-xl z-50 transition-all duration-300",
         isSidebarCollapsed ? "w-20" : "w-64"
       )}>
         <div className="p-5 flex items-center gap-3 overflow-hidden border-b border-white/10">
@@ -406,7 +406,7 @@ export function Layout() {
           {navGroups.map((group) => (
             <div key={group.group} className="space-y-1">
               {!isSidebarCollapsed && (
-                <div className="px-3 py-1 text-[11px] font-bold tracking-wider text-emerald-300/60 uppercase">
+                <div className="px-3 py-1 text-xs font-bold tracking-wider text-emerald-300/60 uppercase">
                   {group.group}
                 </div>
               )}
@@ -421,7 +421,7 @@ export function Layout() {
                     className={cn(
                       "flex items-center px-3.5 py-2.5 rounded-xl gap-3 transition-all min-h-[44px]",
                       isActive
-                        ? "bg-[#0F6B41] text-white shadow-sm font-semibold"
+                        ? "bg-brand text-white shadow-sm font-semibold"
                         : "text-slate-300 hover:bg-white/5 hover:text-white font-medium",
                       isSidebarCollapsed ? "justify-center px-2" : ""
                     )}
@@ -443,7 +443,7 @@ export function Layout() {
         <div className="p-4 border-t border-white/10 bg-black/10">
           <div className="flex items-center justify-between overflow-hidden">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#0F6B41] flex items-center justify-center font-bold text-white uppercase flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center font-bold text-white uppercase flex-shrink-0">
                 {(() => {
                   try {
                     const u = getStoredUser();
@@ -479,10 +479,10 @@ export function Layout() {
           {/* Agency Footer */}
           {!isSidebarCollapsed && (
             <div className="mt-3 pt-3 border-t border-white/10 flex flex-col items-center gap-1 opacity-80 hover:opacity-100 transition-opacity">
-              <span className="text-[11px] text-slate-300 font-semibold tracking-wide">
+              <span className="text-xs text-slate-300 font-semibold tracking-wide">
                 LYNX BarOS by LYNX Consulting
               </span>
-              <span className="text-[10px] text-emerald-400/70 font-semibold">
+              <span className="text-xs text-emerald-400/70 font-semibold">
                 v1.2.0 (Local-First)
               </span>
             </div>
@@ -493,11 +493,11 @@ export function Layout() {
 
       {/* Main Content Area */}
       <main className={cn(
-        "flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-300 ml-0 bg-[#F9F9F8] dark:bg-[#121E19]",
+        "flex-1 flex flex-col min-h-screen min-w-0 transition-all duration-300 ml-0 bg-[#F9F9F8] dark:bg-dark-bg",
         isSidebarCollapsed ? "md:ml-20" : "md:ml-64"
       )}>
         {/* Top Header */}
-        <header className="h-16 bg-white dark:bg-[#1E4437] border-b border-slate-200 dark:border-white/10 flex items-center px-4 md:px-8 justify-between sticky top-0 z-40">
+        <header className="h-16 bg-white dark:bg-brand-dark border-b border-slate-200 dark:border-white/10 flex items-center px-4 md:px-8 justify-between sticky top-0 z-40">
           <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
@@ -510,16 +510,16 @@ export function Layout() {
                 <line x1="3" y1="18" x2="21" y2="18"></line>
               </svg>
             </button>
-            <h2 className="text-lg font-bold text-[#1C1C1C] dark:text-white hidden md:block tracking-tight">
+            <h2 className="text-lg font-bold text-ink dark:text-white hidden md:block tracking-tight">
               {currentTitle}
             </h2>
             <div className="flex items-center gap-2 md:hidden">
               {logo ? (
                 <img src={logo} alt="Logo" className="w-7 h-7 object-cover rounded-lg" />
               ) : (
-                <Utensils className="h-5 w-5 text-[#0F6B41] dark:text-emerald-400" />
+                <Utensils className="h-5 w-5 text-brand dark:text-emerald-400" />
               )}
-              <span className="font-bold text-[#1C1C1C] dark:text-white text-base tracking-tight leading-none truncate max-w-[160px]">{businessName}</span>
+              <span className="font-bold text-ink dark:text-white text-base tracking-tight leading-none truncate max-w-[160px]">{businessName}</span>
             </div>
           </div>
 
@@ -544,14 +544,14 @@ export function Layout() {
                 onClick={() => setIsChatOpen(!isChatOpen)}
                 className={cn(
                   "relative p-2 rounded-full transition-all duration-300 cursor-pointer",
-                  isChatOpen ? "bg-[#E7F3EC] text-[#0F6B41] dark:bg-white/10 dark:text-emerald-400" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10"
+                  isChatOpen ? "bg-[#E7F3EC] text-brand dark:bg-white/10 dark:text-emerald-400" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10"
                 )}
                 title="Chat Interno"
               >
                 <MessageSquare className="w-5 h-5" />
                 {unreadChatCount > 0 && (
-                  <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-[#FA4515] rounded-full border-2 border-white flex items-center justify-center">
-                    <span className="text-[8px] font-bold text-white">{unreadChatCount}</span>
+                  <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-accent rounded-full border-2 border-white flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">{unreadChatCount}</span>
                   </span>
                 )}
               </button>
@@ -562,14 +562,14 @@ export function Layout() {
                 onClick={() => setShowNotifications(!showNotifications)}
                 className={cn(
                   "relative p-2 rounded-full transition-all duration-300",
-                  showNotifications ? "bg-[#E7F3EC] text-[#0F6B41] dark:bg-white/10 dark:text-emerald-400" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10"
+                  showNotifications ? "bg-[#E7F3EC] text-brand dark:bg-white/10 dark:text-emerald-400" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10"
                 )}
                 title="Notificaciones"
               >
                 <Bell className={cn("w-6 h-6", unreadCount > 0 && "animate-[bell-swing_2s_infinite]")} />
                 {unreadCount > 0 && (
                   <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-red-500 rounded-full border-2 border-white flex items-center justify-center">
-                    <span className="text-[8px] font-bold text-white">{unreadCount}</span>
+                    <span className="text-xs font-bold text-white">{unreadCount}</span>
                   </span>
                 )}
               </button>

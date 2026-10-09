@@ -181,6 +181,14 @@ html.dark {
   --color-outline: var(--color-outline);
   --color-outline-variant: var(--color-outline-variant);
 
+  /* Semantic Dark Surface Tokens */
+  --color-dark-bg: #121E19;
+  --color-dark-card: #182C24;
+  --color-dark-card-elevated: #203A30;
+  --color-dark-subtle: #14261F;
+  --color-dark-muted: #1E342B;
+  --color-dark-border: #2A483D;
+
   /* Radii */
   --radius-sm: 6px;
   --radius-md: 10px;

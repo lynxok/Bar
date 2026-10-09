@@ -336,13 +336,13 @@ export function WaiterMobile() {
     occupied: "bg-emerald-500/25 text-emerald-200 border-emerald-500/40",
     occupied_no_order: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     waiting_food: "bg-amber-500/25 text-amber-300 border-amber-500/40 animate-pulse",
-    consuming: "bg-[#0F6B41]/40 text-emerald-200 border-[#0F6B41]",
-    checkout: "bg-[#FA4515]/30 text-orange-200 border-[#FA4515] animate-pulse",
+    consuming: "bg-brand/40 text-emerald-200 border-brand",
+    checkout: "bg-accent/30 text-orange-200 border-accent animate-pulse",
     dirty: "bg-slate-500/20 text-slate-400 border-slate-500/30"
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#142E25] text-slate-100 max-w-[430px] mx-auto border-x border-[#1E4437] shadow-2xl relative font-sans">
+    <div className="flex flex-col min-h-screen bg-brand-dark-surface text-slate-100 max-w-[430px] mx-auto border-x border-brand-dark shadow-2xl relative font-sans">
       
       {/* Toast Notification */}
       {toast && (
@@ -353,14 +353,14 @@ export function WaiterMobile() {
             : 'bg-red-950/95 border-red-500/50 text-red-200'
         )}>
           <div className="text-xs font-bold uppercase tracking-wider">{toast.message}</div>
-          <button onClick={() => setToast(null)} className="text-[10px] uppercase font-bold opacity-60">X</button>
+          <button onClick={() => setToast(null)} className="text-xs uppercase font-bold opacity-60">X</button>
         </div>
       )}
 
       {/* Header */}
-      <header className="h-16 bg-[#1E4437]/90 backdrop-blur-md flex items-center justify-between px-5 border-b border-white/10 sticky top-0 z-40 shrink-0">
+      <header className="h-16 bg-brand-dark/90 backdrop-blur-md flex items-center justify-between px-5 border-b border-white/10 sticky top-0 z-40 shrink-0">
         <div className="flex items-center gap-2">
-          <Utensils className="h-5 w-5 text-[#FA4515]" />
+          <Utensils className="h-5 w-5 text-accent" />
           <h1 className="text-base font-bold text-white tracking-tight">
             LYNX <span className="text-emerald-400">Mozo</span>
           </h1>
@@ -388,7 +388,7 @@ export function WaiterMobile() {
                 placeholder="Buscar mesa (ej: T-01)..." 
                 value={tableSearch}
                 onChange={(e) => setTableSearch(e.target.value)}
-                className="w-full bg-[#182C24] border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs outline-none focus:border-[#0F6B41] focus:ring-1 focus:ring-[#0F6B41] transition-all font-semibold"
+                className="w-full bg-dark-card border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-xs outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-all font-semibold"
               />
             </div>
 
@@ -410,7 +410,7 @@ export function WaiterMobile() {
                     <div 
                       key={table.id}
                       className={cn(
-                        "bg-[#182C24] border border-white/10 rounded-3xl overflow-hidden transition-all duration-200",
+                        "bg-dark-card border border-white/10 rounded-3xl overflow-hidden transition-all duration-200",
                         table.status === 'checkout' ? "ring-2 ring-red-500/20 border-red-500/50" : ""
                       )}
                     >
@@ -425,13 +425,13 @@ export function WaiterMobile() {
                             table.status === 'available' ? "bg-emerald-600" :
                             table.status === 'dirty' ? "bg-slate-700" :
                             table.status === 'checkout' ? "bg-rose-600 animate-pulse" :
-                            "bg-[#0F6B41]"
+                            "bg-brand"
                           )}>
                             {table.id}
                           </div>
                           <div>
                             <h4 className="font-bold text-xs">Mesa {table.id.split('-')[1] || table.id}</h4>
-                            <span className={cn("text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border mt-1 inline-block", statusColors[table.status])}>
+                            <span className={cn("text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full border mt-1 inline-block", statusColors[table.status])}>
                               {statusLabels[table.status]}
                             </span>
                           </div>
@@ -444,7 +444,7 @@ export function WaiterMobile() {
 
                             )}
                             {table.waiterName && (
-                              <div className="text-[8px] text-slate-500 font-bold uppercase">{table.waiterName}</div>
+                              <div className="text-xs text-slate-500 font-bold uppercase">{table.waiterName}</div>
                             )}
                           </div>
                           <ChevronDown className={cn("w-4 h-4 text-slate-500 transition-transform duration-200", isExpanded ? "rotate-180 text-emerald-400" : "")} />
@@ -453,9 +453,9 @@ export function WaiterMobile() {
 
                       {/* Accordion Content */}
                       {isExpanded && (
-                        <div className="px-4 pb-4 pt-1 border-t border-white/10/50 bg-[#121E19]/20 space-y-3">
+                        <div className="px-4 pb-4 pt-1 border-t border-white/10/50 bg-dark-bg/20 space-y-3">
                           {table.status !== 'available' && elapsedMinutes !== null && (
-                            <div className="flex justify-between items-center text-[10px] text-slate-400 font-bold">
+                            <div className="flex justify-between items-center text-xs text-slate-400 font-bold">
                               <span>TIEMPO ACTIVA:</span>
                               <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded-full">⏱ {elapsedMinutes} min</span>
                             </div>
@@ -463,11 +463,11 @@ export function WaiterMobile() {
 
                           {/* Items Detail */}
                           <div className="space-y-1">
-                            <span className="text-[8px] font-black text-slate-500 uppercase tracking-wider block mb-1">Productos Comandados</span>
+                            <span className="text-xs font-black text-slate-500 uppercase tracking-wider block mb-1">Productos Comandados</span>
                             {table.order.length === 0 ? (
-                              <span className="text-[10px] text-slate-500 italic block">Sin ítems comandados aún</span>
+                              <span className="text-xs text-slate-500 italic block">Sin ítems comandados aún</span>
                             ) : (
-                              <div className="divide-y divide-slate-800 bg-[#121E19]/40 rounded-xl border border-white/10/60 p-3 space-y-1.5">
+                              <div className="divide-y divide-slate-800 bg-dark-bg/40 rounded-xl border border-white/10/60 p-3 space-y-1.5">
                                 {table.order.map((item, idx) => {
                                   let stateLabel = "🍽 Servido";
                                   let stateColor = "text-slate-500";
@@ -479,11 +479,11 @@ export function WaiterMobile() {
                                     stateColor = "text-amber-450 font-semibold";
                                   }
                                   return (
-                                    <div key={idx} className="flex justify-between items-center text-[10px] text-slate-300 pt-1.5 first:pt-0">
+                                    <div key={idx} className="flex justify-between items-center text-xs text-slate-300 pt-1.5 first:pt-0">
                                       <span className="font-medium truncate max-w-[150px]">{item.name}</span>
                                       <div className="flex gap-2 items-center">
                                         <span className="font-black text-white">x{item.qty}</span>
-                                        <span className={cn("text-[7.5px] font-black uppercase bg-[#182C24] border border-white/10 px-1 rounded", stateColor)}>
+                                        <span className={cn("text-[7.5px] font-black uppercase bg-dark-card border border-white/10 px-1 rounded", stateColor)}>
                                           {stateLabel}
                                         </span>
                                       </div>
@@ -499,7 +499,7 @@ export function WaiterMobile() {
                             {table.status === 'dirty' && (
                               <button 
                                 onClick={(e) => handleCleanTable(table.id, e)}
-                                className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-505 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
+                                className="flex-1 py-2 bg-emerald-600 hover:bg-emerald-505 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5"
                               >
                                 🧹 Habilitar
                               </button>
@@ -517,14 +517,14 @@ export function WaiterMobile() {
                                 setOrderingTableId(table.id);
                                 setComandaItems([]);
                               }}
-                              className="flex-1 min-h-[44px] py-2 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                              className="flex-1 min-h-[44px] py-2 bg-brand hover:bg-brand-hover text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               🍳 Comandar
                             </button>
                             {table.status !== 'available' && table.status !== 'dirty' && (
                               <button 
                                 onClick={() => setCheckoutTableId(table.id)}
-                                className="flex-1 min-h-[44px] py-2 bg-[#FA4515] hover:bg-[#e03a0e] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                                className="flex-1 min-h-[44px] py-2 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
                               >
                                 💵 Cobrar
                               </button>
@@ -545,7 +545,7 @@ export function WaiterMobile() {
             <div className="flex items-center gap-2">
               <button 
                 onClick={() => setOrderingTableId(null)}
-                className="p-2 bg-[#182C24] border border-white/10 text-slate-300 rounded-xl"
+                className="p-2 bg-dark-card border border-white/10 text-slate-300 rounded-xl"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -553,8 +553,8 @@ export function WaiterMobile() {
             </div>
 
             {/* Cart summary */}
-            <div className="bg-[#182C24] border border-white/10 p-4 rounded-3xl space-y-3">
-              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pedido Actual</h4>
+            <div className="bg-dark-card border border-white/10 p-4 rounded-3xl space-y-3">
+              <h4 className="text-xs font-black text-slate-500 uppercase tracking-widest">Pedido Actual</h4>
               {comandaItems.length === 0 ? (
                 <span className="text-xs text-slate-500 italic block">Agrega productos abajo...</span>
               ) : (
@@ -568,7 +568,7 @@ export function WaiterMobile() {
                           placeholder="Nota (sin cebolla, cocido...)"
                           value={item.note}
                           onChange={(e) => handleUpdateNote(item.name, e.target.value)}
-                          className="w-full bg-[#121E19] border border-white/10 rounded px-2 py-1 text-[11px] mt-1 outline-none text-slate-300 focus:border-[#0F6B41]"
+                          className="w-full bg-dark-bg border border-white/10 rounded px-2 py-1 text-xs mt-1 outline-none text-slate-300 focus:border-brand"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -580,7 +580,7 @@ export function WaiterMobile() {
                   ))}
                   <button 
                     onClick={handleSendComanda}
-                    className="w-full min-h-[44px] mt-3 py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+                    className="w-full min-h-[44px] mt-3 py-3 bg-brand hover:bg-brand-hover text-white rounded-xl text-xs font-semibold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
                   >
                     <ShoppingBag className="w-4 h-4" /> Enviar comanda a cocina
                   </button>
@@ -595,7 +595,7 @@ export function WaiterMobile() {
                 placeholder="Buscar plato o bebida..."
                 value={productSearch}
                 onChange={(e) => setProductSearch(e.target.value)}
-                className="w-full bg-[#182C24] border border-white/10 rounded-xl px-4 py-3 text-xs outline-none focus:border-[#0F6B41] focus:ring-1 focus:ring-[#0F6B41]/30 transition-all font-medium text-white placeholder:text-slate-400"
+                className="w-full bg-dark-card border border-white/10 rounded-xl px-4 py-3 text-xs outline-none focus:border-brand focus:ring-1 focus:ring-brand/30 transition-all font-medium text-white placeholder:text-slate-400"
               />
               <div className="grid grid-cols-1 gap-2.5 max-h-[300px] overflow-y-auto pr-1">
                 {products
@@ -604,11 +604,11 @@ export function WaiterMobile() {
                     <div 
                       key={product.id}
                       onClick={() => handleAddProduct(product)}
-                      className="p-3 bg-[#182C24] border border-white/10 hover:border-emerald-500/50 rounded-2xl flex justify-between items-center cursor-pointer active:scale-[0.99] transition-all"
+                      className="p-3 bg-dark-card border border-white/10 hover:border-emerald-500/50 rounded-2xl flex justify-between items-center cursor-pointer active:scale-[0.99] transition-all"
                     >
                       <div>
                         <div className="font-bold text-xs uppercase text-white">{product.name}</div>
-                        <div className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">{product.category}</div>
+                        <div className="text-xs text-slate-500 font-bold uppercase mt-0.5">{product.category}</div>
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-bold text-amber-500 text-xs tabular-nums">{formatMoney(product.price)}</span>
@@ -630,14 +630,14 @@ export function WaiterMobile() {
               placeholder="Buscar platos o bebidas en el menú..."
               value={productSearch}
               onChange={(e) => setProductSearch(e.target.value)}
-              className="w-full bg-[#182C24] border border-white/10 rounded-2xl px-4 py-3 text-xs outline-none focus:border-[#0F6B41] transition-all font-semibold"
+              className="w-full bg-dark-card border border-white/10 rounded-2xl px-4 py-3 text-xs outline-none focus:border-brand transition-all font-semibold"
             />
             
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               {products
                 .filter(p => p.status !== 'inactive' && p.name.toLowerCase().includes(productSearch.toLowerCase()))
                 .map(product => (
-                  <div key={product.id} className="p-4 bg-[#182C24] border border-white/10 rounded-3xl space-y-2">
+                  <div key={product.id} className="p-4 bg-dark-card border border-white/10 rounded-3xl space-y-2">
                     <div className="flex justify-between items-start">
                       <div>
                         <h4 className="font-black text-xs uppercase text-white">{product.name}</h4>
@@ -649,9 +649,9 @@ export function WaiterMobile() {
                     </div>
 
                     {product.description && (
-                      <p className="text-[10px] text-slate-400 font-medium leading-relaxed italic">{product.description}</p>
+                      <p className="text-xs text-slate-400 font-medium leading-relaxed italic">{product.description}</p>
                     )}
-                    <div className="flex gap-3 text-[9px] font-bold text-slate-500 pt-1 border-t border-white/10/50">
+                    <div className="flex gap-3 text-xs font-bold text-slate-500 pt-1 border-t border-white/10/50">
                       <span>Stock: <b className="text-white">{product.stock}</b></span>
                       <span>•</span>
                       <span>Disponibilidad: <b className="text-emerald-400">Carta QR Activo</b></span>
@@ -668,7 +668,7 @@ export function WaiterMobile() {
             <h3 className="font-black text-lg text-white">Escanear QR de Mesa</h3>
             
             {/* Live Camera Scanner Box */}
-            <div className="relative min-h-[220px] bg-[#182C24] border border-white/10 rounded-3xl overflow-hidden flex flex-col items-center justify-center p-4">
+            <div className="relative min-h-[220px] bg-dark-card border border-white/10 rounded-3xl overflow-hidden flex flex-col items-center justify-center p-4">
               {isScanning ? (
                 <div id={qrReaderId} className="w-full h-full min-h-[220px] overflow-hidden rounded-2xl" />
               ) : (
@@ -678,16 +678,16 @@ export function WaiterMobile() {
                   </div>
                   <div className="space-y-1">
                     <h4 className="font-bold text-xs">Cámara de Escaneo QR</h4>
-                    <p className="text-[10px] text-slate-400 max-w-[220px] mx-auto leading-relaxed">
+                    <p className="text-xs text-slate-400 max-w-[220px] mx-auto leading-relaxed">
                       Presiona el botón de abajo para activar tu cámara y escanear el código QR en la mesa del cliente.
                     </p>
                   </div>
                   {scanningError && (
-                    <p className="text-[10px] text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg max-w-[220px]">{scanningError}</p>
+                    <p className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 px-3 py-1.5 rounded-lg max-w-[220px]">{scanningError}</p>
                   )}
                   <button 
                     onClick={startScanning}
-                    className="mt-2 px-5 py-2.5 bg-[#0F6B41] hover:bg-[#0F6B41] text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-md active:scale-95"
+                    className="mt-2 px-5 py-2.5 bg-brand hover:bg-brand text-white rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-2 transition-all shadow-md active:scale-95"
                   >
                     <Smartphone className="w-4 h-4" /> ACTIVAR CÁMARA
                   </button>
@@ -703,7 +703,7 @@ export function WaiterMobile() {
             {isScanning && (
               <button 
                 onClick={stopScanning}
-                className="w-full py-3 bg-[#182C24] border border-white/10 hover:bg-slate-800 text-slate-350 rounded-2xl text-xs font-black uppercase tracking-wider transition-all"
+                className="w-full py-3 bg-dark-card border border-white/10 hover:bg-slate-800 text-slate-350 rounded-2xl text-xs font-black uppercase tracking-wider transition-all"
               >
                 Cancelar Escaneo
               </button>
@@ -711,15 +711,15 @@ export function WaiterMobile() {
 
             {/* Quick manual selection if scanner is not needed */}
             {!isScanning && (
-              <div className="space-y-3 bg-[#182C24] border border-white/10 p-5 rounded-3xl">
-                <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Entrada Manual</span>
+              <div className="space-y-3 bg-dark-card border border-white/10 p-5 rounded-3xl">
+                <span className="text-xs font-black text-slate-500 uppercase tracking-widest block mb-1">Entrada Manual</span>
                 <div className="flex gap-2">
                   <input 
                     type="text" 
                     placeholder="Mesa (ej: 01, T-01)"
                     value={scanInput}
                     onChange={(e) => setScanInput(e.target.value)}
-                    className="flex-1 bg-[#121E19] border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold outline-none uppercase focus:border-[#0F6B41]"
+                    className="flex-1 bg-dark-bg border border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold outline-none uppercase focus:border-brand"
                   />
                   <button 
                     onClick={() => {
@@ -733,7 +733,7 @@ export function WaiterMobile() {
                       }
                     }}
                     disabled={!scanInput.trim()}
-                    className="px-4 py-2.5 bg-[#0F6B41] hover:bg-[#0F6B41] disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95"
+                    className="px-4 py-2.5 bg-brand hover:bg-brand disabled:opacity-50 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md active:scale-95"
                   >
                     Buscar
                   </button>
@@ -749,21 +749,21 @@ export function WaiterMobile() {
               const elapsedMinutes = table.lastUpdate ? Math.floor((Date.now() - new Date(table.lastUpdate).getTime()) / 60000) : null;
 
               return (
-                <div className="bg-[#182C24] border border-emerald-500/20 shadow-xl rounded-3xl p-5 space-y-4">
+                <div className="bg-dark-card border border-emerald-500/20 shadow-xl rounded-3xl p-5 space-y-4">
                   <div className="flex justify-between items-start border-b border-white/10 pb-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-[#0F6B41] rounded-xl flex items-center justify-center font-black text-xs text-white">
+                      <div className="w-10 h-10 bg-brand rounded-xl flex items-center justify-center font-black text-xs text-white">
                         {table.id}
                       </div>
                       <div>
                         <h4 className="font-black text-xs">Mesa {table.id.split('-')[1] || table.id}</h4>
-                        <span className={cn("text-[8px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border mt-1 inline-block", statusColors[table.status])}>
+                        <span className={cn("text-xs font-black uppercase tracking-wider px-2 py-0.5 rounded-full border mt-1 inline-block", statusColors[table.status])}>
                           {statusLabels[table.status]}
                         </span>
                       </div>
                     </div>
                     {table.waiterName && (
-                      <span className="text-[9px] bg-slate-800 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider text-slate-400">
+                      <span className="text-xs bg-slate-800 px-2.5 py-1 rounded-full font-bold uppercase tracking-wider text-slate-400">
                         {table.waiterName}
                       </span>
                     )}
@@ -786,7 +786,7 @@ export function WaiterMobile() {
                     {table.status !== 'available' && table.status !== 'dirty' && table.status !== 'checkout' && (
                       <button 
                         onClick={() => handleSolicitarCuenta(table.id)}
-                        className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-650 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                        className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-650 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"
                       >
                         🔔 Pedir Cuenta
                       </button>
@@ -794,7 +794,7 @@ export function WaiterMobile() {
                     {table.status !== 'available' && table.status !== 'dirty' && (
                       <button 
                         onClick={() => setCheckoutTableId(table.id)}
-                        className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-650 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                        className="flex-1 py-2.5 bg-amber-600 hover:bg-amber-650 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all"
                       >
                         💵 Cobrar Cuenta
                       </button>
@@ -816,8 +816,8 @@ export function WaiterMobile() {
         const totalItemsPrice = computeTotals(table.order.reduce((acc, i) => acc + (i.price * i.qty), 0)).total;
 
         return (
-          <div className="fixed inset-0 bg-[#121E19]/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">
-            <div className="bg-[#182C24] border border-white/10 rounded-3xl w-full max-w-[360px] p-6 space-y-5" onClick={e => e.stopPropagation()}>
+          <div className="fixed inset-0 bg-dark-bg/80 backdrop-blur-md z-[100] flex items-center justify-center p-6">
+            <div className="bg-dark-card border border-white/10 rounded-3xl w-full max-w-[360px] p-6 space-y-5" onClick={e => e.stopPropagation()}>
               <div className="flex justify-between items-center border-b border-white/10 pb-3">
                 <h3 className="font-black text-sm uppercase text-white">Cobrar Mesa {checkoutTableId.replace('T-', '')}</h3>
                 <button onClick={() => setCheckoutTableId(null)} className="text-slate-500 hover:text-white text-xs">X</button>
@@ -831,15 +831,15 @@ export function WaiterMobile() {
 
 
                 <div className="space-y-1">
-                  <label className="text-[9px] font-bold text-slate-500 uppercase block">Método de Pago</label>
-                  <div className="grid grid-cols-3 gap-1 bg-[#121E19] p-1 rounded-xl border border-white/10">
+                  <label className="text-xs font-bold text-slate-500 uppercase block">Método de Pago</label>
+                  <div className="grid grid-cols-3 gap-1 bg-dark-bg p-1 rounded-xl border border-white/10">
                     {(['cash', 'card', 'qr'] as const).map((method) => (
                       <button
                         key={method}
                         onClick={() => setPaymentMethod(method)}
                         className={cn(
                           "py-2 text-xs font-semibold uppercase rounded-lg transition-all cursor-pointer",
-                          paymentMethod === method ? "bg-[#0F6B41] text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
+                          paymentMethod === method ? "bg-brand text-white shadow-sm" : "text-slate-400 hover:text-slate-200"
                         )}
                       >
                         {method === 'cash' ? 'Efectivo' : method === 'card' ? 'Tarjeta' : 'QR'}
@@ -849,18 +849,18 @@ export function WaiterMobile() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-400 uppercase block">DNI Cliente (Opcional - Puntos)</label>
+                  <label className="text-xs font-semibold text-slate-400 uppercase block">DNI Cliente (Opcional - Puntos)</label>
                   <input 
                     type="text" 
                     placeholder="DNI del cliente..."
                     value={dniInput}
                     onChange={(e) => setDniInput(e.target.value)}
-                    className="w-full bg-[#121E19] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-[#0F6B41]"
+                    className="w-full bg-dark-bg border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-brand"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-400 uppercase block">Descuento (%)</label>
+                  <label className="text-xs font-semibold text-slate-400 uppercase block">Descuento (%)</label>
                   <input 
                     type="number" 
                     min="0" 
@@ -868,19 +868,19 @@ export function WaiterMobile() {
                     placeholder="Descuento..."
                     value={discountInput}
                     onChange={(e) => setDiscountInput(e.target.value)}
-                    className="w-full bg-[#121E19] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-[#0F6B41]"
+                    className="w-full bg-dark-bg border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-brand"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] font-semibold text-slate-400 uppercase block">Propina ($, no suma a la venta)</label>
+                  <label className="text-xs font-semibold text-slate-400 uppercase block">Propina ($, no suma a la venta)</label>
                   <input 
                     type="number" 
                     min="0" 
                     placeholder="0" 
                     value={tipInput} 
                     onChange={(e) => setTipInput(e.target.value)} 
-                    className="w-full bg-[#121E19] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-[#0F6B41]" 
+                    className="w-full bg-dark-bg border border-white/10 rounded-xl px-3 py-2 text-xs font-medium outline-none text-white focus:border-brand" 
                   />
                 </div>
               </div>
@@ -916,7 +916,7 @@ export function WaiterMobile() {
 
               {!showMpQr && <button 
                 onClick={() => handleCheckoutClose()}
-                className="w-full min-h-[48px] py-3 bg-[#FA4515] hover:bg-[#e03a0e] text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
+                className="w-full min-h-[48px] py-3 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
               >
                 <Wallet className="w-4 h-4" /> {paymentMethod === 'qr' && mpEnabled ? 'Generar QR de Mercado Pago' : 'Confirmar pago y cerrar'}
               </button>}
@@ -926,12 +926,12 @@ export function WaiterMobile() {
       })()}
 
       {/* Navigation Footer Bar */}
-      <footer className="h-16 bg-[#1E4437] border-t border-white/10 flex items-center justify-around px-2 sticky bottom-0 z-40 shrink-0 select-none">
+      <footer className="h-16 bg-brand-dark border-t border-white/10 flex items-center justify-around px-2 sticky bottom-0 z-40 shrink-0 select-none">
         <button 
           onClick={() => { setActiveTab('tables'); setOrderingTableId(null); }}
           className={cn(
-            "flex flex-col items-center gap-1 text-[11px] font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
-            activeTab === 'tables' ? "text-white bg-[#0F6B41] shadow-sm" : "text-slate-300 hover:text-white"
+            "flex flex-col items-center gap-1 text-xs font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
+            activeTab === 'tables' ? "text-white bg-brand shadow-sm" : "text-slate-300 hover:text-white"
           )}
         >
           <Utensils className="w-5 h-5" />
@@ -940,8 +940,8 @@ export function WaiterMobile() {
         <button 
           onClick={() => { setActiveTab('menu'); setOrderingTableId(null); }}
           className={cn(
-            "flex flex-col items-center gap-1 text-[11px] font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
-            activeTab === 'menu' ? "text-white bg-[#0F6B41] shadow-sm" : "text-slate-300 hover:text-white"
+            "flex flex-col items-center gap-1 text-xs font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
+            activeTab === 'menu' ? "text-white bg-brand shadow-sm" : "text-slate-300 hover:text-white"
           )}
         >
           <ShoppingBag className="w-5 h-5" />
@@ -950,8 +950,8 @@ export function WaiterMobile() {
         <button 
           onClick={() => { setActiveTab('scan'); setOrderingTableId(null); }}
           className={cn(
-            "flex flex-col items-center gap-1 text-[11px] font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
-            activeTab === 'scan' ? "text-white bg-[#0F6B41] shadow-sm" : "text-slate-300 hover:text-white"
+            "flex flex-col items-center gap-1 text-xs font-semibold uppercase transition-colors py-1 px-3.5 rounded-xl cursor-pointer",
+            activeTab === 'scan' ? "text-white bg-brand shadow-sm" : "text-slate-300 hover:text-white"
           )}
         >
           <QrCode className="w-5 h-5" />

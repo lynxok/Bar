@@ -39,7 +39,7 @@ export function MercadoPagoSettings() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#182C24] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 mt-6">
+    <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 mt-6">
       <div>
         <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><QrCode className="w-5 h-5 text-sky-600" /> Cobro con Mercado Pago (QR)</h3>
         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
@@ -56,7 +56,7 @@ export function MercadoPagoSettings() {
       ) : (
         <div className="flex gap-2">
           <input type="password" value={token} onChange={e => setToken(e.target.value)} placeholder="APP_USR-..."
-            className="flex-1 h-11 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-mono outline-none focus:border-[#0F6B41] text-slate-900 dark:text-white" />
+            className="flex-1 h-11 px-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-mono outline-none focus:border-brand text-slate-900 dark:text-white" />
           <button onClick={save} disabled={busy || token.trim().length < 20}
             className="px-4 h-11 bg-sky-600 text-white rounded-xl font-bold text-sm disabled:opacity-50 flex items-center gap-2">
             {busy && <RefreshCw className="w-4 h-4 animate-spin" />} Conectar

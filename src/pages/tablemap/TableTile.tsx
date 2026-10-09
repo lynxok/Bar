@@ -49,14 +49,14 @@ export function TableTile({
   // Status tokens conforming to LYNX guidelines
   const statusStyles: Record<Table['status'], { bg: string; text: string; border: string; label: string }> = {
     available: {
-      bg: 'bg-white dark:bg-[#182C24]',
-      text: 'text-[#0F6B41] dark:text-emerald-400',
-      border: 'border-2 border-[#0F6B41]',
+      bg: 'bg-white dark:bg-dark-card',
+      text: 'text-brand dark:text-emerald-400',
+      border: 'border-2 border-brand',
       label: 'Disponible',
     },
     occupied_no_order: {
       bg: 'bg-emerald-50 dark:bg-emerald-950/40',
-      text: 'text-[#0F6B41] dark:text-emerald-300',
+      text: 'text-brand dark:text-emerald-300',
       border: 'border-2 border-emerald-300 dark:border-emerald-700',
       label: 'Sin pedido',
     },
@@ -67,15 +67,15 @@ export function TableTile({
       label: 'En cocina',
     },
     consuming: {
-      bg: 'bg-[#0F6B41]',
+      bg: 'bg-brand',
       text: 'text-white',
-      border: 'border-2 border-[#0F6B41]',
+      border: 'border-2 border-brand',
       label: 'Consumiendo',
     },
     checkout: {
-      bg: 'bg-[#FA4515] animate-pulse',
+      bg: 'bg-accent animate-pulse',
       text: 'text-white',
-      border: 'border-2 border-[#FA4515]',
+      border: 'border-2 border-accent',
       label: 'Por cobrar',
     },
     dirty: {
@@ -85,9 +85,9 @@ export function TableTile({
       label: 'Sucia',
     },
     occupied: {
-      bg: 'bg-[#0F6B41]',
+      bg: 'bg-brand',
       text: 'text-white',
-      border: 'border-2 border-[#0F6B41]',
+      border: 'border-2 border-brand',
       label: 'Ocupada',
     },
   };
@@ -128,8 +128,8 @@ export function TableTile({
         </div>
       ) : table.type === 'bar' ? (
         <div className={cn(
-          "w-full h-full bg-[#1E4437] border-l-8 border-[#FA4515] rounded-l-3xl shadow-xl flex items-center justify-center overflow-hidden",
-          isSelected ? "ring-4 ring-[#0F6B41] ring-offset-2" : ""
+          "w-full h-full bg-brand-dark border-l-8 border-accent rounded-l-3xl shadow-xl flex items-center justify-center overflow-hidden",
+          isSelected ? "ring-4 ring-brand ring-offset-2" : ""
         )}>
           <div className="rotate-90 text-white/20 font-black text-2xl tracking-[0.5em] uppercase whitespace-nowrap select-none">BARRA</div>
         </div>
@@ -146,7 +146,7 @@ export function TableTile({
         >
           {/* Top row: Status / Timer & Table Number */}
           <div className={cn(
-            "w-full flex items-center text-[10px] font-semibold tracking-tight px-0.5",
+            "w-full flex items-center text-xs font-semibold tracking-tight px-0.5",
             (table.type === 'round' || table.type === 'stool')
               ? "justify-center relative"
               : "justify-between"
@@ -164,9 +164,9 @@ export function TableTile({
             </span>
             {elapsedMinutes !== null && table.status !== 'available' && table.status !== 'dirty' && (
               <span className={cn(
-                "px-1.5 py-0.5 rounded-full text-[10px] font-semibold tabular-nums",
+                "px-1.5 py-0.5 rounded-full text-xs font-semibold tabular-nums",
                 (table.type === 'round' || table.type === 'stool') ? "absolute right-0 top-0" : "",
-                isLate ? "bg-[#C62828] text-white animate-bounce" : "bg-black/15 text-current"
+                isLate ? "bg-danger text-white animate-bounce" : "bg-black/15 text-current"
               )}>
                 ⏱ {elapsedMinutes}m
               </span>
@@ -180,7 +180,7 @@ export function TableTile({
                 {formatMoney(consumedTotal)}
               </span>
             ) : (
-              <span className="text-[11px] font-semibold opacity-85 leading-tight">
+              <span className="text-xs font-semibold opacity-85 leading-tight">
                 {currentStatus.label}
               </span>
             )}
@@ -189,7 +189,7 @@ export function TableTile({
           {/* Bottom row: Waiter Name & Reservation Badge */}
           <div className="w-full flex items-center justify-between gap-1 overflow-hidden px-0.5">
             {table.waiterName ? (
-              <span className="text-[9px] font-semibold truncate bg-black/10 px-1 py-0.5 rounded max-w-[70px]">
+              <span className="text-xs font-semibold truncate bg-black/10 px-1 py-0.5 rounded max-w-[70px]">
                 {table.waiterName}
               </span>
             ) : <span />}
@@ -197,7 +197,7 @@ export function TableTile({
             {reservation && (
               <span
                 title={`Reserva: ${reservation.customerName} (${reservation.partySize} pers.)`}
-                className="text-[9px] font-semibold bg-[#1E4437] text-white px-1.5 py-0.5 rounded shrink-0 shadow-xs"
+                className="text-xs font-semibold bg-brand-dark text-white px-1.5 py-0.5 rounded shrink-0 shadow-xs"
               >
                 📅 {timeLabel(reservation.date)}
               </span>
@@ -210,7 +210,7 @@ export function TableTile({
       {isSelected && isEditingLayout && table.type !== 'round' && table.type !== 'stool' && (
         <div
           title="Rotar"
-          className="absolute -top-12 left-1/2 -translate-x-1/2 w-10 h-10 bg-[#0F6B41] text-white rounded-full flex items-center justify-center cursor-grab shadow-lg z-20 hover:bg-[#0C5734] border-2 border-white transition-all active:scale-95"
+          className="absolute -top-12 left-1/2 -translate-x-1/2 w-10 h-10 bg-brand text-white rounded-full flex items-center justify-center cursor-grab shadow-lg z-20 hover:bg-brand-hover border-2 border-white transition-all active:scale-95"
           onMouseDown={(e) => onRotateHandleMouseDown(e, table)}
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -229,7 +229,7 @@ export function TableTile({
           onPointerMove={(e) => onResizePointerMove(e, table)}
           onPointerUp={(e) => onResizePointerUp(e, table)}
         >
-          <div className="w-4 h-4 bg-[#0F6B41] border-2 border-white rounded-full shadow-md group-hover/resize:scale-125 transition-transform" />
+          <div className="w-4 h-4 bg-brand border-2 border-white rounded-full shadow-md group-hover/resize:scale-125 transition-transform" />
         </div>
       )}
     </div>

@@ -17,14 +17,14 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const variants = {
-      // Primario verde marca (#0F6B41) con texto blanco (contraste ~6.5:1)
-      primary: 'bg-[#0F6B41] hover:bg-[#0C5734] active:bg-[#094328] text-white shadow-sm hover:shadow',
-      // Acento naranja (#FA4515) para CTA de alto impacto ("Cobrar")
-      accent: 'bg-[#FA4515] hover:bg-[#E03A0E] text-white shadow-md hover:shadow-lg',
+      // Primario verde marca con texto blanco (contraste ~6.5:1)
+      primary: 'bg-brand hover:bg-brand-hover active:bg-brand-active text-white shadow-sm hover:shadow',
+      // Acento naranja para CTA de alto impacto ("Cobrar")
+      accent: 'bg-accent hover:bg-accent-hover text-white shadow-md hover:shadow-lg',
       // Secundario sutil
       secondary: 'bg-slate-100 hover:bg-slate-200 text-slate-800 dark:bg-white/10 dark:hover:bg-white/15 dark:text-white',
-      // Peligro rojo semántico (#C62828)
-      danger: 'bg-[#C62828] hover:bg-[#A82020] text-white shadow-sm',
+      // Peligro rojo semántico
+      danger: 'bg-danger hover:opacity-90 text-white shadow-sm',
       // Fantasma sin fondo
       ghost: 'hover:bg-slate-100 text-slate-700 dark:text-slate-200 dark:hover:bg-white/10',
       // Borde

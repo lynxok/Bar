@@ -82,15 +82,15 @@ export function TableQrModal({ tableId, onClose }: Props) {
         </div>
 
         <p className="text-xs text-slate-500 font-medium">
-          Enlace: <span className="font-mono text-[10px] break-all">{link}</span>
+          Enlace: <span className="font-mono text-xs break-all">{link}</span>
         </p>
         {source === 'lan' && (
-          <p className="text-[11px] text-amber-700 bg-amber-50 rounded-xl p-2 font-bold">
+          <p className="text-xs text-amber-700 bg-amber-50 rounded-xl p-2 font-bold">
             Este QR funciona con celulares conectados al WiFi del local. Para que funcione con datos móviles, activá el túnel en Configuración → Red.
           </p>
         )}
         {source === 'none' && (
-          <p className="text-[11px] text-rose-700 bg-rose-50 rounded-xl p-2 font-bold">
+          <p className="text-xs text-rose-700 bg-rose-50 rounded-xl p-2 font-bold">
             No se detectó una red local: el QR no va a funcionar desde otros celulares.
           </p>
         )}
@@ -101,7 +101,7 @@ export function TableQrModal({ tableId, onClose }: Props) {
             Descargar
           </button>
           <button onClick={handlePrint} disabled={!qrUrl}
-            className="py-3 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-bold text-sm transition-all disabled:opacity-50">
+            className="py-3 bg-brand hover:bg-brand-hover text-white rounded-xl font-bold text-sm transition-all disabled:opacity-50">
             Imprimir
           </button>
         </div>

@@ -29,6 +29,10 @@ import { cn } from "../lib/utils";
 import { LoggerService } from "../lib/LoggerService";
 import { formatMoney } from "../lib/format";
 import { useToast } from "../components/ui/Toast";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { StatusBadge } from "../components/ui/StatusBadge";
+import { EmptyState } from "../components/ui/EmptyState";
 
 
 export function POS() {
@@ -215,9 +219,12 @@ export function POS() {
 
         <div className="flex-1 overflow-y-auto pr-1 grid auto-rows-max grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pb-4">
           {filteredProducts.length === 0 ? (
-            <div className="col-span-4 flex flex-col items-center justify-center h-48 text-on-surface-variant opacity-60 gap-3">
-              <Search className="w-10 h-10" />
-              <p className="text-sm font-bold">Sin resultados para "{searchQuery}"</p>
+            <div className="col-span-4 py-8">
+              <EmptyState
+                icon={<Search className="w-8 h-8" />}
+                title={`Sin resultados para "${searchQuery}"`}
+                description="Intentá buscar por otro término o cambiá de categoría."
+              />
             </div>
           ) : (
             filteredProducts.map(product => {
@@ -241,10 +248,10 @@ export function POS() {
                       </div>
                     )}
                     {product.popular && (
-                      <div className="absolute top-2 right-2 bg-primary text-on-primary text-[10px] px-2 py-0.5 rounded-full font-bold uppercase shadow-sm">POPULAR</div>
+                      <div className="absolute top-2 right-2 bg-primary text-on-primary text-xs px-2 py-0.5 rounded-full font-bold shadow-sm">Popular</div>
                     )}
                     {inCart && (
-                      <div className="absolute top-2 left-2 bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
+                      <div className="absolute top-2 left-2 bg-emerald-600 text-white text-xs px-2 py-0.5 rounded-full font-bold flex items-center gap-1 shadow-sm">
                         <CheckCircle2 className="w-3 h-3" /> {inCart.qty}
                       </div>
                     )}
@@ -334,20 +341,24 @@ export function POS() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <button
+            <Button
+              variant="outline"
+              size="lg"
               onClick={() => { addComanda('POS', cart); showToast('Pedido enviado a cocina', 'success'); }}
               disabled={cart.length === 0}
-              className="w-full min-h-[48px] h-14 bg-surface-container border border-outline text-on-surface text-sm font-semibold rounded-xl shadow-xs hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+              className="h-14 font-semibold"
             >
-              <ChefHat className="h-5 w-5 text-[#0F6B41] dark:text-emerald-400" /> Cocina
-            </button>
-            <button
+              <ChefHat className="h-5 w-5 text-brand dark:text-emerald-400" /> Cocina
+            </Button>
+            <Button
+              variant="accent"
+              size="lg"
               onClick={() => setIsCheckoutModalOpen(true)}
               disabled={cart.length === 0}
-              className="w-full min-h-[48px] h-14 bg-[#FA4515] hover:bg-[#e03a0e] text-white text-sm font-bold rounded-xl shadow-md active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
+              className="h-14 font-bold"
             >
               <Wallet className="h-5 w-5" /> Cobrar
-            </button>
+            </Button>
           </div>
         </div>
       </section>
@@ -357,8 +368,8 @@ export function POS() {
           <div className="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-lg overflow-hidden border border-outline animate-in zoom-in-95 duration-200 text-on-surface">
             <div className="px-8 py-6 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
               <div>
-                <h3 className="font-black text-2xl text-on-surface tracking-tight">Cerrar Venta</h3>
-                <p className="text-[10px] text-on-surface-variant font-bold uppercase tracking-widest mt-1">Selecciona el método y fidelización</p>
+                <h3 className="font-bold text-2xl text-on-surface tracking-tight">Cerrar Venta</h3>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">Selecciona el método y fidelización</p>
               </div>
               <button onClick={() => setIsCheckoutModalOpen(false)} className="p-2 text-on-surface-variant hover:bg-surface-container hover:text-rose-600 rounded-lg transition-all">
                 <X className="w-6 h-6" />
@@ -367,7 +378,7 @@ export function POS() {
 
             <div className="p-8 space-y-6 max-h-[75vh] overflow-y-auto">
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest ml-1">Método de Pago</label>
+                <label className="text-xs font-semibold text-on-surface-variant ml-1">Método de Pago</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { id: 'Efectivo', icon: Wallet, label: 'Efectivo' },
@@ -386,14 +397,14 @@ export function POS() {
                       )}
                     >
                       <method.icon className={cn("h-5 w-5", selectedPaymentMethod === method.id ? "text-on-primary" : "text-primary")} />
-                      <span className="text-xs font-bold uppercase tracking-wider">{method.label}</span>
+                      <span className="text-xs font-semibold">{method.label}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div className="space-y-4">
-                <label className="text-[10px] font-black text-on-surface-variant uppercase tracking-widest ml-1">Fidelización de Clientes</label>
+                <label className="text-xs font-semibold text-on-surface-variant ml-1">Fidelización de Clientes</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant h-5 w-5" />
                   <input
@@ -408,7 +419,7 @@ export function POS() {
                 {currentCustomer && (
                   <div className="bg-primary/5 p-4 rounded-xl border border-primary/20 flex items-center justify-between animate-in fade-in slide-in-from-top-2 duration-300">
                     <div>
-                      <p className="text-[10px] font-black text-primary uppercase tracking-widest">Socio Detectado</p>
+                      <p className="text-xs font-bold text-primary">Socio Detectado</p>
                       <p className="text-sm font-bold text-on-surface">{currentCustomer.name}</p>
                       <p className="text-xs font-medium text-on-surface-variant">{currentCustomer.points || 0} pts disponibles</p>
                     </div>
@@ -417,7 +428,7 @@ export function POS() {
                         <button
                           key={prize.id}
                           onClick={() => handleRedeem(prize)}
-                          className="p-2 bg-surface-container-high text-primary rounded-lg hover:bg-primary hover:text-on-primary transition-all shadow-sm border border-outline flex items-center gap-1 text-[10px] font-black uppercase"
+                          className="p-2 bg-surface-container-high text-primary rounded-lg hover:bg-primary hover:text-on-primary transition-all shadow-sm border border-outline flex items-center gap-1 text-xs font-semibold"
                         >
                           <Gift className="w-3.5 h-3.5" /> {prize.name.split(' ')[0]}
                         </button>
@@ -428,35 +439,35 @@ export function POS() {
               </div>
 
               <div className="bg-surface-container rounded-2xl p-6 space-y-4 text-on-surface border border-outline-variant shadow-sm">
-                <div className="flex justify-between items-center text-on-surface-variant font-bold text-xs uppercase tracking-widest px-2">
+                <div className="flex justify-between items-center text-on-surface-variant font-semibold text-xs px-2">
                   <span>Subtotal</span><span className="tabular-nums">{formatMoney(subtotal)}</span>
                 </div>
-                <div className="flex justify-between items-center text-on-surface-variant font-bold text-xs uppercase tracking-widest px-2">
+                <div className="flex justify-between items-center text-on-surface-variant font-semibold text-xs px-2">
                   <span>{taxLabel({ taxRate, pricesIncludeTax })}</span><span className="tabular-nums">{formatMoney(taxes)}</span>
                 </div>
                 <div className="h-px bg-outline-variant mx-2" />
                 <div className="flex justify-between items-center px-2">
                   <div>
-                    <div className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Total Final</div>
+                    <div className="text-xs font-semibold text-primary mb-1">Total Final</div>
                     <div className="text-4xl font-black tabular-nums">{formatMoney(total)}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Puntos</div>
-                    <div className="text-xl font-black text-emerald-600">+{Math.floor(total / 100)} pts</div>
+                    <div className="text-xs font-semibold text-emerald-600 mb-1">Puntos</div>
+                    <div className="text-xl font-bold text-emerald-600">+{Math.floor(total / 100)} pts</div>
                   </div>
                 </div>
               </div>
 
 
               <label className="block space-y-1">
-                <span className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant">Propina ($, se registra aparte)</span>
+                <span className="text-xs font-semibold text-on-surface-variant">Propina ($, se registra aparte)</span>
                 <input type="number" min={0} value={tipInput} onChange={e => setTipInput(e.target.value)} placeholder="0"
                   className="w-full h-11 px-3 rounded-xl border border-outline-variant bg-surface font-bold outline-none focus:border-primary" />
               </label>
 
               <button
                 onClick={handleProcessPayment}
-                className="w-full h-16 bg-emerald-600 hover:opacity-90 text-white rounded-xl font-black text-lg shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-3 transition-all cursor-pointer"
+                className="w-full h-16 bg-emerald-600 hover:opacity-90 text-white rounded-xl font-bold text-lg shadow-lg shadow-emerald-500/20 active:scale-[0.98] flex items-center justify-center gap-3 transition-all cursor-pointer"
               >
                 FINALIZAR VENTA <ArrowRight className="h-6 w-6" />
               </button>

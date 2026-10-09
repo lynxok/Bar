@@ -59,7 +59,7 @@ export function Logs() {
               <Terminal size={24} />
             </div>
             <div>
-              <h2 className="text-xl font-black text-on-surface tracking-tight uppercase">REGISTRO TÉCNICO (LOGS DEL SISTEMA)</h2>
+              <h1 className="font-light text-[28px] text-on-surface tracking-tight">Registro Técnico (Logs)</h1>
               <p className="text-xs text-on-surface-variant mt-1">
                 Panel exclusivo de diagnóstico para el rol <span className="font-bold text-rose-600">Superadmin</span>.
               </p>
@@ -109,7 +109,7 @@ export function Logs() {
       {/* Table Container */}
       <div className="bg-surface-container-lowest rounded-2xl border border-outline shadow-sm overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
-          <span className="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">
+          <span className="text-xs text-on-surface-variant font-bold uppercase tracking-wider">
             Mostrando registros en orden cronológico inverso (Más recientes primero)
           </span>
           <button
@@ -150,14 +150,14 @@ export function Logs() {
                       <td className="p-4 font-bold">{new Date(log.timestamp).toLocaleString('es-AR')}</td>
                       <td className="p-4">
                         <span className={cn(
-                          "px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider",
+                          "px-2 py-0.5 rounded-md text-xs font-black uppercase tracking-wider",
                           log.level === 'error' ? "bg-rose-600 text-white" : "bg-amber-500 text-slate-900"
                         )}>
                           {log.level}
                         </span>
                       </td>
                       <td className="p-4 whitespace-pre-wrap break-all font-sans font-medium">{log.message}</td>
-                      <td className="p-4 font-semibold text-[10px] text-on-surface-variant">{log.context || '-'}</td>
+                      <td className="p-4 font-semibold text-xs text-on-surface-variant">{log.context || '-'}</td>
                     </tr>
                   ))
                 )}
@@ -187,13 +187,13 @@ export function Logs() {
                     <tr key={log.id} className="hover:bg-surface-container-high transition-colors text-on-surface">
                       <td className="p-4 font-bold">{new Date(log.timestamp).toLocaleString('es-AR')}</td>
                       <td className="p-4 font-bold font-sans">
-                        {log.userName} <span className="text-[10px] text-on-surface-variant block font-mono">({log.userId})</span>
+                        {log.userName} <span className="text-xs text-on-surface-variant block font-mono">({log.userId})</span>
                       </td>
                       <td className="p-4">
-                        <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-[10px] font-black uppercase tracking-wider block w-fit mb-1">
+                        <span className="px-2 py-0.5 bg-primary/10 text-primary rounded-md text-xs font-black uppercase tracking-wider block w-fit mb-1">
                           {log.action}
                         </span>
-                        <span className="text-[10px] font-semibold text-on-surface-variant">
+                        <span className="text-xs font-semibold text-on-surface-variant">
                           {log.module}
                         </span>
                       </td>

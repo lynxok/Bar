@@ -259,22 +259,22 @@ export function Inventory() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
-          <h1 className="font-h1 text-xl sm:text-2xl md:text-3xl font-black text-slate-900 dark:text-zinc-100 mb-1">Gestión de Inventario</h1>
+          <h1 className="font-light text-[28px] md:text-3xl tracking-tight text-slate-900 dark:text-zinc-100 mb-1">Gestión de Inventario</h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium dark:text-zinc-400">
             Seguimiento de stock en tiempo real y controles de reposición.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg font-label-caps text-[10px] sm:text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white dark:bg-[#1E342B] hover:bg-slate-50 dark:hover:bg-[#243E33] transition-all">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg font-label-caps text-xs sm:text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white dark:bg-dark-muted hover:bg-slate-50 dark:hover:bg-dark-muted transition-all">
             <Upload className="h-4 w-4" />
             Importar CSV
           </button>
-          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg font-label-caps text-[10px] sm:text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white dark:bg-[#1E342B] hover:bg-slate-50 dark:hover:bg-[#243E33] transition-all">
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-3 py-2 border border-slate-200 dark:border-slate-800 rounded-lg font-label-caps text-xs sm:text-xs font-bold text-slate-700 dark:text-zinc-200 bg-white dark:bg-dark-muted hover:bg-slate-50 dark:hover:bg-dark-muted transition-all">
             <Download className="h-4 w-4" />
             Exportar Reporte
           </button>
           <button 
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-lg font-label-caps text-[10px] sm:text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-lg font-label-caps text-xs sm:text-xs font-bold shadow-sm hover:opacity-90 active:scale-95 transition-all"
             onClick={() => setIsCreateModalOpen(true)}
           >
             <Plus className="h-4 w-4" />
@@ -287,7 +287,7 @@ export function Inventory() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-card-gap">
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-[#0F6B41]/10 dark:bg-white/10 rounded-lg text-[#0F6B41] dark:text-emerald-400">
+            <div className="p-2 bg-brand/10 dark:bg-white/10 rounded-lg text-brand dark:text-emerald-400">
               <Package className="h-5 w-5" />
             </div>
             <span className="text-slate-500 dark:text-zinc-400 font-bold text-xs">Total</span>
@@ -298,10 +298,10 @@ export function Inventory() {
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-rose-50 dark:bg-rose-950/40 rounded-lg text-[#C62828] dark:text-rose-400">
+            <div className="p-2 bg-rose-50 dark:bg-rose-950/40 rounded-lg text-danger dark:text-rose-400">
               <AlertTriangle className="h-5 w-5" />
             </div>
-            <span className="text-[#C62828] dark:text-rose-400 font-bold text-xs">{products.filter(p => isLowStock(p, lowStockThreshold)).length} Artículos</span>
+            <span className="text-danger dark:text-rose-400 font-bold text-xs">{products.filter(p => isLowStock(p, lowStockThreshold)).length} Artículos</span>
           </div>
           <p className="font-label-caps text-label-caps text-slate-500 dark:text-zinc-400 mb-1">STOCK BAJO</p>
           <h3 className="font-h2 text-h2 text-slate-900 dark:text-zinc-100">{products.filter(p => isLowStock(p, lowStockThreshold)).length}</h3>
@@ -309,7 +309,7 @@ export function Inventory() {
 
         <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-emerald-50 dark:bg-white/10 rounded-lg text-[#0F6B41] dark:text-emerald-400">
+            <div className="p-2 bg-emerald-50 dark:bg-white/10 rounded-lg text-brand dark:text-emerald-400">
               <Receipt className="h-5 w-5" />
             </div>
             <span className="text-slate-500 dark:text-zinc-400 font-bold text-xs">A la Venta</span>
@@ -331,8 +331,8 @@ export function Inventory() {
       </div>
 
       {/* Table Section */}
-      <div className="bg-white dark:bg-[#182C24] rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-[#14261F] flex flex-wrap gap-4 items-center">
+      <div className="bg-white dark:bg-dark-card rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-dark-subtle flex flex-wrap gap-4 items-center">
           <div className="flex-1 min-w-[300px] relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 dark:text-zinc-400" />
             <input 
@@ -341,7 +341,7 @@ export function Inventory() {
               placeholder="Buscar por nombre, SKU o escaneo de código... (F2)"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-[#1E342B] border border-slate-200 dark:border-slate-700 rounded-lg text-body-md focus:ring-2 focus:ring-[#0F6B41]/20 focus:border-[#0F6B41] outline-none text-slate-900 dark:text-zinc-100 shadow-sm transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-dark-muted border border-slate-200 dark:border-slate-700 rounded-lg text-body-md focus:ring-2 focus:ring-brand/20 focus:border-brand outline-none text-slate-900 dark:text-zinc-100 shadow-sm transition-all"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -349,7 +349,7 @@ export function Inventory() {
             <select 
               value={categoryFilter}
               onChange={(e) => setCategoryFilter(e.target.value)}
-              className="bg-white dark:bg-[#1E342B] border border-slate-200 dark:border-slate-700 rounded-md text-body-md px-3 py-1.5 focus:ring-[#0F6B41] outline-none text-slate-900 dark:text-zinc-100"
+              className="bg-white dark:bg-dark-muted border border-slate-200 dark:border-slate-700 rounded-md text-body-md px-3 py-1.5 focus:ring-brand outline-none text-slate-900 dark:text-zinc-100"
             >
               <option>Todas las Categorías</option>
               {categories.map(cat => (
@@ -374,12 +374,12 @@ export function Inventory() {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleAddCategoryFilter();
                 }}
-                className="bg-white dark:bg-[#1E342B] border border-slate-200 dark:border-slate-700 rounded-md text-body-md px-3 py-1.5 focus:ring-[#0F6B41] outline-none text-slate-900 dark:text-zinc-100 w-40"
+                className="bg-white dark:bg-dark-muted border border-slate-200 dark:border-slate-700 rounded-md text-body-md px-3 py-1.5 focus:ring-brand outline-none text-slate-900 dark:text-zinc-100 w-40"
               />
               <button 
                 onClick={handleAddCategoryFilter}
                 disabled={!newCategoryInput.trim()}
-                className="bg-emerald-50 text-[#0F6B41] hover:bg-emerald-100 px-3 py-1.5 rounded-md font-bold text-sm transition-colors disabled:opacity-50 dark:text-emerald-400"
+                className="bg-emerald-50 text-brand hover:bg-emerald-100 px-3 py-1.5 rounded-md font-bold text-sm transition-colors disabled:opacity-50 dark:text-emerald-400"
               >
                 Añadir
               </button>
@@ -390,7 +390,7 @@ export function Inventory() {
             <select 
               value={stockStatusFilter}
               onChange={(e) => setStockStatusFilter(e.target.value)}
-              className="bg-white dark:bg-[#1E342B] border border-slate-200 dark:border-slate-700 rounded-md text-body-md px-3 py-1.5 focus:ring-[#0F6B41] outline-none text-slate-900 dark:text-zinc-100"
+              className="bg-white dark:bg-dark-muted border border-slate-200 dark:border-slate-700 rounded-md text-body-md px-3 py-1.5 focus:ring-brand outline-none text-slate-900 dark:text-zinc-100"
             >
               <option>Todos los Estados</option>
               <option>En Stock</option>
@@ -404,11 +404,11 @@ export function Inventory() {
               min="0" 
               value={lowStockThreshold} 
               onChange={(e) => setLowStockThreshold(Number(e.target.value))}
-              className="bg-white dark:bg-[#1E342B] border border-slate-200 dark:border-slate-700 rounded-md text-body-md w-20 px-3 py-1.5 focus:ring-[#0F6B41] outline-none text-slate-900 dark:text-zinc-100"
+              className="bg-white dark:bg-dark-muted border border-slate-200 dark:border-slate-700 rounded-md text-body-md w-20 px-3 py-1.5 focus:ring-brand outline-none text-slate-900 dark:text-zinc-100"
             />
             <button
               onClick={() => setIsPurchaseListOpen(true)}
-              className="ml-2 px-3 py-1.5 rounded-md bg-[#0F6B41] text-white text-xs font-bold whitespace-nowrap"
+              className="ml-2 px-3 py-1.5 rounded-md bg-brand text-white text-xs font-bold whitespace-nowrap"
             >
               Lista de compra
             </button>
@@ -423,7 +423,7 @@ export function Inventory() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50 dark:bg-[#14261F] border-b border-slate-200 dark:border-slate-800">
+              <tr className="bg-slate-50 dark:bg-dark-subtle border-b border-slate-200 dark:border-slate-800">
                 <th className="px-6 py-4 font-label-caps text-label-caps text-slate-500 dark:text-zinc-400">NOMBRE DEL PRODUCTO</th>
                 <th className="px-6 py-4 font-label-caps text-label-caps text-slate-500 dark:text-zinc-400">CATEGORÍA</th>
                 <th className="px-6 py-4 font-label-caps text-label-caps text-slate-500 dark:text-zinc-400 text-right">STOCK ACTUAL</th>
@@ -452,7 +452,7 @@ export function Inventory() {
                     <tr 
                       className={cn(
                         "transition-colors",
-                        isLowStock && !isEditing ? "bg-red-50/50 hover:bg-red-50 dark:bg-rose-950/30 dark:hover:bg-rose-950/40 border-l-4 border-l-error" : "hover:bg-slate-50 dark:hover:bg-[#1E342B] border-l-4 border-l-transparent",
+                        isLowStock && !isEditing ? "bg-red-50/50 hover:bg-red-50 dark:bg-rose-950/30 dark:hover:bg-rose-950/40 border-l-4 border-l-error" : "hover:bg-slate-50 dark:hover:bg-dark-muted border-l-4 border-l-transparent",
                         isEditing ? "bg-emerald-50/30" : ""
                       )}
                     >
@@ -478,7 +478,7 @@ export function Inventory() {
                                    type="text" 
                                    value={editForm.name} 
                                    onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                                   className="w-full bg-white border border-[#0F6B41]/40 text-slate-800 px-2 py-1 rounded focus:ring-2 focus:ring-[#0F6B41] outline-none font-bold text-sm dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                                   className="w-full bg-white border border-brand/40 text-slate-800 px-2 py-1 rounded focus:ring-2 focus:ring-brand outline-none font-bold text-sm dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                                  />
                                  <div className="flex gap-1">
                                    <input 
@@ -486,14 +486,14 @@ export function Inventory() {
                                      value={editForm.sku} 
                                      onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))}
                                      placeholder="SKU"
-                                     className="w-1/2 bg-white border border-[#0F6B41]/40 text-slate-500 px-2 py-1 rounded text-[10px] focus:ring-2 focus:ring-[#0F6B41] outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
+                                     className="w-1/2 bg-white border border-brand/40 text-slate-500 px-2 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
                                    />
                                    <input 
                                      type="text" 
                                      value={editForm.barcode} 
                                      onChange={(e) => setEditForm(prev => ({ ...prev, barcode: e.target.value }))}
                                      placeholder="Código Barra"
-                                     className="w-1/2 bg-white border border-[#0F6B41]/40 text-[#0F6B41] px-2 py-1 rounded text-[10px] focus:ring-2 focus:ring-[#0F6B41] outline-none font-bold dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
+                                     className="w-1/2 bg-white border border-brand/40 text-brand px-2 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-bold dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
                                    />
                                  </div>
                                </div>
@@ -501,9 +501,9 @@ export function Inventory() {
                                <>
                                  <p className={cn("font-body-md font-bold", isLowStock && !isEditing ? "text-error dark:text-rose-300" : "text-on-surface")}>{product.name}</p>
                                  <div className="flex items-center gap-2 mt-0.5">
-                                   <p className="text-[10px] text-on-surface-variant font-medium bg-slate-100 px-1.5 py-0.5 rounded uppercase dark:bg-white/5">SKU: {product.sku}</p>
+                                   <p className="text-xs text-on-surface-variant font-medium bg-slate-100 px-1.5 py-0.5 rounded uppercase dark:bg-white/5">SKU: {product.sku}</p>
                                    {product.barcode && (
-                                     <p className="text-[10px] text-[#0F6B41] font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-1 dark:text-emerald-400">
+                                     <p className="text-xs text-brand font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-1 dark:text-emerald-400">
                                        <Receipt className="w-3 h-3" /> {product.barcode}
                                      </p>
                                    )}
@@ -521,7 +521,7 @@ export function Inventory() {
                               type="number" 
                               value={editForm.stock} 
                               onChange={(e) => setEditForm(prev => ({ ...prev, stock: Number(e.target.value) }))}
-                              className="w-16 bg-white border border-[#0F6B41]/40 text-slate-800 px-1.5 py-1 rounded text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none text-right font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                              className="w-16 bg-white border border-brand/40 text-slate-800 px-1.5 py-1 rounded text-sm focus:ring-2 focus:ring-brand outline-none text-right font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                             />
                             <input
                               type="number"
@@ -535,7 +535,7 @@ export function Inventory() {
                               type="text" 
                               value={editForm.unit} 
                               onChange={(e) => setEditForm(prev => ({ ...prev, unit: e.target.value }))}
-                              className="w-16 bg-white border border-[#0F6B41]/40 text-slate-500 px-1 py-1 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
+                              className="w-16 bg-white border border-brand/40 text-slate-500 px-1 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
                             />
                           </div>
                         ) : (
@@ -553,7 +553,7 @@ export function Inventory() {
                               value={editForm.cost} 
                               disabled={product.recipe && product.recipe.length > 0}
                               onChange={(e) => setEditForm(prev => ({ ...prev, cost: Number(e.target.value) }))}
-                              className="w-full bg-white border border-[#0F6B41]/40 text-slate-800 pl-4 pr-1 py-1 rounded text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium text-right disabled:bg-slate-100 disabled:text-slate-400 dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                              className="w-full bg-white border border-brand/40 text-slate-800 pl-4 pr-1 py-1 rounded text-sm focus:ring-2 focus:ring-brand outline-none font-medium text-right disabled:bg-slate-100 disabled:text-slate-400 dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                             />
                           </div>
                         ) : (
@@ -571,7 +571,7 @@ export function Inventory() {
                                 type="number" 
                                 value={editForm.price} 
                                 onChange={(e) => setEditForm(prev => ({ ...prev, price: Number(e.target.value) }))}
-                                className="w-full bg-white border border-[#0F6B41]/40 text-slate-800 pl-5 pr-2 py-1 rounded text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                                className="w-full bg-white border border-brand/40 text-slate-800 pl-5 pr-2 py-1 rounded text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                               />
                             </div>
                             <span className="text-slate-400 dark:text-zinc-400">/</span>
@@ -581,7 +581,7 @@ export function Inventory() {
                                 type="number" 
                                 value={editForm.takeawayPrice} 
                                 onChange={(e) => setEditForm(prev => ({ ...prev, takeawayPrice: Number(e.target.value) }))}
-                                className="w-full bg-white border border-[#0F6B41]/40 text-[#0F6B41] pl-5 pr-2 py-1 rounded text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
+                                className="w-full bg-white border border-brand/40 text-brand pl-5 pr-2 py-1 rounded text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
                               />
                             </div>
                           </div>
@@ -591,8 +591,8 @@ export function Inventory() {
                           <div className="flex items-center gap-1.5 flex-wrap justify-end">
                             <span className="text-on-surface tabular-nums">{formatMoney(product.price || 0)}</span>
                             <span className="text-slate-400 mx-1 dark:text-zinc-400">/</span>
-                            <span className="text-[#0F6B41] font-medium tabular-nums dark:text-emerald-400">{formatMoney(product.takeawayPrice || 0)}</span>
-                            <button onClick={() => setHistoryModalItem(product)} className="text-slate-400 hover:text-[#0F6B41] transition-colors ml-1 p-0.5 rounded-md hover:bg-emerald-50 dark:text-zinc-400" title="Ver Historial de Precios">
+                            <span className="text-brand font-medium tabular-nums dark:text-emerald-400">{formatMoney(product.takeawayPrice || 0)}</span>
+                            <button onClick={() => setHistoryModalItem(product)} className="text-slate-400 hover:text-brand transition-colors ml-1 p-0.5 rounded-md hover:bg-emerald-50 dark:text-zinc-400" title="Ver Historial de Precios">
                               <History className="w-4 h-4" />
                             </button>
                           </div>
@@ -604,12 +604,12 @@ export function Inventory() {
                             type="checkbox"
                             checked={editForm.status === 'active'}
                             onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.checked ? 'active' : 'inactive' }))}
-                            className="w-4 h-4 text-[#0F6B41] border-slate-350 rounded focus:ring-[#0F6B41] dark:text-emerald-400"
+                            className="w-4 h-4 text-brand border-slate-350 rounded focus:ring-brand dark:text-emerald-400"
                           />
                         ) : (
                           <span className={cn(
                             "px-2.5 py-0.5 text-xs font-bold rounded-full",
-                            product.status === 'active' ? "bg-emerald-50 text-[#0F6B41] border border-emerald-100 dark:text-emerald-400" : "bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-zinc-400"
+                            product.status === 'active' ? "bg-emerald-50 text-brand border border-emerald-100 dark:text-emerald-400" : "bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-zinc-400"
                           )}>
                             {product.status === 'active' ? 'Disponible' : 'Oculto'}
                           </span>
@@ -625,7 +625,7 @@ export function Inventory() {
                       <td className="px-6 py-4 text-right whitespace-nowrap">
                         {isEditing ? (
                           <div className="flex items-center justify-end">
-                            <button onClick={saveEditing} className="text-[#0F6B41] hover:text-[#0C5734] transition-colors p-1 dark:text-emerald-400" title="Guardar">
+                            <button onClick={saveEditing} className="text-brand hover:text-brand-hover transition-colors p-1 dark:text-emerald-400" title="Guardar">
                               <Save className="w-5 h-5" />
                             </button>
                             <button onClick={cancelEditing} className="text-slate-400 hover:text-slate-600 transition-colors p-1 ml-1 dark:text-zinc-400" title="Cancelar">
@@ -669,7 +669,7 @@ export function Inventory() {
                                           type="text" 
                                           value={editForm.name} 
                                           onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                                          className="w-full bg-white border border-[#0F6B41]/40 text-slate-800 px-2 py-1 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-bold dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                                          className="w-full bg-white border border-brand/40 text-slate-800 px-2 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-bold dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                                         />
                                         <div className="flex gap-1">
                                           <input 
@@ -677,14 +677,14 @@ export function Inventory() {
                                             value={editForm.sku} 
                                             onChange={(e) => setEditForm(prev => ({ ...prev, sku: e.target.value }))}
                                             placeholder="SKU"
-                                            className="w-1/2 bg-white border border-[#0F6B41]/40 text-slate-500 px-2 py-1 rounded text-[9px] focus:ring-2 focus:ring-[#0F6B41] outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
+                                            className="w-1/2 bg-white border border-brand/40 text-slate-500 px-2 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
                                           />
                                           <input 
                                             type="text" 
                                             value={editForm.barcode} 
                                             onChange={(e) => setEditForm(prev => ({ ...prev, barcode: e.target.value }))}
                                             placeholder="Barcode"
-                                            className="w-1/2 bg-white border border-[#0F6B41]/40 text-[#0F6B41] px-2 py-1 rounded text-[9px] focus:ring-2 focus:ring-[#0F6B41] outline-none font-bold dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
+                                            className="w-1/2 bg-white border border-brand/40 text-brand px-2 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-bold dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
                                           />
                                         </div>
                                       </div>
@@ -692,9 +692,9 @@ export function Inventory() {
                                       <>
                                         <p className={cn("text-sm font-bold", isVarLowStock && !isVarEditing ? "text-error dark:text-rose-300" : "text-on-surface")}>{variant.name}</p>
                                         <div className="flex items-center gap-2 mt-0.5">
-                                          <p className="text-[9px] text-on-surface-variant font-medium bg-white px-1.5 py-0.5 rounded border border-slate-200 uppercase dark:bg-[var(--bg-surface)] dark:border-white/10">SKU: {variant.sku}</p>
+                                          <p className="text-xs text-on-surface-variant font-medium bg-white px-1.5 py-0.5 rounded border border-slate-200 uppercase dark:bg-[var(--bg-surface)] dark:border-white/10">SKU: {variant.sku}</p>
                                           {variant.barcode && (
-                                            <p className="text-[9px] text-[#0F6B41] font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-1 dark:text-emerald-400">
+                                            <p className="text-xs text-brand font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 flex items-center gap-1 dark:text-emerald-400">
                                               <Receipt className="w-2.5 h-2.5" /> {variant.barcode}
                                             </p>
                                           )}
@@ -712,13 +712,13 @@ export function Inventory() {
                                   type="number" 
                                   value={editForm.stock} 
                                   onChange={(e) => setEditForm(prev => ({ ...prev, stock: Number(e.target.value) }))}
-                                  className="w-14 bg-white border border-[#0F6B41]/40 text-slate-800 px-1.5 py-0.5 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none text-right font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                                  className="w-14 bg-white border border-brand/40 text-slate-800 px-1.5 py-0.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none text-right font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                                 />
                                 <input 
                                   type="text" 
                                   value={editForm.unit} 
                                   onChange={(e) => setEditForm(prev => ({ ...prev, unit: e.target.value }))}
-                                  className="w-14 bg-white border border-[#0F6B41]/40 text-slate-500 px-1 py-0.5 rounded text-[10px] focus:ring-2 focus:ring-[#0F6B41] outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
+                                  className="w-14 bg-white border border-brand/40 text-slate-500 px-1 py-0.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none dark:bg-[var(--bg-surface)] dark:text-zinc-400" 
                                 />
                               </div>
                             ) : (
@@ -730,12 +730,12 @@ export function Inventory() {
                           <td className="px-6 py-3 text-right">
                             {isVarEditing ? (
                               <div className="relative w-16 ml-auto">
-                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-[10px] dark:text-zinc-400">$</span>
+                                <span className="absolute left-1 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs dark:text-zinc-400">$</span>
                                 <input 
                                   type="number" 
                                   value={editForm.cost} 
                                   onChange={(e) => setEditForm(prev => ({ ...prev, cost: Number(e.target.value) }))}
-                                  className="w-full bg-white border border-[#0F6B41]/40 text-slate-800 pl-3 pr-1 py-0.5 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium text-right dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                                  className="w-full bg-white border border-brand/40 text-slate-800 pl-3 pr-1 py-0.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium text-right dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                                 />
                               </div>
                             ) : (
@@ -753,7 +753,7 @@ export function Inventory() {
                                     type="number" 
                                     value={editForm.price} 
                                     onChange={(e) => setEditForm(prev => ({ ...prev, price: Number(e.target.value) }))}
-                                    className="w-full bg-white border border-[#0F6B41]/40 text-slate-800 pl-5 pr-2 py-1 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
+                                    className="w-full bg-white border border-brand/40 text-slate-800 pl-5 pr-2 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-zinc-100" 
                                   />
                                 </div>
                                 <span className="text-slate-400 dark:text-zinc-400">/</span>
@@ -763,7 +763,7 @@ export function Inventory() {
                                     type="number" 
                                     value={editForm.takeawayPrice}
                                     onChange={(e) => setEditForm(prev => ({ ...prev, takeawayPrice: Number(e.target.value) }))}
-                                    className="w-full bg-white border border-[#0F6B41]/40 text-[#0F6B41] pl-5 pr-2 py-1 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
+                                    className="w-full bg-white border border-brand/40 text-brand pl-5 pr-2 py-1 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--bg-surface)] dark:text-emerald-400" 
                                   />
                                 </div>
                               </div>
@@ -771,8 +771,8 @@ export function Inventory() {
                               <div className="flex items-center gap-1.5 flex-wrap justify-end">
                                 <span className="text-on-surface tabular-nums">{formatMoney(variant.price || 0)}</span>
                                 <span className="text-slate-400 mx-1 dark:text-zinc-400">/</span>
-                                <span className="text-[#0F6B41] font-medium tabular-nums dark:text-emerald-400">{formatMoney(variant.takeawayPrice || 0)}</span>
-                                <button onClick={() => setHistoryModalItem(variant)} className="text-slate-400 hover:text-[#0F6B41] transition-colors ml-1 p-0.5 rounded-md hover:bg-emerald-50 dark:text-zinc-400" title="Ver Historial de Precios">
+                                <span className="text-brand font-medium tabular-nums dark:text-emerald-400">{formatMoney(variant.takeawayPrice || 0)}</span>
+                                <button onClick={() => setHistoryModalItem(variant)} className="text-slate-400 hover:text-brand transition-colors ml-1 p-0.5 rounded-md hover:bg-emerald-50 dark:text-zinc-400" title="Ver Historial de Precios">
                                   <History className="w-3.5 h-3.5" />
                                 </button>
                               </div>
@@ -784,12 +784,12 @@ export function Inventory() {
                                 type="checkbox"
                                 checked={editForm.status === 'active'}
                                 onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.checked ? 'active' : 'inactive' }))}
-                                className="w-3.5 h-3.5 text-[#0F6B41] border-slate-350 rounded focus:ring-[#0F6B41] dark:text-emerald-400"
+                                className="w-3.5 h-3.5 text-brand border-slate-350 rounded focus:ring-brand dark:text-emerald-400"
                               />
                             ) : (
                               <span className={cn(
-                                "px-2 py-0.2 text-[10px] font-bold rounded-full",
-                                variant.status === 'active' ? "bg-emerald-50 text-[#0F6B41] border border-emerald-100 dark:text-emerald-400" : "bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-zinc-400"
+                                "px-2 py-0.2 text-xs font-bold rounded-full",
+                                variant.status === 'active' ? "bg-emerald-50 text-brand border border-emerald-100 dark:text-emerald-400" : "bg-slate-100 text-slate-400 dark:bg-white/5 dark:text-zinc-400"
                               )}>
                                 {variant.status === 'active' ? 'Disponible' : 'Oculto'}
                               </span>
@@ -797,15 +797,15 @@ export function Inventory() {
                           </td>
                           <td className="px-6 py-3 text-center">
                             {isVarLowStock ? (
-                              <span className="px-2 py-0.5 bg-red-100 text-red-700 font-status-badge text-[10px] rounded-full">Stock Bajo</span>
+                              <span className="px-2 py-0.5 bg-red-100 text-red-700 font-status-badge text-xs rounded-full">Stock Bajo</span>
                             ) : (
-                              <span className="px-2 py-0.5 bg-green-100 text-green-700 font-status-badge text-[10px] rounded-full">En Stock</span>
+                              <span className="px-2 py-0.5 bg-green-100 text-green-700 font-status-badge text-xs rounded-full">En Stock</span>
                             )}
                           </td>
                           <td className="px-6 py-3 text-right whitespace-nowrap">
                             {isVarEditing ? (
                               <div className="flex items-center justify-end">
-                                <button onClick={saveEditing} className="text-[#0F6B41] hover:text-[#0C5734] transition-colors p-1 dark:text-emerald-400" title="Guardar">
+                                <button onClick={saveEditing} className="text-brand hover:text-brand-hover transition-colors p-1 dark:text-emerald-400" title="Guardar">
                                   <Save className="w-4 h-4" />
                                 </button>
                                 <button onClick={cancelEditing} className="text-slate-400 hover:text-slate-600 transition-colors p-1 ml-1 dark:text-zinc-400" title="Cancelar">
@@ -870,7 +870,7 @@ export function Inventory() {
                       <ImageIcon className="w-6 h-6 text-emerald-400" />
                     </div>
                     <span className="text-sm font-semibold text-slate-600 dark:text-zinc-300">Subir Imagen</span>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 mt-1 dark:text-zinc-400">PNG, JPG hasta 5MB</span>
+                    <span className="text-xs uppercase font-bold text-slate-400 mt-1 dark:text-zinc-400">PNG, JPG hasta 5MB</span>
                   </div>
                 </div>
 
@@ -882,7 +882,7 @@ export function Inventory() {
                       placeholder="Ej. Hamburguesa Doble" 
                       value={newProductName}
                       onChange={(e) => setNewProductName(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                      className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                     />
                   </div>
                   
@@ -893,7 +893,7 @@ export function Inventory() {
                         <button 
                           type="button"
                           onClick={() => setIsAddingCategory(!isAddingCategory)}
-                          className="text-[10px] font-bold text-[#0F6B41] hover:text-[#0C5734] dark:text-emerald-400"
+                          className="text-xs font-bold text-brand hover:text-brand-hover dark:text-emerald-400"
                         >
                           {isAddingCategory ? 'Cancelar' : '+ Nueva'}
                         </button>
@@ -904,7 +904,7 @@ export function Inventory() {
                           <input 
                             type="text" 
                             placeholder="Categoría" 
-                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                             value={newCategoryName}
                             onChange={(e) => setNewCategoryName(e.target.value)}
                             onKeyDown={(e) => {
@@ -919,7 +919,7 @@ export function Inventory() {
                           />
                           <button 
                             type="button"
-                            className="px-3 py-2 bg-[#0F6B41] text-white rounded-lg text-sm font-bold"
+                            className="px-3 py-2 bg-brand text-white rounded-lg text-sm font-bold"
                             onClick={() => {
                               if (newCategoryName.trim()) {
                                 setCategories([...categories, newCategoryName.trim()]);
@@ -936,7 +936,7 @@ export function Inventory() {
                         <select 
                           value={newProductCategory}
                           onChange={(e) => setNewProductCategory(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium appearance-none dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium appearance-none dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                         >
                           {categories.map((cat, idx) => (
                             <option key={idx} value={cat}>{cat}</option>
@@ -951,14 +951,14 @@ export function Inventory() {
                         placeholder="Ej. BUR-DOB-01" 
                         value={newProductSKU}
                         onChange={(e) => setNewProductSKU(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                        className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                         disabled={hasVariants} 
                       />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center justify-between dark:text-zinc-400">
                         Código de Barras
-                        <span className="text-[9px] bg-emerald-100 text-[#0F6B41] px-1 py-0.5 rounded dark:text-emerald-400">EAN</span>
+                        <span className="text-xs bg-emerald-100 text-brand px-1 py-0.5 rounded dark:text-emerald-400">EAN</span>
                       </label>
                       <div className="relative">
                         <input 
@@ -966,10 +966,10 @@ export function Inventory() {
                           placeholder="71234567..." 
                           value={newProductBarcode}
                           onChange={(e) => setNewProductBarcode(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-4 pr-8 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-4 pr-8 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                           disabled={hasVariants} 
                         />
-                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-[#0F6B41] dark:text-zinc-400" title="Escanear Producto">
+                        <button className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-brand dark:text-zinc-400" title="Escanear Producto">
                           <Search className="w-4 h-4" />
                         </button>
                       </div>
@@ -981,13 +981,13 @@ export function Inventory() {
                       <input 
                         type="checkbox" 
                         id="hasVariants" 
-                        className="w-5 h-5 text-[#0F6B41] border-slate-350 rounded focus:ring-[#0F6B41] cursor-pointer dark:text-emerald-400" 
+                        className="w-5 h-5 text-brand border-slate-350 rounded focus:ring-brand cursor-pointer dark:text-emerald-400" 
                         checked={hasVariants}
                         onChange={(e) => setHasVariants(e.target.checked)}
                       />
                       <label htmlFor="hasVariants" className="text-sm font-bold text-slate-700 cursor-pointer select-none dark:text-zinc-300">
                         Tiene variantes
-                        <span className="block text-[10px] text-slate-450 font-normal">Tamaños, sabores, etc.</span>
+                        <span className="block text-xs text-slate-450 font-normal">Tamaños, sabores, etc.</span>
                       </label>
                     </div>
 
@@ -997,13 +997,13 @@ export function Inventory() {
                       <input 
                         type="checkbox" 
                         id="newProductIsMenuAvailable" 
-                        className="w-5 h-5 text-[#0F6B41] border-slate-350 rounded focus:ring-[#0F6B41] cursor-pointer dark:text-emerald-400" 
+                        className="w-5 h-5 text-brand border-slate-350 rounded focus:ring-brand cursor-pointer dark:text-emerald-400" 
                         checked={newProductIsMenuAvailable}
                         onChange={(e) => setNewProductIsMenuAvailable(e.target.checked)}
                       />
                       <label htmlFor="newProductIsMenuAvailable" className="text-sm font-bold text-slate-700 cursor-pointer select-none dark:text-zinc-300">
                         Disponible en Menú
-                        <span className="block text-[10px] text-slate-450 font-normal">Mostrar en carta digital.</span>
+                        <span className="block text-xs text-slate-450 font-normal">Mostrar en carta digital.</span>
                       </label>
                     </div>
                   </div>
@@ -1015,7 +1015,7 @@ export function Inventory() {
                         <button 
                           type="button"
                           onClick={() => setNewProductVariants([...newProductVariants, { id: Date.now().toString(), name: '', sku: '', price: 0, takeawayPrice: 0, stock: 0 }])}
-                          className="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-[#0F6B41] rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors dark:text-emerald-400"
+                          className="flex items-center gap-1.5 px-3 py-1 bg-emerald-100 text-brand rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors dark:text-emerald-400"
                         >
                           <Plus className="w-3.5 h-3.5" /> Añadir Variante
                         </button>
@@ -1029,7 +1029,7 @@ export function Inventory() {
                             <div key={variant.id} className="flex gap-2 items-start bg-white p-3 border border-slate-200 rounded-lg shadow-sm dark:bg-[var(--bg-surface)] dark:border-white/10">
                               <div className="grid grid-cols-2 gap-2 flex-1">
                                 <div>
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Nombre Variante</label>
+                                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Nombre Variante</label>
                                   <input 
                                     type="text" 
                                     placeholder="Ej. Pequeño" 
@@ -1037,11 +1037,11 @@ export function Inventory() {
                                     onChange={(e) => {
                                       const nv = [...newProductVariants]; nv[index].name = e.target.value; setNewProductVariants(nv);
                                     }}
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">SKU</label>
+                                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">SKU</label>
                                   <input 
                                     type="text" 
                                     placeholder="Ej. BUR-DOB-PEQ" 
@@ -1049,11 +1049,11 @@ export function Inventory() {
                                     onChange={(e) => {
                                       const nv = [...newProductVariants]; nv[index].sku = e.target.value; setNewProductVariants(nv);
                                     }}
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Precio</label>
+                                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Precio</label>
                                   <input 
                                     type="number" 
                                     placeholder="0.00" 
@@ -1061,11 +1061,11 @@ export function Inventory() {
                                     onChange={(e) => {
                                       const nv = [...newProductVariants]; nv[index].price = Number(e.target.value); setNewProductVariants(nv);
                                     }}
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Precio P/Llevar</label>
+                                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Precio P/Llevar</label>
                                   <input 
                                     type="number" 
                                     placeholder="0.00" 
@@ -1073,11 +1073,11 @@ export function Inventory() {
                                     onChange={(e) => {
                                       const nv = [...newProductVariants]; nv[index].takeawayPrice = Number(e.target.value); setNewProductVariants(nv);
                                     }}
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Stock Inicial</label>
+                                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 dark:text-zinc-400">Stock Inicial</label>
                                   <input 
                                     type="number" 
                                     placeholder="0" 
@@ -1085,7 +1085,7 @@ export function Inventory() {
                                     onChange={(e) => {
                                       const nv = [...newProductVariants]; nv[index].stock = Number(e.target.value); setNewProductVariants(nv);
                                     }}
-                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                                    className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-3 py-1.5 rounded text-xs focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                                   />
                                 </div>
                               </div>
@@ -1112,12 +1112,12 @@ export function Inventory() {
                               placeholder="0.00" 
                               value={newProductPrice}
                               onChange={(e) => setNewProductPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                             />
                           </div>
                         </div>
                         <div>
-                          <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1 truncate dark:text-zinc-400" title="Precio Para Llevar">Precio P/Llevar</label>
+                          <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 truncate dark:text-zinc-400" title="Precio Para Llevar">Precio P/Llevar</label>
                           <div className="relative">
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold dark:text-zinc-400">$</span>
                             <input 
@@ -1125,7 +1125,7 @@ export function Inventory() {
                               placeholder="0.00" 
                               value={newProductTakeawayPrice}
                               onChange={(e) => setNewProductTakeawayPrice(e.target.value === '' ? '' : Number(e.target.value))}
-                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                              className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                             />
                           </div>
                         </div>
@@ -1139,7 +1139,7 @@ export function Inventory() {
                               value={ingredients.length > 0 ? recipeCost.toFixed(2) : newProductCost}
                               disabled={ingredients.length > 0}
                               onChange={(e) => setNewProductCost(e.target.value === '' ? '' : Number(e.target.value))}
-                              className="w-full bg-slate-50 border border-slate-200 text-slate-850 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium disabled:bg-slate-200 disabled:text-slate-500 dark:bg-[var(--color-paper-subtle)] dark:border-white/10" 
+                              className="w-full bg-slate-50 border border-slate-200 text-slate-850 pl-6 pr-2 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium disabled:bg-slate-200 disabled:text-slate-500 dark:bg-[var(--color-paper-subtle)] dark:border-white/10" 
                             />
                           </div>
                         </div>
@@ -1153,7 +1153,7 @@ export function Inventory() {
                             placeholder="0" 
                             value={newProductStock}
                             onChange={(e) => setNewProductStock(Number(e.target.value))}
-                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100" 
                           />
                           <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1 mt-3 dark:text-zinc-400">Stock mínimo (alerta)</label>
                           <input
@@ -1161,7 +1161,7 @@ export function Inventory() {
                             placeholder={`General: ${lowStockThreshold}`}
                             value={newProductMinStock}
                             onChange={(e) => setNewProductMinStock(e.target.value === '' ? '' : Number(e.target.value))}
-                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                           />
                         </div>
                         <div>
@@ -1169,7 +1169,7 @@ export function Inventory() {
                           <select 
                             value={newProductUnit}
                             onChange={(e) => setNewProductUnit(e.target.value)}
-                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium appearance-none dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
+                            className="w-full bg-slate-50 border border-slate-200 text-slate-800 px-4 py-2.5 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium appearance-none dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                           >
                             <option value="Unidades">Unidades</option>
                             <option value="g">Gramos (g)</option>
@@ -1195,7 +1195,7 @@ export function Inventory() {
                   </div>
                   <button 
                     onClick={handleAddIngredient}
-                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-[#0F6B41] rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors dark:text-emerald-400"
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-100 text-brand rounded-lg text-xs font-bold hover:bg-emerald-100 transition-colors dark:text-emerald-400"
                   >
                     <Plus className="w-3.5 h-3.5" /> Agregar
                   </button>
@@ -1225,7 +1225,7 @@ export function Inventory() {
                                   unit: selectedProd?.unit || 'g'
                                 } : i));
                               }}
-                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10"
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)] dark:border-white/10"
                             >
                               <option value="">-- Seleccionar Insumo --</option>
                               {products.filter(p => !p.variants || p.variants.length === 0).map(p => (
@@ -1239,7 +1239,7 @@ export function Inventory() {
                               placeholder="0" 
                               value={ing.quantity}
                               onChange={(e) => setIngredients(ingredients.map(i => i.id === ing.id ? {...i, quantity: Number(e.target.value)} : i))}
-                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-center focus:ring-2 focus:ring-[#0F6B41] outline-none font-bold dark:bg-[var(--color-paper-subtle)] dark:border-white/10" 
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-center focus:ring-2 focus:ring-brand outline-none font-bold dark:bg-[var(--color-paper-subtle)] dark:border-white/10" 
                             />
                           </div>
                           <div className="w-20 pt-2 text-center text-xs font-bold text-slate-500 dark:text-zinc-400">
@@ -1261,7 +1261,7 @@ export function Inventory() {
                 <div className="mt-4 pt-4 border-t border-slate-200 dark:border-white/10">
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-bold text-slate-500 uppercase tracking-wider dark:text-zinc-400">Costo Receta Calculado:</span>
-                    <span className="font-bold text-[#0F6B41] text-lg dark:text-emerald-400">{formatMoney(recipeCost)}</span>
+                    <span className="font-bold text-brand text-lg dark:text-emerald-400">{formatMoney(recipeCost)}</span>
                   </div>
                 </div>
 
@@ -1277,7 +1277,7 @@ export function Inventory() {
                 Cancelar
               </button>
               <button 
-                className="px-6 py-2.5 bg-[#0F6B41] text-white font-bold text-sm rounded-xl shadow-lg shadow-sm hover:bg-[#0C5734] transition-colors flex items-center gap-2"
+                className="px-6 py-2.5 bg-brand text-white font-bold text-sm rounded-xl shadow-lg shadow-sm hover:bg-brand-hover transition-colors flex items-center gap-2"
                 onClick={handleCreateProduct}
                 disabled={!newProductName}
               >
@@ -1317,7 +1317,7 @@ export function Inventory() {
                 <div className="space-y-4 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                   {historyModalItem.priceHistory.map((entry: any, idx: number) => (
                     <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                      <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-[#0F6B41] text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 dark:text-zinc-400" />
+                      <div className="flex items-center justify-center w-5 h-5 rounded-full border-2 border-white bg-brand text-slate-500 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 dark:text-zinc-400" />
                       <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] bg-white p-3 border border-slate-100 rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.05)] dark:bg-[var(--bg-surface)] dark:border-white/10">
                         <div className="flex flex-col gap-1">
                           <span className="text-xs font-bold text-slate-400 dark:text-zinc-400">

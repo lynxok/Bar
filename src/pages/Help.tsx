@@ -79,8 +79,8 @@ const HELP_SECTIONS = [
     id: 'loyalty',
     title: 'Fidelización y Premios',
     icon: Gift,
-    color: 'text-[#0F6B41] dark:text-emerald-400',
-    bg: 'bg-[#0F6B41]/10',
+    color: 'text-brand dark:text-emerald-400',
+    bg: 'bg-brand/10',
     description: 'Atrae clientes regalándoles puntos por sus compras.',
     items: [
       {
@@ -134,9 +134,9 @@ export default function Help() {
     <div className="max-w-4xl mx-auto space-y-8 p-4">
       <div className="text-center space-y-4 pt-8 pb-4">
         <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-          <HelpCircle className="w-8 h-8 text-[#0F6B41] dark:text-emerald-400" />
+          <HelpCircle className="w-8 h-8 text-brand dark:text-emerald-400" />
         </div>
-        <h1 className="text-4xl font-black text-slate-800 tracking-tight dark:text-zinc-100">Centro de Ayuda</h1>
+        <h1 className="font-light text-[32px] md:text-4xl text-slate-800 tracking-tight dark:text-zinc-100">Centro de Ayuda</h1>
         <p className="text-lg text-slate-500 max-w-2xl mx-auto dark:text-zinc-400">
           Encuentra respuestas rápidas y aprende a utilizar todas las funciones del ecosistema LYNX BAR.
         </p>
@@ -149,7 +149,7 @@ export default function Help() {
           placeholder="Buscar un tema, ejemplo: 'Cobrar', 'Puntos', 'Mesas'..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-slate-200 focus:border-[#0F6B41] focus:ring-4 focus:ring-[#0F6B41]/20 transition-all text-lg font-medium outline-none shadow-sm dark:border-white/10"
+          className="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-slate-200 focus:border-brand focus:ring-4 focus:ring-brand/20 transition-all text-lg font-medium outline-none shadow-sm dark:border-white/10"
         />
       </div>
 
@@ -176,7 +176,7 @@ export default function Help() {
                     key={idx} 
                     className={cn(
                       "border rounded-2xl transition-all overflow-hidden",
-                      isOpen ? "border-[#0F6B41]/30 bg-emerald-50/30" : "border-slate-200 hover:border-slate-300 bg-white dark:border-white/10 dark:bg-[var(--bg-surface)]"
+                      isOpen ? "border-brand/30 bg-emerald-50/30" : "border-slate-200 hover:border-slate-300 bg-white dark:border-white/10 dark:bg-[var(--bg-surface)]"
                     )}
                   >
                     <button
@@ -185,7 +185,7 @@ export default function Help() {
                     >
                       <span className="font-bold text-slate-800 dark:text-zinc-100">{item.q}</span>
                       {isOpen ? (
-                        <ChevronUp className="w-5 h-5 text-[#0F6B41] shrink-0 dark:text-emerald-400" />
+                        <ChevronUp className="w-5 h-5 text-brand shrink-0 dark:text-emerald-400" />
                       ) : (
                         <ChevronDown className="w-5 h-5 text-slate-400 shrink-0 dark:text-zinc-400" />
                       )}

@@ -53,10 +53,10 @@ export function BackupPanel() {
   };
 
   return (
-    <div className="bg-white dark:bg-[#182C24] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 mt-6">
+    <div className="bg-white dark:bg-dark-card rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 mt-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><History className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> Copias de seguridad</h3>
+          <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><History className="w-5 h-5 text-brand dark:text-emerald-400" /> Copias de seguridad</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
             Se hace una copia automática por día y se guardan las últimas 30 en esta PC.
             Exportá una copia a un pendrive o a OneDrive cada tanto: si la PC se rompe, es lo único que salva los datos.
@@ -69,15 +69,15 @@ export function BackupPanel() {
 
       <div className="flex flex-wrap gap-3">
         <button disabled={!!busy} onClick={() => run('create', async () => { await createBackup('manual'); return 'Copia creada.'; })}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+          className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-brand-hover text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
           {busy === 'create' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Crear copia ahora
         </button>
         <button disabled={!!busy} onClick={() => run('export', async () => { const r = await exportBackup(); return r.canceled ? null : `Copia exportada a ${r.path}`; })}
-          className="flex items-center gap-2 px-4 py-2.5 bg-[#1E4437] hover:bg-[#153228] text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
+          className="flex items-center gap-2 px-4 py-2.5 bg-brand-dark hover:bg-brand-dark-surface text-white rounded-xl font-bold text-sm disabled:opacity-50 transition-colors">
           {busy === 'export' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <DownloadCloud className="w-4 h-4" />} Exportar a archivo…
         </button>
         <button disabled={!!busy} onClick={async () => { if (await confirmRestore('un archivo')) run('import', async () => afterRestore(await restoreFromFile())); }}
-          className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-[#1E342B] border-2 border-rose-200 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 rounded-xl font-bold text-sm hover:bg-rose-50 dark:hover:bg-rose-950/20 disabled:opacity-50">
+          className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-dark-muted border-2 border-rose-200 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 rounded-xl font-bold text-sm hover:bg-rose-50 dark:hover:bg-rose-950/20 disabled:opacity-50">
           {busy === 'import' ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />} Restaurar desde archivo…
         </button>
       </div>

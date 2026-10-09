@@ -1,4 +1,7 @@
 import { useToast } from "../components/ui/Toast";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { StatusBadge } from "../components/ui/StatusBadge";
 import React, { useState, useEffect, useRef } from "react";
 import { computeTotals, taxLabel } from '../lib/pricing';
 import {
@@ -154,7 +157,7 @@ export function Dashboard() {
     available: "bg-emerald-50 border-emerald-200 text-emerald-700",
     occupied_no_order: "bg-sky-50 border-sky-200 text-sky-700",
     waiting_food: "bg-amber-50 border-amber-200 text-amber-700",
-    consuming: "bg-emerald-50 border-emerald-200 text-[#0F6B41] dark:text-emerald-400",
+    consuming: "bg-emerald-50 border-emerald-200 text-brand dark:text-emerald-400",
     checkout: "bg-rose-50 border-rose-200 text-rose-700",
     dirty: "bg-stone-50 border-stone-200 text-stone-700",
     occupied: "bg-rose-50 border-rose-200 text-rose-700",
@@ -176,16 +179,16 @@ export function Dashboard() {
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
       {/* Scroll Velocity / Ticker Marquee */}
-      <div className="w-full bg-[#1C1C1C] border border-white/10 rounded-2xl overflow-hidden py-3 shadow-md relative flex items-center min-h-[46px]">
+      <div className="w-full bg-ink border border-white/10 rounded-2xl overflow-hidden py-3 shadow-md relative flex items-center min-h-[46px]">
         {/* Glow / Fade Effects on edges */}
-        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#1C1C1C] to-transparent z-10 pointer-events-none" />
-        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#1C1C1C] to-transparent z-10 pointer-events-none" />
+        <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-ink to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-ink to-transparent z-10 pointer-events-none" />
         
         {/* Marquee Track */}
         <div className="flex whitespace-nowrap animate-marquee">
-          <div className="flex gap-12 text-[11px] font-semibold uppercase tracking-wider text-slate-300 items-center">
+          <div className="flex gap-12 text-xs font-semibold tracking-wide text-slate-300 items-center">
             <span className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#0F6B41] animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-full bg-brand animate-ping" />
               Facturación Hoy: <strong className="text-white font-mono">{formatMoney(totalSalesToday)}</strong>
             </span>
             <span className="flex items-center gap-2">
@@ -198,19 +201,19 @@ export function Dashboard() {
             </span>
             {stockAlertsCount > 0 && (
               <span className="flex items-center gap-2 text-red-300">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C62828] animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-danger animate-pulse" />
                 Alertas de Stock: <strong className="text-red-100">{stockAlertsCount} productos bajos</strong>
               </span>
             )}
             <span className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FA4515]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-accent" />
               Terminal Local: <strong className="text-white">Conectado LYNX-Host</strong>
             </span>
           </div>
           {/* Duplicate for seamless looping */}
-          <div className="flex gap-12 text-[11px] font-semibold uppercase tracking-wider text-slate-300 items-center ml-12">
+          <div className="flex gap-12 text-xs font-semibold tracking-wide text-slate-300 items-center ml-12">
             <span className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#0F6B41] animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-full bg-brand animate-ping" />
               Facturación Hoy: <strong className="text-white font-mono">{formatMoney(totalSalesToday)}</strong>
             </span>
             <span className="flex items-center gap-2">
@@ -223,12 +226,12 @@ export function Dashboard() {
             </span>
             {stockAlertsCount > 0 && (
               <span className="flex items-center gap-2 text-red-300">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#C62828] animate-pulse" />
+                <span className="w-2.5 h-2.5 rounded-full bg-danger animate-pulse" />
                 Alertas de Stock: <strong className="text-red-100">{stockAlertsCount} productos bajos</strong>
               </span>
             )}
             <span className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#FA4515]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-accent" />
               Terminal Local: <strong className="text-white">Conectado LYNX-Host</strong>
             </span>
           </div>
@@ -238,37 +241,37 @@ export function Dashboard() {
 
       {/* Summary Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+        <Card className="p-5 flex items-start justify-between shadow-sm">
           <div>
-            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Ventas Hoy</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-semibold mb-1">Ventas Hoy</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{formatMoney(totalSalesToday)}</div>
             <div className="text-emerald-500 text-xs font-medium mt-2 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
               Sincronizado
             </div>
           </div>
-          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41] dark:text-emerald-400">
+          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-brand dark:text-emerald-400">
             <Receipt className="h-6 w-6" />
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+        <Card className="p-5 flex items-start justify-between shadow-sm">
           <div>
-            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Ocupación</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-semibold mb-1">Ocupación</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{activeTablesCount} / {tables.length}</div>
             <div className="text-slate-400 text-xs mt-2 flex items-center">
               <Users className="h-3 w-3 mr-1" />
               Mesas activas
             </div>
           </div>
-          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41] dark:text-emerald-400">
+          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-brand dark:text-emerald-400">
             <Users className="h-6 w-6" />
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+        <Card className="p-5 flex items-start justify-between shadow-sm">
           <div>
-            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Comandas en Curso</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-semibold mb-1">Comandas en Curso</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{pendingOrdersCount}</div>
             <div className="text-amber-500 text-xs mt-2 flex items-center font-medium">
               <Clock className="h-3 w-3 mr-1" />
@@ -278,11 +281,11 @@ export function Dashboard() {
           <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-lg text-amber-500 dark:text-amber-400">
             <Receipt className="h-6 w-6" />
           </div>
-        </div>
+        </Card>
 
-        <div className="bg-white dark:bg-[#182C24] p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-start justify-between">
+        <Card className="p-5 flex items-start justify-between shadow-sm">
           <div>
-            <div className="text-slate-500 dark:text-zinc-400 text-xs font-bold uppercase tracking-wider mb-1">Alertas Stock</div>
+            <div className="text-slate-500 dark:text-zinc-400 text-xs font-semibold mb-1">Alertas Stock</div>
             <div className="text-2xl font-bold text-slate-900 dark:text-zinc-100">{stockAlertsCount}</div>
             <div className="text-red-500 text-xs mt-2 flex items-center font-medium">
               <AlertTriangle className="h-3 w-3 mr-1" />
@@ -292,12 +295,12 @@ export function Dashboard() {
           <div className="bg-red-50 dark:bg-rose-950/40 p-3 rounded-lg text-red-500 dark:text-rose-400">
             <Package className="h-6 w-6" />
           </div>
-        </div>
+        </Card>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
         {/* Sales Chart */}
-        <div className="col-span-12 lg:col-span-8 bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+        <div className="col-span-12 lg:col-span-8 bg-white dark:bg-dark-card p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h3 className="font-bold text-slate-800 dark:text-zinc-100">Resumen Semanal de Ventas</h3>
@@ -329,7 +332,7 @@ export function Dashboard() {
                       if (!active || !payload || !payload.length) return null;
                       const val = payload[0].value as number;
                       return (
-                        <div className="bg-[#1C1C1C] text-white px-3.5 py-2 rounded-xl shadow-xl border border-white/10 text-xs">
+                        <div className="bg-ink text-white px-3.5 py-2 rounded-xl shadow-xl border border-white/10 text-xs">
                           <p className="font-semibold text-emerald-400">{label}</p>
                           <p className="font-bold text-sm mt-0.5 font-mono">{formatMoney(val)}</p>
                         </div>
@@ -346,24 +349,24 @@ export function Dashboard() {
 
         {/* Quick Actions */}
         <div className="col-span-12 lg:col-span-4 flex flex-col gap-6">
-          <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex-1">
+          <div className="bg-white dark:bg-dark-card p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex-1">
             <h3 className="font-bold text-slate-800 dark:text-zinc-100 mb-6">Acciones Rápidas</h3>
             <div className="space-y-3">
-              <Link to="/pos" className="w-full flex items-center justify-between p-4 bg-[#0F6B41] text-white rounded-xl hover:bg-[#0C5734] transition-all group active:scale-[0.98]">
+              <Link to="/pos" className="w-full flex items-center justify-between p-4 bg-brand text-white rounded-xl hover:bg-brand-hover transition-all group active:scale-[0.98]">
                 <div className="flex items-center gap-3">
                   <MonitorCheck className="h-5 w-5" />
                   <span className="font-semibold text-sm">Venta Rápida (POS)</span>
                 </div>
                 <ChevronRight className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
-              <Link to="/mapa" className="w-full flex items-center justify-between p-4 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-zinc-200 rounded-xl hover:bg-slate-50 dark:hover:bg-[#1E342B] transition-all group active:scale-[0.98]">
+              <Link to="/mapa" className="w-full flex items-center justify-between p-4 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-zinc-200 rounded-xl hover:bg-slate-50 dark:hover:bg-dark-muted transition-all group active:scale-[0.98]">
                 <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-[#0F6B41] dark:text-emerald-400" />
+                  <Users className="h-5 w-5 text-brand dark:text-emerald-400" />
                   <span className="font-semibold text-sm">Mapa de Mesas</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
               </Link>
-              <Link to="/finanzas" className="w-full flex items-center justify-between p-4 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-zinc-200 rounded-xl hover:bg-slate-50 dark:hover:bg-[#1E342B] transition-all group active:scale-[0.98]">
+              <Link to="/finanzas" className="w-full flex items-center justify-between p-4 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-zinc-200 rounded-xl hover:bg-slate-50 dark:hover:bg-dark-muted transition-all group active:scale-[0.98]">
                 <div className="flex items-center gap-3">
                   <Receipt className="h-5 w-5 text-emerald-500" />
                   <span className="font-semibold text-sm">Ingresos/Gastos</span>
@@ -373,7 +376,7 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-[#1E4437] p-6 rounded-xl shadow-lg relative overflow-hidden">
+          <div className="bg-brand-dark p-6 rounded-xl shadow-lg relative overflow-hidden">
             <div className="relative z-10">
               <h4 className="text-white/70 font-bold text-xs tracking-widest uppercase mb-1">SISTEMA</h4>
               <p className="text-white text-xl font-bold mb-4">Estado Operativo</p>
@@ -388,13 +391,13 @@ export function Dashboard() {
       </div>
 
       {/* Live Salon Tables Section */}
-      <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in duration-500">
+      <div className="bg-white dark:bg-dark-card p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm animate-in fade-in duration-500">
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="font-bold text-slate-800 dark:text-zinc-100">Estado de Mesas en Vivo</h3>
             <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Clic derecho para cerrar mesa · Ocupación, tiempos y consumos actuales</p>
           </div>
-          <Link to="/mapa" className="text-[#0F6B41] text-xs font-black hover:text-[#0C5734] uppercase tracking-wider flex items-center gap-1 dark:text-emerald-400">
+          <Link to="/mapa" className="text-brand text-xs font-black hover:text-brand-hover uppercase tracking-wider flex items-center gap-1 dark:text-emerald-400">
             Ver Mapa Completo <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -423,23 +426,23 @@ export function Dashboard() {
                   <div className="flex items-start justify-between">
                     <span className="font-black text-sm uppercase">{table.id}</span>
                     {elapsedMinutes !== null && (
-                      <span className="text-[9px] bg-black/5 px-1.5 py-0.5 rounded-full font-bold">⏱ {elapsedMinutes}m</span>
+                      <span className="text-xs bg-black/5 px-1.5 py-0.5 rounded-full font-bold">⏱ {elapsedMinutes}m</span>
                     )}
                   </div>
 
                   <div className="mt-2 flex-1">
                     {!isOccupied(table.status) ? (
-                      <p className="text-[10px] font-black uppercase opacity-75">{STATUS_LABELS[table.status] || table.status}</p>
+                      <p className="text-xs font-black uppercase opacity-75">{STATUS_LABELS[table.status] || table.status}</p>
                     ) : (
                       <div className="space-y-0.5">
-                        <p className="text-[10px] font-bold truncate">Mozo: {table.waiterName || "Sin asignar"}</p>
-                        <p className="text-[9px] font-medium opacity-80">{itemUnits} items pedidos</p>
+                        <p className="text-xs font-bold truncate">Mozo: {table.waiterName || "Sin asignar"}</p>
+                        <p className="text-xs font-medium opacity-80">{itemUnits} items pedidos</p>
                       </div>
                     )}
                   </div>
 
                   <div className="flex justify-between items-center mt-2 pt-2 border-t border-black/5">
-                    <span className="text-[9px] font-black uppercase opacity-60">
+                    <span className="text-xs font-black uppercase opacity-60">
                       {!isOccupied(table.status) ? `Cap: ${table.capacity}` : "Consumo:"}
                     </span>
                     <span className="text-xs font-black">
@@ -461,7 +464,7 @@ export function Dashboard() {
           onClick={e => e.stopPropagation()}
         >
           <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mesa {contextMenu.tableId}</p>
+            <p className="text-xs font-black text-slate-400 uppercase tracking-widest">Mesa {contextMenu.tableId}</p>
           </div>
           <div className="p-1.5 space-y-0.5">
             <button
@@ -504,7 +507,7 @@ export function Dashboard() {
               {/* Order summary */}
               {orderItems.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Consumo de la Mesa</p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Consumo de la Mesa</p>
                   {orderItems.map((item: any) => (
                     <div key={item.id} className="flex items-center justify-between text-sm">
                       <span className="font-semibold text-slate-700">{item.name} × {item.qty}</span>
@@ -516,7 +519,7 @@ export function Dashboard() {
 
               {/* Payment Method */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Método de Pago</label>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Método de Pago</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { id: "Efectivo", icon: Wallet, label: "Efectivo" },
@@ -530,11 +533,11 @@ export function Dashboard() {
                       className={cn(
                         "flex items-center gap-3 p-4 rounded-2xl border-2 transition-all active:scale-[0.98]",
                         paymentMethod === method.id
-                          ? "bg-[#0F6B41] border-[#0F6B41] text-white shadow-lg"
+                          ? "bg-brand border-brand text-white shadow-lg"
                           : "bg-slate-50 border-transparent text-slate-600 hover:border-slate-200"
                       )}
                     >
-                      <method.icon className={cn("h-5 w-5", paymentMethod === method.id ? "text-white" : "text-[#0F6B41] dark:text-emerald-400")} />
+                      <method.icon className={cn("h-5 w-5", paymentMethod === method.id ? "text-white" : "text-brand dark:text-emerald-400")} />
                       <span className="text-xs font-black uppercase tracking-wider">{method.label}</span>
                     </button>
                   ))}
@@ -545,11 +548,11 @@ export function Dashboard() {
               {/* Split Bill + Per-Diner Loyalty */}
               <div className="space-y-4 pt-4 border-t border-slate-100">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <UserCheck className="w-4 h-4 text-emerald-400" />
                     Dividir Cuenta
                   </label>
-                  <span className="text-[9px] font-black text-[#0F6B41] bg-emerald-50 dark:bg-white/10 px-2 py-1 rounded-full uppercase dark:text-emerald-400">
+                  <span className="text-xs font-black text-brand bg-emerald-50 dark:bg-white/10 px-2 py-1 rounded-full uppercase dark:text-emerald-400">
                     {comensales} {comensales === 1 ? "comensal" : "comensales"}
                   </span>
                 </div>
@@ -570,13 +573,13 @@ export function Dashboard() {
                 </div>
 
                 {perPerson !== null && (
-                  <div className="bg-[#0F6B41] rounded-2xl p-4 text-white flex items-center justify-between">
+                  <div className="bg-brand rounded-2xl p-4 text-white flex items-center justify-between">
                     <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Paga cada uno</p>
+                      <p className="text-xs font-black uppercase tracking-widest opacity-70">Paga cada uno</p>
                       <p className="text-3xl font-black">{formatMoney(Math.ceil(perPerson))}</p>
                     </div>
                     <div className="text-right opacity-70">
-                      <p className="text-[9px] font-black uppercase tracking-widest">× {comensales}</p>
+                      <p className="text-xs font-black uppercase tracking-widest">× {comensales}</p>
                       <p className="text-xs font-bold">personas</p>
                     </div>
                   </div>
@@ -585,9 +588,9 @@ export function Dashboard() {
                 {/* Per-diner loyalty fields */}
                 <div className="space-y-2 pt-2 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Fidelización por Comensal</label>
+                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest">Fidelización por Comensal</label>
                     {registeredDiners.length > 0 && (
-                      <span className="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
+                      <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
                         +{pointsPerRegistered} pts c/u · {registeredDiners.length} socio{registeredDiners.length !== 1 ? 's' : ''}
                       </span>
                     )}
@@ -599,19 +602,19 @@ export function Dashboard() {
                         type="text"
                         value={loyaltyIds[i] || ""}
                         onChange={e => setLoyaltyIdAt(i, e.target.value)}
-                        className="w-full h-11 pl-10 pr-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 text-sm focus:bg-white focus:border-[#0F6B41] outline-none transition-all"
+                        className="w-full h-11 pl-10 pr-4 bg-slate-50 border-2 border-transparent rounded-xl font-bold text-slate-900 text-sm focus:bg-white focus:border-brand outline-none transition-all"
                         placeholder={`Comensal ${i + 1} — DNI o N° Socio (opcional)`}
                       />
                     </div>
                   ))}
                   {registeredDiners.length === 0 && (
-                    <p className="text-[10px] text-slate-400 italic px-1">Sin socios cargados. No se sumarán puntos.</p>
+                    <p className="text-xs text-slate-400 italic px-1">Sin socios cargados. No se sumarán puntos.</p>
                   )}
                 </div>
               </div>
 
               {/* Total Summary */}
-              <div className="bg-[#1E4437] rounded-[2rem] p-7 space-y-3 text-white shadow-2xl">
+              <div className="bg-brand-dark rounded-[2rem] p-7 space-y-3 text-white shadow-2xl">
                 <div className="flex justify-between items-center text-emerald-100/70 font-bold text-xs uppercase tracking-widest px-1">
                   <span>Subtotal</span>
                   <span>{formatMoney(subtotal)}</span>
@@ -623,12 +626,12 @@ export function Dashboard() {
                 <div className="h-px bg-white/10 mx-1" />
                 <div className="flex justify-between items-center px-1">
                   <div>
-                    <div className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Total a Cobrar</div>
+                    <div className="text-xs font-black text-emerald-300 uppercase tracking-widest mb-1">Total a Cobrar</div>
                     <div className="text-3xl font-black">{formatMoney(total)}</div>
                   </div>
                   {registeredDiners.length > 0 && (
                     <div className="text-right">
-                      <div className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Puntos a Sumar</div>
+                      <div className="text-xs font-black text-emerald-300 uppercase tracking-widest mb-1">Puntos a Sumar</div>
                       <div className="text-lg font-black text-emerald-300">+{Math.floor(total / 10)} pts</div>
                     </div>
                   )}
@@ -637,7 +640,7 @@ export function Dashboard() {
 
               <button
                 onClick={handleCloseOrder}
-                className="w-full h-14 bg-[#FA4515] text-white rounded-2xl font-black text-lg shadow-xl hover:bg-[#E03A0E] transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                className="w-full h-14 bg-accent text-white rounded-2xl font-black text-lg shadow-xl hover:bg-accent-hover transition-all active:scale-[0.98] flex items-center justify-center gap-3"
               >
                 FINALIZAR Y COBRAR <ArrowRight className="h-5 w-5" />
               </button>

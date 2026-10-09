@@ -43,10 +43,10 @@ export function NotificationsPanel({
       {/* Header */}
       <div className="p-4 border-b border-slate-100 dark:border-white/10 flex items-center justify-between bg-slate-50/50 dark:bg-white/5">
         <div className="flex items-center gap-2">
-          <Bell className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
+          <Bell className="w-5 h-5 text-brand dark:text-emerald-400" />
           <h3 className="font-bold text-slate-800 dark:text-white">Notificaciones</h3>
           {(notifications.filter(n => !n.read).length > 0 || pendingOrders.length > 0) && (
-            <span className="bg-[#0F6B41] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            <span className="bg-brand text-white text-xs font-bold px-2 py-0.5 rounded-full">
               {notifications.filter(n => !n.read).length + pendingOrders.length} nuevas
             </span>
           )}
@@ -71,22 +71,22 @@ export function NotificationsPanel({
       {/* Pending Client Orders Section */}
       {pendingOrders.length > 0 && (
         <div className="bg-amber-50/80 dark:bg-amber-950/40 p-4 border-b border-slate-150 dark:border-white/10 space-y-3">
-          <h4 className="text-[10px] font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
+          <h4 className="text-xs font-black text-amber-700 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1">
             <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
             Pedidos QR Pendientes ({pendingOrders.length})
           </h4>
           <div className="space-y-2 max-h-[220px] overflow-y-auto">
             {pendingOrders.map(order => (
-              <div key={order.id} className="bg-white dark:bg-[#182C24] p-3 rounded-2xl border border-amber-200/60 dark:border-white/10 shadow-sm space-y-2 text-xs">
+              <div key={order.id} className="bg-white dark:bg-dark-card p-3 rounded-2xl border border-amber-200/60 dark:border-white/10 shadow-sm space-y-2 text-xs">
                 <div className="flex justify-between items-center">
                   <span className="font-black text-slate-850 dark:text-white">Mesa {order.tableId.replace('T-', '')}</span>
-                  <span className="text-[10px] text-slate-400 font-bold">
+                  <span className="text-xs text-slate-400 font-bold">
                     {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
                 <div className="text-slate-600 dark:text-slate-300 font-semibold space-y-0.5">
                   {order.items.map((it: any, idx: number) => (
-                    <div key={idx} className="flex justify-between text-[11px]">
+                    <div key={idx} className="flex justify-between text-xs">
                       <span>{it.qty}x {it.name}</span>
                       <span>${(it.price * it.qty).toLocaleString('es-AR')}</span>
                     </div>
@@ -97,13 +97,13 @@ export function NotificationsPanel({
                   <div className="flex gap-1.5">
                     <button
                       onClick={() => onRejectOrder?.(order.id!)}
-                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg font-bold text-[10px] transition-all border border-rose-100"
+                      className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg font-bold text-xs transition-all border border-rose-100"
                     >
                       Rechazar
                     </button>
                     <button
                       onClick={() => onApproveOrder?.(order.id!)}
-                      className="px-2.5 py-1 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-lg font-bold text-[10px] transition-all"
+                      className="px-2.5 py-1 bg-brand hover:bg-brand-hover text-white rounded-lg font-bold text-xs transition-all"
                     >
                       Aprobar
                     </button>
@@ -136,7 +136,7 @@ export function NotificationsPanel({
                 )}
               >
                 {!notification.read && (
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#0F6B41]" />
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-brand" />
                 )}
                 <div className="flex gap-4">
                   <div className={cn(
@@ -159,7 +159,7 @@ export function NotificationsPanel({
                       )}>
                         {notification.title}
                       </p>
-                      <span className="text-[10px] text-slate-400 font-medium">
+                      <span className="text-xs text-slate-400 font-medium">
                         {notification.time}
                       </span>
                     </div>
@@ -178,7 +178,7 @@ export function NotificationsPanel({
       <div className="p-3 border-t border-slate-100 dark:border-white/10 bg-slate-50/50 dark:bg-white/5 flex flex-col gap-2">
         <button 
           onClick={onRequestDesktop}
-          className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-[#0F6B41] hover:bg-emerald-50 dark:hover:bg-white/10 rounded-lg transition-colors dark:text-emerald-400"
+          className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-brand hover:bg-emerald-50 dark:hover:bg-white/10 rounded-lg transition-colors dark:text-emerald-400"
         >
           <Settings className="w-3.5 h-3.5" />
           Configurar Notificaciones de Escritorio

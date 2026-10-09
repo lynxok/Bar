@@ -9,10 +9,10 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
 
 export function Card({ className, variant = 'default', children, ...props }: CardProps) {
   const variants = {
-    default: 'bg-white dark:bg-[#182C24] border border-slate-200 dark:border-white/10 shadow-sm',
-    flat: 'bg-slate-50 dark:bg-[#14261F] border border-slate-200 dark:border-white/5',
-    elevated: 'bg-white dark:bg-[#203A30] border border-slate-200 dark:border-white/10 shadow-lg',
-    brand: 'bg-[#1E4437] text-white border border-[#0F6B41]/40 shadow-md',
+    default: 'bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 shadow-sm',
+    flat: 'bg-slate-50 dark:bg-dark-subtle border border-slate-200 dark:border-white/5',
+    elevated: 'bg-white dark:bg-dark-card-elevated border border-slate-200 dark:border-white/10 shadow-lg',
+    brand: 'bg-brand-dark text-white border border-brand/40 shadow-md',
   };
 
   return (

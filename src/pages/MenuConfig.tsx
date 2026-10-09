@@ -82,12 +82,12 @@ export function MenuConfig() {
         <div className="p-6 border-b border-slate-100 bg-slate-50/50 dark:bg-white/5 shrink-0 dark:border-white/10">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="font-black text-2xl text-slate-900 tracking-tight flex items-center gap-2 dark:text-zinc-100">
-                <Utensils className="w-6 h-6 text-[#0F6B41] dark:text-emerald-400" /> Configuración de Carta / Menú
-              </h2>
+              <h1 className="font-light text-[28px] text-slate-900 tracking-tight flex items-center gap-2 dark:text-zinc-100">
+                <Utensils className="w-6 h-6 text-brand dark:text-emerald-400" /> Configuración de Carta / Menú
+              </h1>
               <p className="text-xs text-slate-500 font-medium mt-0.5 dark:text-zinc-400">Define qué productos de tu stock están visibles para tus clientes en el menú digital.</p>
             </div>
-            <div className="flex items-center gap-2 text-xs bg-emerald-50 text-[#0F6B41] px-3.5 py-1.5 rounded-full font-bold border border-emerald-100 dark:text-emerald-400">
+            <div className="flex items-center gap-2 text-xs bg-emerald-50 text-brand px-3.5 py-1.5 rounded-full font-bold border border-emerald-100 dark:text-emerald-400">
               <Globe className="w-3.5 h-3.5" /> Carta Digital Online Activa
             </div>
           </div>
@@ -101,7 +101,7 @@ export function MenuConfig() {
                 placeholder="Buscar platos o insumos..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-slate-200 text-slate-800 pl-9 pr-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-100"
+                className="w-full bg-white border border-slate-200 text-slate-800 pl-9 pr-4 py-2.5 rounded-xl text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-100"
               />
             </div>
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
@@ -112,7 +112,7 @@ export function MenuConfig() {
                   className={cn(
                     "px-4 py-2.5 rounded-xl text-xs font-black tracking-wide uppercase transition-colors shrink-0",
                     selectedCategory === cat
-                      ? "bg-[#1E4437] text-white shadow-md"
+                      ? "bg-brand-dark text-white shadow-md"
                       : "bg-white border border-slate-250 text-slate-600 hover:bg-slate-50 dark:bg-[var(--bg-surface)] dark:text-zinc-300 dark:hover:bg-white/5"
                   )}
                 >
@@ -154,7 +154,7 @@ export function MenuConfig() {
                           title={prod.image ? 'Cambiar foto' : 'Agregar foto'}
                           className={cn(
                             "w-20 h-20 rounded-xl overflow-hidden flex flex-col items-center justify-center cursor-pointer transition-colors",
-                            prod.image ? "border border-slate-200 dark:border-white/10" : "border-2 border-dashed border-slate-300 hover:border-[#0F6B41] text-slate-400 hover:text-[#0F6B41] dark:border-white/20 dark:text-zinc-400"
+                            prod.image ? "border border-slate-200 dark:border-white/10" : "border-2 border-dashed border-slate-300 hover:border-brand text-slate-400 hover:text-brand dark:border-white/20 dark:text-zinc-400"
                           )}
                         >
                           {uploadingId === prod.id ? (
@@ -188,11 +188,11 @@ export function MenuConfig() {
                       {/* Left side details */}
                       <div className="space-y-1.5 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider dark:bg-white/5 dark:text-zinc-400">
+                          <span className="text-xs bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider dark:bg-white/5 dark:text-zinc-400">
                             {prod.category}
                           </span>
                           {!isMenuAvailable && (
-                            <span className="text-[9px] bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 border border-amber-100">
+                            <span className="text-xs bg-amber-50 text-amber-600 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1 border border-amber-100">
                               <EyeOff className="w-2.5 h-2.5" /> Oculto en carta
                             </span>
                           )}
@@ -207,12 +207,12 @@ export function MenuConfig() {
                               value={editingDesc}
                               onChange={(e) => setEditingDesc(e.target.value)}
                               placeholder="Ej: Jugosa carne con doble cheddar..."
-                              className="w-full text-xs bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-[#0F6B41] outline-none dark:bg-[var(--color-paper-subtle)] dark:border-white/10"
+                              className="w-full text-xs bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg focus:ring-2 focus:ring-brand outline-none dark:bg-[var(--color-paper-subtle)] dark:border-white/10"
                               autoFocus
                             />
                             <button 
                               onClick={() => handleSaveDescription(prod.id!)}
-                              className="p-1.5 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-lg"
+                              className="p-1.5 bg-brand hover:bg-brand-hover text-white rounded-lg"
                             >
                               <Check className="w-3.5 h-3.5" />
                             </button>
@@ -232,7 +232,7 @@ export function MenuConfig() {
                             className="text-xs text-slate-500 font-medium leading-relaxed line-clamp-2 cursor-pointer hover:bg-slate-50 p-1 rounded group flex items-center gap-1.5 dark:text-zinc-400 dark:hover:bg-white/5"
                           >
                             {prod.description || <span className="text-slate-400 italic dark:text-zinc-400">Haz clic para agregar descripción...</span>}
-                            <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 text-[#0F6B41] shrink-0 dark:text-emerald-400" />
+                            <Edit3 className="w-3 h-3 opacity-0 group-hover:opacity-100 text-brand shrink-0 dark:text-emerald-400" />
                           </p>
                         )}
                       </div>
@@ -242,7 +242,7 @@ export function MenuConfig() {
                         onClick={() => toggleMenuAvailability(prod.id!, prod.status)}
                         className={cn(
                           "w-12 h-6.5 rounded-full p-1 transition-colors relative shrink-0",
-                          isMenuAvailable ? "bg-[#0F6B41]" : "bg-slate-300"
+                          isMenuAvailable ? "bg-brand" : "bg-slate-300"
                         )}
                       >
                         <div 
@@ -252,7 +252,7 @@ export function MenuConfig() {
                           )}
                         >
                           {isMenuAvailable ? (
-                            <Eye className="w-2.5 h-2.5 text-[#0F6B41] dark:text-emerald-400" />
+                            <Eye className="w-2.5 h-2.5 text-brand dark:text-emerald-400" />
                           ) : (
                             <EyeOff className="w-2.5 h-2.5 text-slate-400 dark:text-zinc-400" />
                           )}
@@ -270,11 +270,11 @@ export function MenuConfig() {
                         {prod.takeawayPrice != null && prod.takeawayPrice > 0 && (
                           <span className="flex items-center gap-1 border-l border-slate-200 pl-3 dark:border-white/10">
                             Llevar: 
-                            <strong className="text-[#0F6B41] dark:text-emerald-400">{formatMoney(prod.takeawayPrice)}</strong>
+                            <strong className="text-brand dark:text-emerald-400">{formatMoney(prod.takeawayPrice)}</strong>
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] font-bold text-slate-400 dark:text-zinc-400">
+                      <div className="text-xs font-bold text-slate-400 dark:text-zinc-400">
                         Stock: {prod.stock || 0} {prod.unit || 'u'}
                       </div>
                     </div>
@@ -287,25 +287,25 @@ export function MenuConfig() {
       </div>
 
       {/* Right panel: Live smartphone mockup preview */}
-      <div className="w-[380px] bg-[#1E4437] p-6 flex flex-col justify-center items-center shrink-0 border-l border-emerald-950">
+      <div className="w-[380px] bg-brand-dark p-6 flex flex-col justify-center items-center shrink-0 border-l border-emerald-950">
         <div className="text-center mb-4 text-slate-400 dark:text-zinc-400">
           <h4 className="text-sm font-black text-white flex items-center gap-2 justify-center">
             <Smartphone className="w-4 h-4 text-emerald-400" /> Vista Previa del Cliente
           </h4>
-          <p className="text-[10px] mt-1 text-slate-500 dark:text-zinc-400">Así es como tus clientes ven la carta digital en sus celulares.</p>
+          <p className="text-xs mt-1 text-slate-500 dark:text-zinc-400">Así es como tus clientes ven la carta digital en sus celulares.</p>
         </div>
 
         {/* Smartphone Frame */}
-        <div className="w-[280px] h-[560px] bg-[#121E19] rounded-[2.5rem] p-3 shadow-2xl border-4 border-white/10 relative flex flex-col overflow-hidden">
+        <div className="w-[280px] h-[560px] bg-dark-bg rounded-[2.5rem] p-3 shadow-2xl border-4 border-white/10 relative flex flex-col overflow-hidden">
           {/* Speaker & camera slot */}
-          <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-24 h-4 bg-[#121E19] rounded-full z-50 flex items-center justify-center">
+          <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-24 h-4 bg-dark-bg rounded-full z-50 flex items-center justify-center">
             <div className="w-8 h-1 bg-slate-800 rounded-full" />
           </div>
 
           {/* Smartphone Screen simulator */}
           <div className="flex-1 bg-white rounded-[2rem] overflow-hidden flex flex-col pt-3 relative text-slate-800 select-none dark:bg-[var(--bg-surface)] dark:text-zinc-100">
             {/* Fake status bar */}
-            <div className="px-4 py-1 flex justify-between items-center text-[9px] font-bold text-slate-450 shrink-0 select-none">
+            <div className="px-4 py-1 flex justify-between items-center text-xs font-bold text-slate-450 shrink-0 select-none">
               <span>9:41</span>
               <div className="flex gap-1 items-center">
                 <span>5G</span>
@@ -314,9 +314,9 @@ export function MenuConfig() {
             </div>
 
             {/* Client summary fake header */}
-            <div className="px-4 py-3 bg-[#1E4437] text-white shrink-0">
+            <div className="px-4 py-3 bg-brand-dark text-white shrink-0">
               <h5 className="font-black text-xs">MESA #05</h5>
-              <p className="text-[9px] text-emerald-300">Escanea la carta & haz tu pedido</p>
+              <p className="text-xs text-emerald-300">Escanea la carta & haz tu pedido</p>
             </div>
 
             {/* Fake category slider */}
@@ -326,9 +326,9 @@ export function MenuConfig() {
                   key={cat}
                   onClick={() => setPreviewActiveCategory(cat)}
                   className={cn(
-                    "px-2.5 py-1 rounded-full text-[9px] font-black uppercase whitespace-nowrap transition-colors",
+                    "px-2.5 py-1 rounded-full text-xs font-black uppercase whitespace-nowrap transition-colors",
                     previewActiveCategory === cat 
-                      ? "bg-[#1E4437] text-white"
+                      ? "bg-brand-dark text-white"
                       : "bg-slate-200 text-slate-500 dark:text-zinc-400"
                   )}
                 >
@@ -343,25 +343,25 @@ export function MenuConfig() {
                 <div key={prod.id} className="bg-white p-2.5 rounded-xl border border-slate-150 flex justify-between items-start gap-2 shadow-sm dark:bg-[var(--bg-surface)]">
                   {prod.image && <img src={prod.image} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />}
                   <div className="min-w-0 flex-1">
-                    <h6 className="font-bold text-[10px] text-slate-800 truncate dark:text-zinc-100">{prod.name}</h6>
-                    <p className="text-[8px] text-slate-450 line-clamp-1 leading-normal">{prod.description || 'Sin descripción'}</p>
-                    <span className="text-[10px] font-black text-slate-700 block mt-1 dark:text-zinc-300">{formatMoney(prod.price || 0)}</span>
+                    <h6 className="font-bold text-xs text-slate-800 truncate dark:text-zinc-100">{prod.name}</h6>
+                    <p className="text-xs text-slate-450 line-clamp-1 leading-normal">{prod.description || 'Sin descripción'}</p>
+                    <span className="text-xs font-black text-slate-700 block mt-1 dark:text-zinc-300">{formatMoney(prod.price || 0)}</span>
                   </div>
-                  <button className="p-1 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-lg text-[9px] font-black shrink-0">
+                  <button className="p-1 bg-brand hover:bg-brand-hover text-white rounded-lg text-xs font-black shrink-0">
                     +
                   </button>
                 </div>
               ))}
               {previewProducts.length === 0 && (
-                <div className="text-center py-12 text-slate-450 text-[9px]">
+                <div className="text-center py-12 text-slate-450 text-xs">
                   No hay productos activos en la carta. Actívalos a la izquierda.
                 </div>
               )}
             </div>
 
             {/* Fake bottom navigation bar */}
-            <div className="px-4 py-3.5 border-t border-slate-200 bg-white flex justify-around items-center text-[9px] font-bold text-slate-450 shrink-0 dark:border-white/10 dark:bg-[var(--bg-surface)]">
-              <span className="text-[#0F6B41] dark:text-emerald-400">Carta</span>
+            <div className="px-4 py-3.5 border-t border-slate-200 bg-white flex justify-around items-center text-xs font-bold text-slate-450 shrink-0 dark:border-white/10 dark:bg-[var(--bg-surface)]">
+              <span className="text-brand dark:text-emerald-400">Carta</span>
               <span>Mi Pedido</span>
               <span>Cuenta</span>
             </div>

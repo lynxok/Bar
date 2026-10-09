@@ -77,8 +77,8 @@ export function Security() {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3 dark:text-zinc-100">
-            <ShieldAlert className="w-8 h-8 text-[#0F6B41] dark:text-emerald-400" />
+          <h1 className="font-light text-[28px] md:text-3xl text-slate-800 tracking-tight flex items-center gap-3 dark:text-zinc-100">
+            <ShieldAlert className="w-8 h-8 text-brand dark:text-emerald-400" />
             Seguridad y Auditoría
           </h1>
           <p className="text-slate-500 mt-1 font-medium dark:text-zinc-400">Monitoreo de actividad y registros críticos del sistema.</p>
@@ -100,7 +100,7 @@ export function Security() {
           className={cn(
             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
             activeTab === 'audit' 
-              ? "bg-[#0F6B41] text-white shadow-sm" 
+              ? "bg-brand text-white shadow-sm" 
               : "text-slate-500 hover:text-slate-700 hover:bg-white/50 dark:text-zinc-400"
           )}
         >
@@ -112,7 +112,7 @@ export function Security() {
           className={cn(
             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
             activeTab === 'logs' 
-              ? "bg-[#0F6B41] text-white shadow-sm" 
+              ? "bg-brand text-white shadow-sm" 
               : "text-slate-500 hover:text-slate-700 hover:bg-white/50 dark:text-zinc-400"
           )}
         >
@@ -130,7 +130,7 @@ export function Security() {
             placeholder={activeTab === 'audit' ? "Buscar por usuario, acción o módulo..." : "Buscar en mensajes o contexto..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)]"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-brand outline-none font-medium dark:bg-[var(--color-paper-subtle)]"
           />
         </div>
         
@@ -140,7 +140,7 @@ export function Security() {
             <select 
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value as any)}
-              className="bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-[#0F6B41] outline-none dark:bg-[var(--color-paper-subtle)] dark:text-zinc-300"
+              className="bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-brand outline-none dark:bg-[var(--color-paper-subtle)] dark:text-zinc-300"
             >
               <option value="all">Todos los Niveles</option>
               <option value="error">Solo Errores</option>
@@ -158,11 +158,11 @@ export function Security() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Fecha y Hora</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Usuario</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Acción</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Módulo</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Detalles</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Fecha y Hora</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Usuario</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Acción</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Módulo</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Detalles</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -181,7 +181,7 @@ export function Security() {
                     </td>
                     <td className="px-6 py-4">
                       <span className={cn(
-                        "px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider",
+                        "px-2 py-0.5 rounded text-xs font-black uppercase tracking-wider",
                         log.action === 'CREATE' ? "bg-emerald-100 text-emerald-700" :
                         log.action === 'UPDATE' ? "bg-amber-100 text-amber-700" :
                         log.action === 'DELETE' ? "bg-rose-100 text-rose-700" :
@@ -191,7 +191,7 @@ export function Security() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">{log.module}</span>
+                      <span className="text-xs font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">{log.module}</span>
                     </td>
                     <td className="px-6 py-4">
                       <p className="text-sm text-slate-600 font-medium dark:text-zinc-300">{log.details}</p>
@@ -211,9 +211,9 @@ export function Security() {
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48 dark:text-zinc-400">Fecha / Nivel</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Mensaje</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right dark:text-zinc-400">Contexto</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest w-48 dark:text-zinc-400">Fecha / Nivel</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Mensaje</th>
+                  <th className="px-6 py-4 text-xs font-black text-slate-400 uppercase tracking-widest text-right dark:text-zinc-400">Contexto</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -221,13 +221,13 @@ export function Security() {
                   <tr key={log.id} className="hover:bg-slate-50/50 dark:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-400">{formatDate(log.timestamp)}</span>
+                        <span className="text-xs font-bold text-slate-400 dark:text-zinc-400">{formatDate(log.timestamp)}</span>
                         <div className="flex items-center gap-1.5">
                           {log.level === 'error' && <AlertCircle className="w-3 h-3 text-rose-500" />}
                           {log.level === 'warning' && <AlertCircle className="w-3 h-3 text-amber-500" />}
                           {log.level === 'info' && <Info className="w-3 h-3 text-blue-500" />}
                           <span className={cn(
-                            "text-[9px] font-black uppercase tracking-widest",
+                            "text-xs font-black uppercase tracking-widest",
                             log.level === 'error' ? "text-rose-600" :
                             log.level === 'warning' ? "text-amber-600" :
                             "text-blue-600"
@@ -248,7 +248,7 @@ export function Security() {
                     <td className="px-6 py-4 text-right">
                       {log.context && (
                         <div className="flex items-center justify-end gap-2 text-slate-400 dark:text-zinc-400">
-                          <code className="text-[10px] font-mono bg-slate-100 px-2 py-1 rounded dark:bg-white/5">
+                          <code className="text-xs font-mono bg-slate-100 px-2 py-1 rounded dark:bg-white/5">
                             {log.context}
                           </code>
                         </div>

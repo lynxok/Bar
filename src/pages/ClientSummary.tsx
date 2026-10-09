@@ -129,19 +129,19 @@ export function ClientSummary() {
             {logo ? (
               <img src={logo} alt="Logo" className="w-10 h-10 object-cover rounded-xl border border-slate-200 shrink-0" />
             ) : (
-              <div className="w-10 h-10 rounded-xl bg-[#0F6B41] flex items-center justify-center text-white shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-brand flex items-center justify-center text-white shrink-0">
                 <Utensils className="w-5 h-5" />
               </div>
             )}
             <div className="min-w-0">
-              <h1 className="text-base font-bold text-[#1C1C1C] truncate leading-tight">{businessName}</h1>
+              <h1 className="text-base font-bold text-ink truncate leading-tight">{businessName}</h1>
               <p className="text-xs text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
-                <Clock className="w-3 h-3 text-[#0F6B41] dark:text-emerald-400" /> Mesa {tableId?.replace('T-', '')}
+                <Clock className="w-3 h-3 text-brand dark:text-emerald-400" /> Mesa {tableId?.replace('T-', '')}
               </p>
             </div>
           </div>
-          <div className="min-h-[44px] min-w-[52px] bg-[#0F6B41] rounded-2xl flex flex-col items-center justify-center text-white shadow-md shrink-0 px-2">
-            <span className="text-[9px] font-bold leading-none uppercase tracking-wider text-emerald-200">Mesa</span>
+          <div className="min-h-[44px] min-w-[52px] bg-brand rounded-2xl flex flex-col items-center justify-center text-white shadow-md shrink-0 px-2">
+            <span className="text-xs font-bold leading-none uppercase tracking-wider text-emerald-200">Mesa</span>
             <span className="text-lg font-bold leading-none mt-1 font-mono">{tableId?.replace('T-', '')}</span>
           </div>
         </div>
@@ -153,7 +153,7 @@ export function ClientSummary() {
           onClick={() => setActiveTab('pedir')}
           className={cn(
             "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
-            activeTab === 'pedir' ? "border-[#0F6B41] text-[#0F6B41] dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
+            activeTab === 'pedir' ? "border-brand text-brand dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Carta / Pedir
@@ -162,7 +162,7 @@ export function ClientSummary() {
           onClick={() => setActiveTab('consumo')}
           className={cn(
             "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
-            activeTab === 'consumo' ? "border-[#0F6B41] text-[#0F6B41] dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
+            activeTab === 'consumo' ? "border-brand text-brand dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Mi Consumo ({registeredOrder.length})
@@ -171,12 +171,12 @@ export function ClientSummary() {
           onClick={() => setActiveTab('pedidos')}
           className={cn(
             "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all relative cursor-pointer",
-            activeTab === 'pedidos' ? "border-[#0F6B41] text-[#0F6B41] dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
+            activeTab === 'pedidos' ? "border-brand text-brand dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Mis Envíos
           {myPastOrders.filter(o => o.status === 'pending').length > 0 && (
-            <span className="absolute top-2.5 right-2 w-2.5 h-2.5 bg-[#FA4515] rounded-full animate-pulse" />
+            <span className="absolute top-2.5 right-2 w-2.5 h-2.5 bg-accent rounded-full animate-pulse" />
           )}
         </button>
       </div>
@@ -194,7 +194,7 @@ export function ClientSummary() {
                 placeholder="Buscar platos, bebidas..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-white dark:bg-[#182C24] border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold outline-none focus:border-[#0F6B41] focus:ring-1 focus:ring-[#0F6B41] text-slate-900 dark:text-white shadow-sm"
+                className="w-full bg-white dark:bg-dark-card border border-slate-200 dark:border-white/10 rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold outline-none focus:border-brand focus:ring-1 focus:ring-brand text-slate-900 dark:text-white shadow-sm"
               />
             </div>
 
@@ -207,7 +207,7 @@ export function ClientSummary() {
                   className={cn(
                     "px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all border cursor-pointer",
                     selectedCategory === cat 
-                      ? "bg-[#0F6B41] border-[#0F6B41] text-white shadow-sm" 
+                      ? "bg-brand border-brand text-white shadow-sm" 
                       : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
                   )}
                 >
@@ -232,12 +232,12 @@ export function ClientSummary() {
                         <img src={product.image} alt={product.name} loading="lazy" className="w-20 h-20 rounded-xl object-cover shrink-0" />
                       )}
                       <div className="flex-1 min-w-0 pr-2">
-                        <span className="text-[10px] font-semibold text-[#0F6B41] uppercase tracking-wider dark:text-emerald-400">{product.category}</span>
-                        <h4 className="font-semibold text-[#1C1C1C] truncate text-sm mt-0.5">{product.name}</h4>
+                        <span className="text-xs font-semibold text-brand uppercase tracking-wider dark:text-emerald-400">{product.category}</span>
+                        <h4 className="font-semibold text-ink truncate text-sm mt-0.5">{product.name}</h4>
                         <div className="flex items-center gap-2 mt-1">
-                          <span className="font-bold text-[#1C1C1C] text-base tabular-nums">{formatMoney(product.price)}</span>
+                          <span className="font-bold text-ink text-base tabular-nums">{formatMoney(product.price)}</span>
                           {product.stock <= 3 && product.stock > 0 && (
-                            <span className="text-[10px] font-semibold text-[#FA4515] bg-orange-50 px-2 py-0.5 rounded-md">¡Últimos {product.stock}!</span>
+                            <span className="text-xs font-semibold text-accent bg-orange-50 px-2 py-0.5 rounded-md">¡Últimos {product.stock}!</span>
                           )}
                         </div>
                       </div>
@@ -258,7 +258,7 @@ export function ClientSummary() {
                                 "w-8 h-8 rounded-xl flex items-center justify-center font-bold transition-all",
                                 product.stock <= cartItem.qty 
                                   ? "bg-slate-100 text-slate-300 cursor-not-allowed" 
-                                  : "bg-[#0F6B41] text-white hover:bg-[#0c5734] shadow-sm cursor-pointer"
+                                  : "bg-brand text-white hover:bg-brand-hover shadow-sm cursor-pointer"
                               )}
                             >
                               <Plus className="w-3.5 h-3.5" />
@@ -272,7 +272,7 @@ export function ClientSummary() {
                               "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer",
                               product.stock <= 0
                                 ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                : "bg-emerald-50 text-[#0F6B41] hover:bg-emerald-100 dark:text-emerald-400"
+                                : "bg-emerald-50 text-brand hover:bg-emerald-100 dark:text-emerald-400"
                             )}
                           >
                             {product.stock <= 0 ? 'Sin stock' : 'Agregar'}
@@ -296,7 +296,7 @@ export function ClientSummary() {
             )}>
               <div className={cn(
                 "w-12 h-12 rounded-xl flex items-center justify-center",
-                registeredOrder.length > 0 ? "bg-[#0F6B41]/10 text-[#0F6B41] dark:text-emerald-400" : "bg-slate-200 text-slate-400"
+                registeredOrder.length > 0 ? "bg-brand/10 text-brand dark:text-emerald-400" : "bg-slate-200 text-slate-400"
               )}>
                 <ShoppingBag className="w-6 h-6" />
               </div>
@@ -330,7 +330,7 @@ export function ClientSummary() {
                         </div>
                         <div>
                           <h4 className="text-sm font-semibold text-slate-800">{item.name}</h4>
-                          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-tight tabular-nums">{formatMoney(item.price)} c/u</p>
+                          <p className="text-xs text-slate-400 font-medium uppercase tracking-tight tabular-nums">{formatMoney(item.price)} c/u</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -342,7 +342,7 @@ export function ClientSummary() {
               </div>
 
               {registeredOrder.length > 0 && (
-                <div className="p-6 bg-[#1E4437] text-white">
+                <div className="p-6 bg-brand-dark text-white">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-200 font-semibold uppercase tracking-widest text-xs">Total consumido</span>
                     <span className="text-2xl font-bold text-white tabular-nums">{formatMoney(registeredTotal)}</span>
@@ -353,9 +353,9 @@ export function ClientSummary() {
 
             <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex gap-3">
               <div className="p-2 bg-white rounded-lg h-fit shadow-sm">
-                <Utensils className="w-4 h-4 text-[#0F6B41] dark:text-emerald-400" />
+                <Utensils className="w-4 h-4 text-brand dark:text-emerald-400" />
               </div>
-              <p className="text-xs text-[#1E4437] font-medium leading-relaxed">
+              <p className="text-xs text-brand-dark font-medium leading-relaxed">
                 Este es un resumen de tu consumo actual. Para pedir algo más, utilizá la pestaña de "Carta" o solicitá la cuenta al personal.
               </p>
             </div>
@@ -417,7 +417,7 @@ export function ClientSummary() {
                     </div>
                     
                     {order.status === 'pending' && (
-                      <div className="p-3 bg-amber-50 rounded-xl flex items-start gap-2 text-[11px] text-amber-800 font-semibold border border-amber-200">
+                      <div className="p-3 bg-amber-50 rounded-xl flex items-start gap-2 text-xs text-amber-800 font-semibold border border-amber-200">
                         <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                         <span>Pedido enviado. Esperando confirmación del personal.</span>
                       </div>
@@ -435,14 +435,14 @@ export function ClientSummary() {
         <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto p-4 bg-white/90 backdrop-blur-md border-t border-slate-200 z-40">
           <button
             onClick={handleSendOrder}
-            className="w-full min-h-[48px] py-3.5 bg-[#FA4515] hover:bg-[#e03a0e] text-white rounded-xl font-bold text-sm shadow-lg flex items-center justify-between px-6 transition-all active:scale-[0.98] cursor-pointer"
+            className="w-full min-h-[48px] py-3.5 bg-accent hover:bg-accent-hover text-white rounded-xl font-bold text-sm shadow-lg flex items-center justify-between px-6 transition-all active:scale-[0.98] cursor-pointer"
           >
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5" />
               <span>Enviar pedido ({cartItemCount})</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] font-semibold uppercase tracking-wider opacity-85">Total</span>
+              <span className="text-xs font-semibold uppercase tracking-wider opacity-85">Total</span>
               <span className="text-lg font-bold tabular-nums">{formatMoney(cartTotal)}</span>
               <Send className="w-4 h-4 ml-1" />
             </div>
@@ -452,8 +452,8 @@ export function ClientSummary() {
 
       {/* Footer Branding */}
       <footer className="p-6 text-center text-slate-500 border-t border-slate-200 bg-white">
-        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-[#1E4437] mb-0.5">LYNX BarOS</p>
-        <p className="text-[11px] text-slate-400">Mesa {tableId} • by LYNX</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-brand-dark mb-0.5">LYNX BarOS</p>
+        <p className="text-xs text-slate-400">Mesa {tableId} • by LYNX</p>
       </footer>
     </div>
   );
