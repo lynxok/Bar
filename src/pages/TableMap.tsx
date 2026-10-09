@@ -23,7 +23,7 @@ import { db } from "../db/database";
 const isRotatable = (type: Table['type']) => type !== 'round' && type !== 'stool';
 
 export function TableMap() {
-  const { tables, products, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan, clientOrders, approveClientOrder, rejectClientOrder, comandas } = useStore();
+  const { tables, products, updateTableOrder, closeOrder, moveTable, addTable, removeTable, updateTable, renameTable, addComanda, floorPlans, saveFloorPlan, loadFloorPlan, deleteFloorPlan, setDefaultFloorPlan, clientOrders, approveClientOrder, rejectClientOrder, comandas } = useStore();
   const { taxRate, pricesIncludeTax } = useBusiness();
   const { showToast, confirm } = useToast();
 
@@ -791,6 +791,15 @@ export function TableMap() {
           }}
           onCreateNew={handleCreateNew}
           onUpdateTable={updateTable}
+          onRenameTable={async (oldId, newId) => {
+            const res = await renameTable(oldId, newId);
+            if (!res.ok || !res.id) { showToast(res.error || "No se pudo cambiar el nombre de la mesa.", "warning"); return false; }
+            if (res.id !== oldId) {
+              setSelectedTableIds(new Set([res.id]));
+              showToast(`Mesa renombrada a ${res.id}. Si ya imprimiste su QR, volvé a imprimirlo.`, "success");
+            }
+            return true;
+          }}
           onDeleteSelected={async () => {
             if (editingTable && await confirm({ title: "Eliminar elemento", message: "¿Eliminar elemento?", isDestructive: true })) {
               removeTable(editingTable.id);

@@ -29,6 +29,8 @@ export interface PaymentOrder {
   status: 'Pendiente' | 'Pagado';
 }
 
+export interface RenameTableResult { ok: boolean; id?: string; error?: string }
+
 interface StoreContextType {
   products: Product[];
   tables: Table[];
@@ -84,6 +86,8 @@ interface StoreContextType {
   addTable: (config: Partial<Table>) => Promise<void>;
   removeTable: (id: string) => Promise<void>;
   updateTable: (id: string, updates: Partial<Table>) => Promise<void>;
+  /** Cambia el nombre (clave) de una mesa. Devuelve un mensaje de error si no se puede. */
+  renameTable: (oldId: string, newId: string) => Promise<RenameTableResult>;
 
   // Loyalty Config persistence helpers
   updateLoyaltyConfig: (updates: Partial<LoyaltyConfig>) => Promise<void>;
@@ -212,6 +216,33 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const updateTable = async (id: string, updates: Partial<Table>) => {
     await db.salonTables.update(id, updates);
+  };
+
+  // El nombre de la mesa es su clave: se usa en pedidos, reservas y el QR de la mesa.
+  // Por eso se renombra de una sola vez (no letra por letra) y solo si la mesa está libre.
+  const renameTable = async (oldId: string, rawNewId: string): Promise<RenameTableResult> => {
+    const newId = rawNewId.trim();
+    if (!newId) return { ok: false, error: 'El nombre de la mesa no puede quedar vacío.' };
+    if (newId === oldId) return { ok: true, id: oldId };
+    try {
+      await db.transaction('rw', db.salonTables, db.reservations, async () => {
+        const table = await db.salonTables.get(oldId);
+        if (!table) throw new Error('La mesa ya no existe.');
+        if (await db.salonTables.get(newId)) throw new Error(`Ya existe una mesa llamada "${newId}".`);
+        const busy = (table.order?.length ?? 0) > 0 || !['available', 'dirty'].includes(table.status);
+        if (busy) throw new Error('La mesa tiene un pedido abierto. Cobrala o liberala antes de cambiarle el nombre.');
+        await db.salonTables.add({ ...table, id: newId, lastUpdate: new Date().toISOString() });
+        await db.salonTables.delete(oldId);
+        // Las reservas pendientes siguen apuntando a la misma mesa
+        await db.reservations.where('tableId').equals(oldId)
+          .filter(r => r.status === 'pending' || r.status === 'confirmed')
+          .modify({ tableId: newId });
+      });
+    } catch (err: any) {
+      return { ok: false, error: err?.message || 'No se pudo cambiar el nombre de la mesa.' };
+    }
+    audit('UPDATE', 'MESAS', `Mesa ${oldId} renombrada a ${newId}`);
+    return { ok: true, id: newId };
   };
 
   const addExpense = async (expense: Expense) => {
@@ -599,7 +630,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       openShift, closeShift,
       closeOrder, closePOSOrder, closeOrderSplit, updateTableOrder,
       setProducts, addProduct, updateProduct, deleteProduct,
-      moveTable, addTable, removeTable, updateTable,
+      moveTable, addTable, removeTable, updateTable, renameTable,
       updateLoyaltyConfig,
       createBillingDraft, markDraftsAsBilled
     };

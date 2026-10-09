@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Layout, Plus, Minus, Trash2, Smartphone, Save, X, Star, ArrowRight, RotateCw
 } from 'lucide-react';
@@ -19,6 +19,7 @@ interface FloorEditorToolbarProps {
   onClose: () => void;
   onCreateNew: (type: Table['type']) => void;
   onUpdateTable: (tableId: string, patch: Partial<Table>) => void;
+  onRenameTable: (oldId: string, newId: string) => Promise<boolean>;
   onDeleteSelected: () => void;
   onOpenQrModal: (tableId: string) => void;
   adjustChair: (table: Table, side: 'top' | 'bottom' | 'left' | 'right', delta: number) => void;
@@ -40,10 +41,25 @@ export function FloorEditorToolbar({
   onClose,
   onCreateNew,
   onUpdateTable,
+  onRenameTable,
   onDeleteSelected,
   onOpenQrModal,
   adjustChair,
 }: FloorEditorToolbarProps) {
+  // Borrador del nombre: se guarda al salir del campo o con Enter, no en cada letra
+  // (el nombre es la clave de la mesa; cambiarlo en cada tecla hacía perder el foco).
+  const currentId = editingTable?.id ?? '';
+  const [nameDraft, setNameDraft] = useState(currentId);
+  useEffect(() => { setNameDraft(currentId); }, [currentId]);
+
+  const commitName = async () => {
+    if (!editingTable) return;
+    const next = nameDraft.trim();
+    if (next === editingTable.id) { setNameDraft(editingTable.id); return; }
+    const ok = await onRenameTable(editingTable.id, next);
+    if (!ok) setNameDraft(editingTable.id);
+  };
+
   return (
     <aside className="w-80 bg-white dark:bg-[#182C24] border-r border-slate-200 dark:border-white/10 flex flex-col shadow-2xl z-30 shrink-0">
       <div className="p-6 border-b border-slate-100 dark:border-white/10 bg-emerald-50/50 dark:bg-[#0F6B41]/10 flex items-center justify-between">
@@ -104,8 +120,13 @@ export function FloorEditorToolbar({
               <label className="text-[11px] font-semibold text-slate-300">Nombre / ID</label>
               <input
                 type="text"
-                value={editingTable.id}
-                onChange={(e) => onUpdateTable(editingTable.id, { id: e.target.value })}
+                value={nameDraft}
+                onChange={(e) => setNameDraft(e.target.value)}
+                onBlur={commitName}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); }
+                  if (e.key === 'Escape') { setNameDraft(editingTable.id); }
+                }}
                 className="w-full bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-sm outline-none focus:border-emerald-400 font-semibold"
               />
             </div>
