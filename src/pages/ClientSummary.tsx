@@ -227,8 +227,11 @@ export function ClientSummary() {
                 filteredProducts.map(product => {
                   const cartItem = cart[product.id!];
                   return (
-                    <div key={product.id} className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between shadow-sm">
-                      <div className="flex-1 min-w-0 pr-4">
+                    <div key={product.id} className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between gap-3 shadow-sm">
+                      {product.image && (
+                        <img src={product.image} alt={product.name} loading="lazy" className="w-20 h-20 rounded-xl object-cover shrink-0" />
+                      )}
+                      <div className="flex-1 min-w-0 pr-2">
                         <span className="text-[10px] font-semibold text-[#0F6B41] uppercase tracking-wider dark:text-emerald-400">{product.category}</span>
                         <h4 className="font-semibold text-[#1C1C1C] truncate text-sm mt-0.5">{product.name}</h4>
                         <div className="flex items-center gap-2 mt-1">

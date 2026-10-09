@@ -3,8 +3,10 @@ import { useStore } from '../contexts/StoreContext';
 import { db } from '../db/database';
 import { 
   Utensils, Search, Check, X, Smartphone, Globe, Eye, 
-  EyeOff, DollarSign, Package, Layers, Info, Edit3
+  EyeOff, DollarSign, Package, Layers, Info, Edit3, ImagePlus, Trash2
 } from 'lucide-react';
+import { resizeImageFile } from '../lib/images';
+import { useToast } from '../components/ui/Toast';
 import { cn } from '../lib/utils';
 import { formatMoney } from '../lib/format';
 
@@ -33,6 +35,26 @@ export function MenuConfig() {
     } catch (err) {
       console.error('Error al cambiar disponibilidad:', err);
     }
+  };
+
+  const { showToast } = useToast();
+  const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const handleImageFile = async (productId: number, file?: File | null) => {
+    if (!file) return;
+    setUploadingId(productId);
+    try {
+      const image = await resizeImageFile(file);
+      await db.products.update(productId, { image });
+      showToast('Foto guardada', 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'No se pudo guardar la foto', 'error');
+    } finally {
+      setUploadingId(null);
+    }
+  };
+  const handleRemoveImage = async (productId: number) => {
+    await db.products.update(productId, { image: undefined });
+    showToast('Foto quitada', 'success');
   };
 
   const handleSaveDescription = async (productId: number) => {
@@ -126,6 +148,43 @@ export function MenuConfig() {
                     )}
                   >
                     <div className="flex justify-between items-start gap-4">
+                      {/* Foto del producto */}
+                      <div className="relative w-20 h-20 shrink-0 group/img">
+                        <label
+                          title={prod.image ? 'Cambiar foto' : 'Agregar foto'}
+                          className={cn(
+                            "w-20 h-20 rounded-xl overflow-hidden flex flex-col items-center justify-center cursor-pointer transition-colors",
+                            prod.image ? "border border-slate-200 dark:border-white/10" : "border-2 border-dashed border-slate-300 hover:border-[#0F6B41] text-slate-400 hover:text-[#0F6B41] dark:border-white/20 dark:text-zinc-400"
+                          )}
+                        >
+                          {uploadingId === prod.id ? (
+                            <span className="text-xs font-semibold">Subiendo…</span>
+                          ) : prod.image ? (
+                            <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <>
+                              <ImagePlus className="w-5 h-5" />
+                              <span className="text-xs font-semibold mt-1">Foto</span>
+                            </>
+                          )}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => { handleImageFile(prod.id!, e.target.files?.[0]); e.target.value = ''; }}
+                          />
+                        </label>
+                        {prod.image && uploadingId !== prod.id && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(prod.id!)}
+                            title="Quitar foto"
+                            className="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-white border border-slate-200 text-rose-600 shadow-sm flex items-center justify-center opacity-0 group-hover/img:opacity-100 focus:opacity-100 transition-opacity dark:bg-[var(--bg-surface)] dark:border-white/10"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
                       {/* Left side details */}
                       <div className="space-y-1.5 flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -138,7 +197,7 @@ export function MenuConfig() {
                             </span>
                           )}
                         </div>
-                        <h4 className="font-bold text-slate-800 text-base truncate dark:text-zinc-100">{prod.name}</h4>
+                        <h4 className="font-bold text-slate-800 text-base line-clamp-2 leading-snug dark:text-zinc-100">{prod.name}</h4>
                         
                         {/* Description editor */}
                         {isEditing ? (
@@ -282,7 +341,8 @@ export function MenuConfig() {
             <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-slate-50 dark:bg-[var(--color-paper-subtle)]">
               {previewProducts.filter(p => previewActiveCategory === 'Todos' || p.category === previewActiveCategory).map(prod => (
                 <div key={prod.id} className="bg-white p-2.5 rounded-xl border border-slate-150 flex justify-between items-start gap-2 shadow-sm dark:bg-[var(--bg-surface)]">
-                  <div className="min-w-0">
+                  {prod.image && <img src={prod.image} alt="" className="w-9 h-9 rounded-lg object-cover shrink-0" />}
+                  <div className="min-w-0 flex-1">
                     <h6 className="font-bold text-[10px] text-slate-800 truncate dark:text-zinc-100">{prod.name}</h6>
                     <p className="text-[8px] text-slate-450 line-clamp-1 leading-normal">{prod.description || 'Sin descripción'}</p>
                     <span className="text-[10px] font-black text-slate-700 block mt-1 dark:text-zinc-300">{formatMoney(prod.price || 0)}</span>
