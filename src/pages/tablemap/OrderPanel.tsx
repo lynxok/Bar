@@ -75,7 +75,7 @@ export function OrderPanel({
             </div>
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer"
+              className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer dark:text-zinc-400"
             >
               <X className="w-6 h-6" />
             </button>
@@ -84,7 +84,7 @@ export function OrderPanel({
           {/* Search bar & Categories tabs */}
           <div className="p-6 pb-3 space-y-3 shrink-0 bg-white/60 dark:bg-[#182C24]/60 border-b border-slate-200 dark:border-white/10">
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 dark:text-zinc-400" />
               <input
                 type="text"
                 value={search}
@@ -115,7 +115,7 @@ export function OrderPanel({
           {/* Catalog grid: 4-5 columns on desktop */}
           <div className="flex-1 overflow-y-auto p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 content-start">
             {filteredItems.length === 0 ? (
-              <div className="col-span-full text-center py-12 text-slate-400 text-sm font-semibold">
+              <div className="col-span-full text-center py-12 text-slate-400 text-sm font-semibold dark:text-zinc-400">
                 No se encontraron productos disponibles.
               </div>
             ) : (
@@ -178,9 +178,9 @@ export function OrderPanel({
 
           <div className="flex-1 overflow-y-auto py-4 space-y-2.5">
             {orderItems.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 py-12">
+              <div className="h-full flex flex-col items-center justify-center text-center text-slate-400 py-12 dark:text-zinc-400">
                 <p className="text-sm font-semibold">Sin consumos cargados</p>
-                <p className="text-xs text-slate-500 mt-1">Seleccioná ítems de la carta para añadirlos a la mesa.</p>
+                <p className="text-xs text-slate-500 mt-1 dark:text-zinc-400">Seleccioná ítems de la carta para añadirlos a la mesa.</p>
               </div>
             ) : (
               orderItems.map((item: any) => (

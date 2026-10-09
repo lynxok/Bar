@@ -609,7 +609,7 @@ export function TableMap() {
     };
     return (
       <div
-        className="absolute w-5 h-5 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center transition-all z-20"
+        className="absolute w-5 h-5 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center transition-all z-20 dark:bg-[var(--bg-surface)] dark:border-white/10"
         style={{ top: cy - 10, left: cx - 10 }}
       >
         <div className={cn("w-2.5 h-2.5 rounded-full", dotColors[status] || "bg-slate-300")} />
@@ -833,7 +833,7 @@ export function TableMap() {
               <h2 className="font-black text-4xl text-slate-900 dark:text-zinc-100 tracking-tight">Sala</h2>
               <div className="flex items-center gap-4 mt-3 flex-wrap">
                 <div className="flex items-center gap-2 text-xs text-slate-500 font-bold bg-white dark:bg-[#182C24] text-slate-500 dark:text-zinc-400 px-4 py-2 rounded-full shadow-sm border border-slate-100 dark:border-slate-800">
-                  <Users className="w-4 h-4 text-[#0F6B41]" />
+                  <Users className="w-4 h-4 text-[#0F6B41] dark:text-emerald-400" />
                   {tables.filter(t => t.type !== 'wall').reduce((acc, t) => acc + (t.capacity || 0), 0)} PLAZAS TOTALES
                 </div>
                 <div className="flex items-center gap-2 text-xs text-emerald-600 font-bold bg-emerald-50 dark:bg-[#14261F] text-emerald-600 dark:text-emerald-400 px-4 py-2 rounded-full shadow-sm border border-emerald-100 dark:border-emerald-900/40">
@@ -844,7 +844,7 @@ export function TableMap() {
                 <div className="h-5 w-[1px] bg-slate-200 hidden lg:block" />
                 <div className="hidden lg:flex items-center gap-3 text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#182C24] px-4 py-2 rounded-xl shadow-xs border border-slate-200 dark:border-white/10 flex-wrap">
                   <div className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full border border-[#0F6B41] bg-white" /> Disponible
+                    <span className="w-2.5 h-2.5 rounded-full border border-[#0F6B41] bg-white dark:bg-[var(--bg-surface)]" /> Disponible
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="w-2.5 h-2.5 rounded-full bg-emerald-100 border border-emerald-400" /> Sin pedido
@@ -866,12 +866,12 @@ export function TableMap() {
             </div>
 
             {!isEditingLayout && (
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-sm ml-4">
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Mozo:</span>
+              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-2xl border border-slate-200 shadow-sm ml-4 dark:bg-[var(--bg-surface)] dark:border-white/10">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider dark:text-zinc-400">Mozo:</span>
                 <select
                   value={waiterFilter}
                   onChange={(e) => setWaiterFilter(e.target.value)}
-                  className="text-xs font-bold text-slate-700 outline-none bg-transparent cursor-pointer"
+                  className="text-xs font-bold text-slate-700 outline-none bg-transparent cursor-pointer dark:text-zinc-300"
                 >
                   <option value="Todos">Todos</option>
                   {Array.from(new Set(tables.map(t => t.waiterName).filter(Boolean))).map(name => (
@@ -925,7 +925,7 @@ export function TableMap() {
                       : "bg-white dark:bg-[#182C24] border-slate-200 dark:border-slate-800 text-slate-700 dark:text-zinc-200 hover:bg-slate-50 dark:hover:bg-[#1E342B]"
                   )}
                 >
-                  <Layout className="w-5 h-5 text-[#0F6B41]" /> SELECCIÓN MÚLTIPLE: {isMarqueeMode ? 'ON' : 'OFF'}
+                  <Layout className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> SELECCIÓN MÚLTIPLE: {isMarqueeMode ? 'ON' : 'OFF'}
                 </button>
               </div>
             )}
@@ -951,10 +951,10 @@ export function TableMap() {
                       "flex items-center gap-3 px-6 py-4 rounded-2xl text-sm font-black transition-all shadow-sm border active:scale-95 relative",
                       pendingOrders.length > 0
                         ? "bg-rose-50 border-rose-100 text-rose-600 hover:bg-rose-100"
-                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
                     )}
                   >
-                    <Smartphone className="w-5 h-5 text-[#0F6B41]" /> PEDIDOS QR
+                    <Smartphone className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> PEDIDOS QR
                     {pendingOrders.length > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 w-6 h-6 bg-rose-600 text-white rounded-full flex items-center justify-center text-[10px] font-black animate-bounce shadow-md">
                         {pendingOrders.length}
@@ -978,7 +978,7 @@ export function TableMap() {
                 onClick={() => setIsEditingLayout(true)}
                 className="flex items-center gap-3 px-8 py-4 bg-[#1E4437] rounded-2xl text-sm font-black text-white hover:bg-[#0C5734] transition-all shadow-xl active:scale-95"
               >
-                <Layout className="w-5 h-5 text-[#0F6B41]" /> EDITAR PLANO
+                <Layout className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> EDITAR PLANO
               </button>
             </div>
           )}
@@ -1076,10 +1076,10 @@ export function TableMap() {
                       <span className={cn(
                         "text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md",
                         hoveredTable.status === 'available' ? "bg-emerald-500/20 text-emerald-400" :
-                        hoveredTable.status === 'dirty' ? "bg-slate-500/20 text-slate-400" :
+                        hoveredTable.status === 'dirty' ? "bg-slate-500/20 text-slate-400 dark:text-zinc-400" :
                         hoveredTable.status === 'waiting_food' ? "bg-amber-500/20 text-amber-400 animate-pulse" :
                         hoveredTable.status === 'checkout' ? "bg-rose-500/20 text-rose-400 animate-pulse" :
-                        "bg-[#0F6B41]/20 text-[#0F6B41]"
+                        "bg-[#0F6B41]/20 text-[#0F6B41] dark:text-emerald-400"
                       )}>
                         {hoveredTable.status === 'available' ? "Libre" :
                          hoveredTable.status === 'dirty' ? "Sucia" :
@@ -1120,9 +1120,9 @@ export function TableMap() {
                           </span>
                         </div>
                         <div className="border-t border-white/5 my-2 pt-2">
-                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1">Items comandados</span>
+                          <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider block mb-1 dark:text-zinc-400">Items comandados</span>
                           {hoveredTable.order.length === 0 ? (
-                            <span className="italic text-slate-500 block">Sin ítems aún</span>
+                            <span className="italic text-slate-500 block dark:text-zinc-400">Sin ítems aún</span>
                           ) : (
                             <div className="max-h-28 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
                               {hoveredTable.order.map((i, idx) => {
@@ -1136,7 +1136,7 @@ export function TableMap() {
                                   stateColor = "text-amber-405 font-bold";
                                 }
                                 return (
-                                  <div key={i.id || idx} className="flex justify-between text-slate-400 items-center">
+                                  <div key={i.id || idx} className="flex justify-between text-slate-400 items-center dark:text-zinc-400">
                                     <span className="truncate max-w-[120px] font-medium">{i.name}</span>
                                     <div className="flex gap-2 items-center">
                                       <span className="font-bold text-white">x{i.qty}</span>
@@ -1185,7 +1185,7 @@ export function TableMap() {
           </div>
 
           {/* Zoom indicator only */}
-          <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm border border-slate-200/80 rounded-xl px-3 py-1.5 text-[11px] font-black text-slate-500 shadow pointer-events-none z-20">
+          <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm border border-slate-200/80 rounded-xl px-3 py-1.5 text-[11px] font-black text-slate-500 shadow pointer-events-none z-20 dark:text-zinc-400">
             Zoom: {Math.round(zoom * 100)}%
           </div>
         </div>
@@ -1228,16 +1228,16 @@ export function TableMap() {
                 occupied: "bg-rose-100 text-rose-800 border-rose-200 animate-pulse",
                 occupied_no_order: "bg-sky-100 text-sky-800 border-sky-200",
                 waiting_food: "bg-amber-100 text-amber-800 border-amber-250 animate-pulse",
-                consuming: "bg-[#0F6B41]/15 text-[#0F6B41] border-[#0F6B41]/30",
+                consuming: "bg-[#0F6B41]/15 text-[#0F6B41] border-[#0F6B41]/30 dark:text-emerald-400",
                 checkout: "bg-red-100 text-red-800 border-red-250 animate-pulse",
-                dirty: "bg-slate-100 text-slate-800 border-slate-200"
+                dirty: "bg-slate-100 text-slate-800 border-slate-200 dark:bg-white/5 dark:text-zinc-100 dark:border-white/10"
               };
 
               return (
                 <div 
                   key={table.id} 
                   className={cn(
-                    "bg-white rounded-[2rem] border-2 border-slate-200 shadow-md overflow-hidden transition-all duration-200",
+                    "bg-white rounded-[2rem] border-2 border-slate-200 shadow-md overflow-hidden transition-all duration-200 dark:bg-[var(--bg-surface)] dark:border-white/10",
                     table.status === 'checkout' ? "ring-2 ring-red-500/25 border-red-400" : ""
                   )}
                 >
@@ -1258,7 +1258,7 @@ export function TableMap() {
                         <span>{table.id}</span>
                       </div>
                       <div>
-                        <h4 className="font-black text-slate-800 text-sm">Mesa {table.id.split('-')[1] || table.id}</h4>
+                        <h4 className="font-black text-slate-800 text-sm dark:text-zinc-100">Mesa {table.id.split('-')[1] || table.id}</h4>
                         <span className={cn("text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full border mt-1 inline-block", statusColors[table.status])}>
                           {statusLabels[table.status]}
                         </span>
@@ -1271,34 +1271,34 @@ export function TableMap() {
                           <div className="font-black text-amber-500 text-sm">${totalItemsPrice}</div>
                         )}
                         {table.waiterName && (
-                          <div className="text-[10px] text-slate-400 font-bold uppercase">{table.waiterName}</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase dark:text-zinc-400">{table.waiterName}</div>
                         )}
                       </div>
-                      <ChevronDown className={cn("w-5 h-5 text-slate-400 transition-transform duration-200", isExpanded ? "rotate-180 text-[#0F6B41]" : "")} />
+                      <ChevronDown className={cn("w-5 h-5 text-slate-400 transition-transform duration-200 dark:text-zinc-400", isExpanded ? "rotate-180 text-[#0F6B41] dark:text-emerald-400" : "")} />
                     </div>
                   </div>
 
                   {/* Collapsible Content */}
                   {isExpanded && (
-                    <div className="px-5 pb-5 pt-1 border-t border-slate-100 bg-slate-50/40 space-y-4">
+                    <div className="px-5 pb-5 pt-1 border-t border-slate-100 bg-slate-50/40 space-y-4 dark:border-white/10">
                       {/* Active Time */}
                       {table.status !== 'available' && elapsedMinutes !== null && (
-                        <div className="flex justify-between items-center text-xs text-slate-500 font-semibold">
+                        <div className="flex justify-between items-center text-xs text-slate-500 font-semibold dark:text-zinc-400">
                           <span>Tiempo activa:</span>
-                          <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full">⏱ {elapsedMinutes} min</span>
+                          <span className="font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-full dark:text-zinc-300 dark:bg-white/5">⏱ {elapsedMinutes} min</span>
                         </div>
                       )}
 
                       {/* Items details list */}
                       <div className="space-y-2">
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block">Productos Comandados</span>
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest block dark:text-zinc-400">Productos Comandados</span>
                         {table.order.length === 0 ? (
-                          <span className="text-xs text-slate-400 italic block">Sin ítems aún</span>
+                          <span className="text-xs text-slate-400 italic block dark:text-zinc-400">Sin ítems aún</span>
                         ) : (
-                          <div className="divide-y divide-slate-100 bg-white rounded-2xl border border-slate-150 p-3 space-y-2">
+                          <div className="divide-y divide-slate-100 bg-white rounded-2xl border border-slate-150 p-3 space-y-2 dark:divide-white/10 dark:bg-[var(--bg-surface)]">
                             {table.order.map((item, idx) => {
                               let stateLabel = "🍽 Servido";
-                              let stateColor = "text-slate-400";
+                              let stateColor = "text-slate-400 dark:text-zinc-400";
                               if (readyItems.has(item.name)) {
                                 stateLabel = "🔔 Listo";
                                 stateColor = "text-emerald-500 font-black animate-pulse";
@@ -1310,8 +1310,8 @@ export function TableMap() {
                                 <div key={idx} className="flex justify-between items-center text-xs text-slate-655 pt-2 first:pt-0">
                                   <span className="font-semibold">{item.name}</span>
                                   <div className="flex gap-2.5 items-center">
-                                    <span className="font-black text-slate-800">x{item.qty}</span>
-                                    <span className={cn("text-[9px] font-bold uppercase bg-slate-50 px-1.5 py-0.5 rounded", stateColor)}>
+                                    <span className="font-black text-slate-800 dark:text-zinc-100">x{item.qty}</span>
+                                    <span className={cn("text-[9px] font-bold uppercase bg-slate-50 px-1.5 py-0.5 rounded dark:bg-[var(--color-paper-subtle)]", stateColor)}>
                                       {stateLabel}
                                     </span>
                                   </div>
@@ -1368,13 +1368,13 @@ export function TableMap() {
       {/* Visual Table Merge Confirmation Modal */}
       {isMergeMode && mergeSourceId && mergeTargetId && (
         <div className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col gap-6 animate-in fade-in zoom-in duration-200">
-            <div className="flex items-center gap-3 text-[#0F6B41]">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl border border-slate-100 flex flex-col gap-6 animate-in fade-in zoom-in duration-200 dark:bg-[var(--bg-surface)] dark:border-white/10">
+            <div className="flex items-center gap-3 text-[#0F6B41] dark:text-emerald-400">
               <ArrowRightLeft className="w-8 h-8" />
-              <h3 className="font-black text-lg text-slate-900 uppercase tracking-tight">Confirmar Unión</h3>
+              <h3 className="font-black text-lg text-slate-900 uppercase tracking-tight dark:text-zinc-100">Confirmar Unión</h3>
             </div>
-            <p className="text-slate-600 text-sm leading-relaxed">
-              ¿Deseas transferir los pedidos y consumos de la mesa <span className="font-black text-[#0F6B41]">{mergeSourceId}</span> a la mesa <span className="font-black text-[#0F6B41]">{mergeTargetId}</span>?
+            <p className="text-slate-600 text-sm leading-relaxed dark:text-zinc-300">
+              ¿Deseas transferir los pedidos y consumos de la mesa <span className="font-black text-[#0F6B41] dark:text-emerald-400">{mergeSourceId}</span> a la mesa <span className="font-black text-[#0F6B41] dark:text-emerald-400">{mergeTargetId}</span>?
             </p>
             <div className="flex gap-3 mt-2">
               <button
@@ -1383,7 +1383,7 @@ export function TableMap() {
                   setMergeTargetId(null);
                   setIsMergeMode(false);
                 }}
-                className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-black uppercase tracking-wider transition-all"
+                className="flex-1 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-2xl text-xs font-black uppercase tracking-wider transition-all dark:bg-white/5 dark:text-zinc-300"
               >
                 Cancelar
               </button>
@@ -1423,18 +1423,18 @@ export function TableMap() {
       )}
       {isMobileOrdersOpen && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden border border-slate-200" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden border border-slate-200 dark:bg-[var(--bg-surface)] dark:border-white/10" onClick={(e) => e.stopPropagation()}>
             
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]">
               <div>
-                <h2 className="font-bold text-xl text-slate-800 flex items-center gap-2">
-                  <Smartphone className="w-5 h-5 text-[#0F6B41]" /> Pedidos Móviles (Clientes)
+                <h2 className="font-bold text-xl text-slate-800 flex items-center gap-2 dark:text-zinc-100">
+                  <Smartphone className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> Pedidos Móviles (Clientes)
                 </h2>
-                <p className="text-sm text-slate-500 font-medium">Pedidos realizados por clientes escaneando el código QR.</p>
+                <p className="text-sm text-slate-500 font-medium dark:text-zinc-400">Pedidos realizados por clientes escaneando el código QR.</p>
               </div>
               <button 
                 onClick={() => setIsMobileOrdersOpen(false)}
-                className="p-2 text-slate-400 hover:bg-slate-200 rounded-full transition-colors"
+                className="p-2 text-slate-400 hover:bg-slate-200 rounded-full transition-colors dark:text-zinc-400"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1442,33 +1442,33 @@ export function TableMap() {
 
             <div className="flex-1 overflow-y-auto p-6 space-y-4">
               {(!clientOrders || clientOrders.filter(co => co.status === 'pending').length === 0) ? (
-                <div className="text-center py-12 text-slate-400">
+                <div className="text-center py-12 text-slate-400 dark:text-zinc-400">
                   <Smartphone className="w-12 h-12 mx-auto mb-3 opacity-20" />
-                  <p className="font-semibold text-slate-600">No hay pedidos pendientes</p>
-                  <p className="text-xs text-slate-400 mt-1">Los pedidos de los clientes aparecerán aquí automáticamente.</p>
+                  <p className="font-semibold text-slate-600 dark:text-zinc-300">No hay pedidos pendientes</p>
+                  <p className="text-xs text-slate-400 mt-1 dark:text-zinc-400">Los pedidos de los clientes aparecerán aquí automáticamente.</p>
                 </div>
               ) : (
                 clientOrders.filter(co => co.status === 'pending').map((order) => {
                   const minutesAgo = Math.floor((Date.now() - new Date(order.timestamp).getTime()) / 60000);
                   return (
-                    <div key={order.id} className="bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col gap-4">
+                    <div key={order.id} className="bg-slate-50 rounded-xl p-5 border border-slate-200 flex flex-col gap-4 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2.5">
                           <span className="bg-[#0F6B41] text-white font-black px-3 py-1 rounded-lg text-sm">
                             Mesa {order.tableId.replace('T-', '')}
                           </span>
-                          <span className="text-xs text-slate-400 font-medium">
+                          <span className="text-xs text-slate-400 font-medium dark:text-zinc-400">
                             Hace {minutesAgo} min ({new Date(order.timestamp).toLocaleTimeString()})
                           </span>
                         </div>
-                        <span className="font-black text-slate-800">${order.total.toLocaleString()}</span>
+                        <span className="font-black text-slate-800 dark:text-zinc-100">${order.total.toLocaleString('es-AR')}</span>
                       </div>
 
-                      <div className="bg-white rounded-lg border border-slate-150 p-3">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Ítems</span>
-                        <div className="divide-y divide-slate-100">
+                      <div className="bg-white rounded-lg border border-slate-150 p-3 dark:bg-[var(--bg-surface)]">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1 dark:text-zinc-400">Ítems</span>
+                        <div className="divide-y divide-slate-100 dark:divide-white/10">
                           {order.items.map((item: any, idx: number) => (
-                            <div key={idx} className="flex justify-between py-1.5 text-sm text-slate-700">
+                            <div key={idx} className="flex justify-between py-1.5 text-sm text-slate-700 dark:text-zinc-300">
                               <span>{item.name}</span>
                               <span className="font-bold">x{item.qty}</span>
                             </div>
@@ -1483,7 +1483,7 @@ export function TableMap() {
                               await rejectClientOrder(order.id!);
                             }
                           }}
-                          className="px-4 py-2 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-100 transition-colors"
+                          className="px-4 py-2 border border-slate-200 text-slate-600 font-bold text-xs rounded-xl hover:bg-slate-100 transition-colors dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/10"
                         >
                           Rechazar
                         </button>
@@ -1502,10 +1502,10 @@ export function TableMap() {
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end shrink-0">
+            <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end shrink-0 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]">
               <button 
                 onClick={() => setIsMobileOrdersOpen(false)}
-                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition-colors"
+                className="px-4 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition-colors dark:text-zinc-300"
               >
                 Cerrar
               </button>

@@ -247,7 +247,7 @@ export function BillingDrafts() {
           </div>
           <div>
             <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Pendiente de Facturar</span>
-            <span className="text-2xl font-black text-on-surface font-mono tabular-nums">{formatMoney(totalPendingAmount)}</span>
+            <span className="text-2xl font-black text-on-surface tabular-nums">{formatMoney(totalPendingAmount)}</span>
             <span className="text-xs text-amber-600 block mt-0.5 font-medium">{pendingCount} borradores</span>
           </div>
         </div>
@@ -258,7 +258,7 @@ export function BillingDrafts() {
           </div>
           <div>
             <span className="text-[10px] font-bold text-on-surface-variant block uppercase tracking-wider">Facturado Consolidado</span>
-            <span className="text-2xl font-black text-on-surface font-mono tabular-nums">{formatMoney(totalBilledAmount)}</span>
+            <span className="text-2xl font-black text-on-surface tabular-nums">{formatMoney(totalBilledAmount)}</span>
             <span className="text-xs text-emerald-600 block mt-0.5 font-medium">{billedCount} facturas emitidas</span>
           </div>
         </div>
@@ -423,7 +423,7 @@ export function BillingDrafts() {
                       )}
                     </td>
                   )}
-                  <td className="px-6 py-4 text-right font-black text-on-surface font-mono tabular-nums">
+                  <td className="px-6 py-4 text-right font-black text-on-surface tabular-nums">
                     {formatMoney(draft.amount)}
                   </td>
 
@@ -657,7 +657,7 @@ export function BillingDrafts() {
 
               <div className="border-t border-outline-variant pt-3 flex justify-between text-base font-black text-on-surface font-sans">
                 <span>TOTAL COMERCIAL:</span>
-                <span className="font-mono tabular-nums">{formatMoney(previewDraft.amount)}</span>
+                <span className="tabular-nums">{formatMoney(previewDraft.amount)}</span>
               </div>
             </div>
 

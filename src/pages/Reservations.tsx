@@ -14,9 +14,9 @@ const toLocalInput = (d: Date) => {
 
 const STATUS_STYLE: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border-amber-200',
-  confirmed: 'bg-emerald-50 text-[#0F6B41] border-emerald-200',
+  confirmed: 'bg-emerald-50 text-[#0F6B41] border-emerald-200 dark:text-emerald-400',
   seated: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  cancelled: 'bg-slate-100 text-slate-500 border-slate-200 line-through',
+  cancelled: 'bg-slate-100 text-slate-500 border-slate-200 line-through dark:bg-white/5 dark:text-zinc-400 dark:border-white/10',
   no_show: 'bg-rose-50 text-rose-700 border-rose-200',
 };
 
@@ -90,32 +90,32 @@ export default function Reservations() {
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2"><CalendarDays className="w-6 h-6 text-[#0F6B41]" /> Reservas</h1>
-          <p className="text-sm text-slate-500">{dayList.length} reserva(s) · {covers} cubierto(s)</p>
+          <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2 dark:text-zinc-100"><CalendarDays className="w-6 h-6 text-[#0F6B41] dark:text-emerald-400" /> Reservas</h1>
+          <p className="text-sm text-slate-500 dark:text-zinc-400">{dayList.length} reserva(s) · {covers} cubierto(s)</p>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => shiftDay(-1)} className="p-2 rounded-xl bg-white border border-slate-200"><ChevronLeft className="w-4 h-4" /></button>
+          <button onClick={() => shiftDay(-1)} className="p-2 rounded-xl bg-white border border-slate-200 dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-100"><ChevronLeft className="w-4 h-4" /></button>
           <input type="date" value={toLocalInput(day)} onChange={e => e.target.value && setDay(new Date(`${e.target.value}T00:00:00`))}
-            className="h-10 px-3 rounded-xl border border-slate-200 font-bold text-sm" />
-          <button onClick={() => shiftDay(1)} className="p-2 rounded-xl bg-white border border-slate-200"><ChevronRight className="w-4 h-4" /></button>
-          <button onClick={() => setDay(new Date())} className="px-3 h-10 rounded-xl bg-slate-100 text-xs font-bold">Hoy</button>
+            className="h-10 px-3 rounded-xl border border-slate-200 font-bold text-sm dark:border-white/10 dark:bg-[var(--bg-surface)] dark:text-zinc-100 dark:[color-scheme:dark]" />
+          <button onClick={() => shiftDay(1)} className="p-2 rounded-xl bg-white border border-slate-200 dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-100"><ChevronRight className="w-4 h-4" /></button>
+          <button onClick={() => setDay(new Date())} className="px-3 h-10 rounded-xl bg-slate-100 text-xs font-bold dark:bg-white/5 dark:text-zinc-100">Hoy</button>
           <button onClick={openNew} className="px-4 h-10 rounded-xl bg-[#0F6B41] hover:bg-[#0C5734] text-white text-sm font-bold flex items-center gap-1"><Plus className="w-4 h-4" /> Nueva</button>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100">
-        {dayList.length === 0 && <div className="p-10 text-center text-slate-400 font-bold">No hay reservas para este día.</div>}
+      <div className="bg-white rounded-2xl border border-slate-200 divide-y divide-slate-100 dark:bg-[var(--bg-surface)] dark:border-white/10 dark:divide-white/10">
+        {dayList.length === 0 && <div className="p-10 text-center text-slate-400 font-bold dark:text-zinc-400">No hay reservas para este día.</div>}
         {dayList.map(r => {
           const clash = findConflicts(r, all).length > 0 && (r.status === 'pending' || r.status === 'confirmed');
           return (
             <div key={r.id} className="p-4 flex items-center gap-4 flex-wrap">
               <div className="w-16 text-center">
-                <div className="text-lg font-black text-slate-900">{timeLabel(r.date)}</div>
-                <div className="text-[10px] text-slate-400 font-bold">{r.durationMin} min</div>
+                <div className="text-lg font-black text-slate-900 dark:text-zinc-100">{timeLabel(r.date)}</div>
+                <div className="text-[10px] text-slate-400 font-bold dark:text-zinc-400">{r.durationMin} min</div>
               </div>
               <button onClick={() => openEdit(r)} className="flex-1 min-w-[180px] text-left">
-                <div className="font-black text-slate-900">{r.customerName}</div>
-                <div className="text-xs text-slate-500 flex items-center gap-3 flex-wrap">
+                <div className="font-black text-slate-900 dark:text-zinc-100">{r.customerName}</div>
+                <div className="text-xs text-slate-500 flex items-center gap-3 flex-wrap dark:text-zinc-400">
                   <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {r.partySize}</span>
                   {r.phone && <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {r.phone}</span>}
                   <span>{r.tableId ? `Mesa ${r.tableId.replace('T-', '')}` : 'Sin mesa asignada'}</span>
@@ -125,11 +125,11 @@ export default function Reservations() {
               </button>
               <span className={cn('px-2 py-1 rounded-lg border text-[10px] font-black uppercase', STATUS_STYLE[r.status])}>{STATUS_LABEL[r.status]}</span>
               <div className="flex gap-1">
-                {r.status === 'pending' && <button onClick={() => setStatus(r, 'confirmed')} title="Confirmar" className="p-2 rounded-lg bg-emerald-50 text-[#0F6B41]"><Check className="w-4 h-4" /></button>}
+                {r.status === 'pending' && <button onClick={() => setStatus(r, 'confirmed')} title="Confirmar" className="p-2 rounded-lg bg-emerald-50 text-[#0F6B41] dark:text-emerald-400"><Check className="w-4 h-4" /></button>}
                 {(r.status === 'pending' || r.status === 'confirmed') && <>
                   <button onClick={() => setStatus(r, 'seated')} className="px-2 py-1 rounded-lg bg-emerald-600 text-white text-xs font-bold">Sentar</button>
                   <button onClick={() => setStatus(r, 'no_show')} title="No vino" className="p-2 rounded-lg bg-rose-50 text-rose-600"><UserX className="w-4 h-4" /></button>
-                  <button onClick={() => setStatus(r, 'cancelled')} title="Cancelar" className="p-2 rounded-lg bg-slate-100 text-slate-500"><X className="w-4 h-4" /></button>
+                  <button onClick={() => setStatus(r, 'cancelled')} title="Cancelar" className="p-2 rounded-lg bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-zinc-400"><X className="w-4 h-4" /></button>
                 </>}
               </div>
             </div>
@@ -139,32 +139,32 @@ export default function Reservations() {
 
       {form && (
         <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4" onClick={() => setForm(null)}>
-          <div className="bg-white rounded-3xl w-full max-w-lg p-6 space-y-4" onClick={e => e.stopPropagation()}>
-            <h3 className="font-black text-xl text-slate-900">{form.id ? 'Editar reserva' : 'Nueva reserva'}</h3>
+          <div className="bg-white rounded-3xl w-full max-w-lg p-6 space-y-4 dark:bg-[var(--bg-surface)]" onClick={e => e.stopPropagation()}>
+            <h3 className="font-black text-xl text-slate-900 dark:text-zinc-100">{form.id ? 'Editar reserva' : 'Nueva reserva'}</h3>
             <div className="grid grid-cols-2 gap-3">
-              <input className="col-span-2 h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none" placeholder="Nombre del cliente"
+              <input className="col-span-2 h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none dark:bg-[var(--color-paper-subtle)]" placeholder="Nombre del cliente"
                 value={form.customerName} onChange={e => setForm({ ...form, customerName: e.target.value })} />
-              <input className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none" placeholder="Teléfono"
+              <input className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none dark:bg-[var(--color-paper-subtle)]" placeholder="Teléfono"
                 value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-              <label className="flex items-center gap-2 h-11 px-3 rounded-xl bg-slate-50 font-bold text-sm">
-                <Users className="w-4 h-4 text-slate-400" />
+              <label className="flex items-center gap-2 h-11 px-3 rounded-xl bg-slate-50 font-bold text-sm dark:bg-[var(--color-paper-subtle)]">
+                <Users className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
                 <input type="number" min={1} className="w-full bg-transparent outline-none" value={form.partySize}
                   onChange={e => setForm({ ...form, partySize: Number(e.target.value) })} /> pers.
               </label>
-              <input type="date" className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none" value={form.day}
+              <input type="date" className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none dark:bg-[var(--color-paper-subtle)]" value={form.day}
                 onChange={e => setForm({ ...form, day: e.target.value })} />
-              <input type="time" className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none" value={form.time}
+              <input type="time" className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none dark:bg-[var(--color-paper-subtle)]" value={form.time}
                 onChange={e => setForm({ ...form, time: e.target.value })} />
-              <select className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none" value={form.tableId}
+              <select className="h-11 px-3 rounded-xl bg-slate-50 font-bold outline-none dark:bg-[var(--color-paper-subtle)]" value={form.tableId}
                 onChange={e => setForm({ ...form, tableId: e.target.value })}>
                 <option value="">Sin mesa asignada</option>
                 {realTables.map(t => <option key={t.id} value={t.id}>Mesa {t.id.replace('T-', '')} ({t.capacity} lug.)</option>)}
               </select>
-              <label className="flex items-center gap-2 h-11 px-3 rounded-xl bg-slate-50 font-bold text-sm">
+              <label className="flex items-center gap-2 h-11 px-3 rounded-xl bg-slate-50 font-bold text-sm dark:bg-[var(--color-paper-subtle)]">
                 <input type="number" min={15} step={15} className="w-full bg-transparent outline-none" value={form.durationMin}
                   onChange={e => setForm({ ...form, durationMin: Number(e.target.value) })} /> min
               </label>
-              <textarea className="col-span-2 px-3 py-2 rounded-xl bg-slate-50 font-medium outline-none text-sm" rows={2} placeholder="Notas (cumpleaños, alergias, silla de bebé…)"
+              <textarea className="col-span-2 px-3 py-2 rounded-xl bg-slate-50 font-medium outline-none text-sm dark:bg-[var(--color-paper-subtle)]" rows={2} placeholder="Notas (cumpleaños, alergias, silla de bebé…)"
                 value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} />
             </div>
             {form.tableId && (() => {
@@ -180,7 +180,7 @@ export default function Reservations() {
             )}
             {error && <div className="text-xs font-bold text-rose-700">{error}</div>}
             <div className="flex justify-end gap-2">
-              <button onClick={() => setForm(null)} className="px-4 h-11 rounded-xl bg-slate-100 font-bold text-sm">Cancelar</button>
+              <button onClick={() => setForm(null)} className="px-4 h-11 rounded-xl bg-slate-100 font-bold text-sm dark:bg-white/5">Cancelar</button>
               <button onClick={save} className="px-5 h-11 rounded-xl bg-[#0F6B41] hover:bg-[#0C5734] text-white font-bold text-sm">Guardar</button>
             </div>
           </div>

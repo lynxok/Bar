@@ -124,7 +124,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
   return (
     <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xl z-[200] flex items-center justify-center p-4">
       <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-2xl max-h-[94vh] overflow-hidden border border-slate-200 flex flex-col">
-        <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+        <div className="px-8 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
           <div>
             <h3 className="font-black text-2xl text-slate-900">Cobrar Mesa {tableId}</h3>
             <div className="flex gap-2 mt-2">
@@ -185,7 +185,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
                   <button key={m.id} onClick={() => setMethod(m.id)}
                     className={cn('flex items-center gap-2 p-3 rounded-2xl border-2 transition-all',
                       method === m.id ? 'bg-[#0F6B41] border-[#0F6B41] text-white' : 'bg-slate-50 border-transparent text-slate-600 hover:border-slate-200')}>
-                    <m.icon className={cn('h-5 w-5', method === m.id ? 'text-white' : 'text-[#0F6B41]')} />
+                    <m.icon className={cn('h-5 w-5', method === m.id ? 'text-white' : 'text-[#0F6B41] dark:text-emerald-400')} />
                     <span className="text-xs font-black uppercase tracking-wider">{m.label}</span>
                   </button>
                 ))}
@@ -227,7 +227,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
                 <div key={i} className="border border-slate-200 rounded-2xl p-4 space-y-3">
                   <div className="flex justify-between items-center">
                     <span className="font-black text-slate-900">Parte {i + 1}</span>
-                    <span className="font-black text-[#0F6B41]">{money(partAmounts[i] || 0)}</span>
+                    <span className="font-black text-[#0F6B41] dark:text-emerald-400">{money(partAmounts[i] || 0)}</span>
                   </div>
                   {splitKind === 'items' && (
                     <div className="space-y-1">

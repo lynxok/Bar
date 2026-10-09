@@ -56,7 +56,7 @@ export function BackupPanel() {
     <div className="bg-white dark:bg-[#182C24] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-5 mt-6">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><History className="w-5 h-5 text-[#0F6B41]" /> Copias de seguridad</h3>
+          <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><History className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> Copias de seguridad</h3>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
             Se hace una copia automática por día y se guardan las últimas 30 en esta PC.
             Exportá una copia a un pendrive o a OneDrive cada tanto: si la PC se rompe, es lo único que salva los datos.

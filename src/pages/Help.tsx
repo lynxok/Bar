@@ -79,7 +79,7 @@ const HELP_SECTIONS = [
     id: 'loyalty',
     title: 'Fidelización y Premios',
     icon: Gift,
-    color: 'text-[#0F6B41]',
+    color: 'text-[#0F6B41] dark:text-emerald-400',
     bg: 'bg-[#0F6B41]/10',
     description: 'Atrae clientes regalándoles puntos por sus compras.',
     items: [
@@ -101,8 +101,8 @@ const HELP_SECTIONS = [
     id: 'admin',
     title: 'Configuración y Roles',
     icon: Settings,
-    color: 'text-slate-500',
-    bg: 'bg-slate-50',
+    color: 'text-slate-500 dark:text-zinc-400',
+    bg: 'bg-slate-50 dark:bg-[var(--color-paper-subtle)]',
     description: 'Administración del negocio y permisos de empleados.',
     items: [
       {
@@ -134,35 +134,35 @@ export default function Help() {
     <div className="max-w-4xl mx-auto space-y-8 p-4">
       <div className="text-center space-y-4 pt-8 pb-4">
         <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-          <HelpCircle className="w-8 h-8 text-[#0F6B41]" />
+          <HelpCircle className="w-8 h-8 text-[#0F6B41] dark:text-emerald-400" />
         </div>
-        <h1 className="text-4xl font-black text-slate-800 tracking-tight">Centro de Ayuda</h1>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+        <h1 className="text-4xl font-black text-slate-800 tracking-tight dark:text-zinc-100">Centro de Ayuda</h1>
+        <p className="text-lg text-slate-500 max-w-2xl mx-auto dark:text-zinc-400">
           Encuentra respuestas rápidas y aprende a utilizar todas las funciones del ecosistema LYNX BAR.
         </p>
       </div>
 
       <div className="relative max-w-2xl mx-auto">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5 dark:text-zinc-400" />
         <input 
           type="text"
           placeholder="Buscar un tema, ejemplo: 'Cobrar', 'Puntos', 'Mesas'..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-slate-200 focus:border-[#0F6B41] focus:ring-4 focus:ring-[#0F6B41]/20 transition-all text-lg font-medium outline-none shadow-sm"
+          className="w-full h-14 pl-12 pr-4 rounded-2xl border-2 border-slate-200 focus:border-[#0F6B41] focus:ring-4 focus:ring-[#0F6B41]/20 transition-all text-lg font-medium outline-none shadow-sm dark:border-white/10"
         />
       </div>
 
       <div className="grid gap-8">
         {filteredSections.map(section => (
-          <div key={section.id} className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200">
-            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
+          <div key={section.id} className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 dark:bg-[var(--bg-surface)] dark:border-white/10">
+            <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100 dark:border-white/10">
               <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center", section.bg)}>
                 <section.icon className={cn("w-6 h-6", section.color)} />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-800">{section.title}</h2>
-                <p className="text-slate-500 font-medium">{section.description}</p>
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-zinc-100">{section.title}</h2>
+                <p className="text-slate-500 font-medium dark:text-zinc-400">{section.description}</p>
               </div>
             </div>
 
@@ -176,18 +176,18 @@ export default function Help() {
                     key={idx} 
                     className={cn(
                       "border rounded-2xl transition-all overflow-hidden",
-                      isOpen ? "border-[#0F6B41]/30 bg-emerald-50/30" : "border-slate-200 hover:border-slate-300 bg-white"
+                      isOpen ? "border-[#0F6B41]/30 bg-emerald-50/30" : "border-slate-200 hover:border-slate-300 bg-white dark:border-white/10 dark:bg-[var(--bg-surface)]"
                     )}
                   >
                     <button
                       onClick={() => setOpenItem(isOpen ? null : itemId)}
                       className="w-full text-left px-6 py-4 flex items-center justify-between gap-4 focus:outline-none"
                     >
-                      <span className="font-bold text-slate-800">{item.q}</span>
+                      <span className="font-bold text-slate-800 dark:text-zinc-100">{item.q}</span>
                       {isOpen ? (
-                        <ChevronUp className="w-5 h-5 text-[#0F6B41] shrink-0" />
+                        <ChevronUp className="w-5 h-5 text-[#0F6B41] shrink-0 dark:text-emerald-400" />
                       ) : (
-                        <ChevronDown className="w-5 h-5 text-slate-400 shrink-0" />
+                        <ChevronDown className="w-5 h-5 text-slate-400 shrink-0 dark:text-zinc-400" />
                       )}
                     </button>
                     <div 
@@ -196,7 +196,7 @@ export default function Help() {
                         isOpen ? "max-h-96 opacity-100 pb-5" : "max-h-0 opacity-0"
                       )}
                     >
-                      <p className="px-6 text-slate-600 leading-relaxed">
+                      <p className="px-6 text-slate-600 leading-relaxed dark:text-zinc-300">
                         {item.a}
                       </p>
                     </div>
@@ -208,10 +208,10 @@ export default function Help() {
         ))}
 
         {filteredSections.length === 0 && (
-          <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-300">
+          <div className="text-center py-20 bg-slate-50 rounded-[2rem] border border-dashed border-slate-300 dark:bg-[var(--color-paper-subtle)] dark:border-white/15">
             <HelpCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-slate-700">No encontramos resultados</h3>
-            <p className="text-slate-500 mt-2">Intenta buscar con otras palabras o navega por las categorías.</p>
+            <h3 className="text-xl font-bold text-slate-700 dark:text-zinc-300">No encontramos resultados</h3>
+            <p className="text-slate-500 mt-2 dark:text-zinc-400">Intenta buscar con otras palabras o navega por las categorías.</p>
           </div>
         )}
       </div>

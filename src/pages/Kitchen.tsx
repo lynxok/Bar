@@ -100,35 +100,35 @@ export default function Kitchen() {
 
   const getStatusColor = (status: string, timestamp: string) => {
     if (status === 'ready') return {
-      card: 'border-green-500 bg-white border-2',
+      card: 'border-green-500 bg-white border-2 dark:bg-[var(--bg-surface)]',
       header: 'bg-green-500 text-white border-green-500',
       title: 'text-white',
       clock: 'text-green-100',
-      badge: 'bg-white text-green-700'
+      badge: 'bg-white text-green-700 dark:bg-[var(--bg-surface)]'
     };
     
     const minutes = (Date.now() - new Date(timestamp).getTime()) / 60000;
     
     if (minutes > 12) return {
-      card: 'border-red-600 border-[3px] bg-white shadow-xl shadow-red-100/50 animate-pulse',
+      card: 'border-red-600 border-[3px] bg-white shadow-xl shadow-red-100/50 animate-pulse dark:bg-[var(--bg-surface)]',
       header: 'bg-red-600 text-white border-red-600',
       title: 'text-white font-black',
       clock: 'text-red-100 font-bold',
-      badge: 'bg-white text-red-600'
+      badge: 'bg-white text-red-600 dark:bg-[var(--bg-surface)]'
     };
     if (minutes >= 5) return {
-      card: 'border-amber-500 border-2 bg-white',
+      card: 'border-amber-500 border-2 bg-white dark:bg-[var(--bg-surface)]',
       header: 'bg-amber-500 text-white border-amber-500',
       title: 'text-white',
       clock: 'text-amber-100',
-      badge: 'bg-white text-amber-600'
+      badge: 'bg-white text-amber-600 dark:bg-[var(--bg-surface)]'
     };
     return {
-      card: 'border-emerald-500 border-2 bg-white',
+      card: 'border-emerald-500 border-2 bg-white dark:bg-[var(--bg-surface)]',
       header: 'bg-emerald-500 text-white border-emerald-500',
       title: 'text-white',
       clock: 'text-emerald-100',
-      badge: 'bg-white text-emerald-700'
+      badge: 'bg-white text-emerald-700 dark:bg-[var(--bg-surface)]'
     };
   };
 
@@ -165,7 +165,7 @@ export default function Kitchen() {
             onClick={() => setSoundEnabled(!soundEnabled)}
             className={cn(
               "p-3 rounded-xl border transition-all shadow-sm active:scale-95 cursor-pointer",
-              soundEnabled ? "bg-emerald-50 border-emerald-200 text-[#0F6B41] hover:bg-emerald-100" : "bg-slate-50 border-slate-200 text-slate-400"
+              soundEnabled ? "bg-emerald-50 border-emerald-200 text-[#0F6B41] hover:bg-emerald-100 dark:text-emerald-400" : "bg-slate-50 border-slate-200 text-slate-400 dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-400"
             )}
             title={soundEnabled ? "Silenciar notificaciones" : "Activar sonido"}
           >
@@ -174,7 +174,7 @@ export default function Kitchen() {
 
           {/* Dynamic Station/Category selection dropdown */}
           <div className="relative flex items-center bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 gap-2">
-            <Filter className="w-4 h-4 text-slate-400" />
+            <Filter className="w-4 h-4 text-slate-400 dark:text-zinc-400" />
             <select
               value={selectedStation}
               onChange={(e) => setSelectedStation(e.target.value)}
@@ -195,27 +195,27 @@ export default function Kitchen() {
               )}
             >
               Pendientes
-              <span className={cn("px-1.5 rounded text-[10px] font-bold", filter === 'pending' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700")}>{stats.pending}</span>
+              <span className={cn("px-1.5 rounded text-[10px] font-bold", filter === 'pending' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.pending}</span>
             </button>
             <button 
               onClick={() => setFilter('preparing')}
               className={cn(
                 "px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-bold text-xs uppercase tracking-wide",
-                filter === 'preparing' ? "bg-orange-500 text-white shadow-md shadow-orange-100" : "text-slate-600 hover:bg-slate-200"
+                filter === 'preparing' ? "bg-orange-500 text-white shadow-md shadow-orange-100" : "text-slate-600 hover:bg-slate-200 dark:text-zinc-300"
               )}
             >
               En Marcha
-              <span className={cn("px-1.5 rounded text-[10px] font-black", filter === 'preparing' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700")}>{stats.preparing}</span>
+              <span className={cn("px-1.5 rounded text-[10px] font-black", filter === 'preparing' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.preparing}</span>
             </button>
             <button 
               onClick={() => setFilter('ready')}
               className={cn(
                 "px-4 py-2 rounded-lg transition-all flex items-center gap-2 font-bold text-xs uppercase tracking-wide",
-                filter === 'ready' ? "bg-green-600 text-white shadow-md shadow-green-100" : "text-slate-600 hover:bg-slate-200"
+                filter === 'ready' ? "bg-green-600 text-white shadow-md shadow-green-100" : "text-slate-600 hover:bg-slate-200 dark:text-zinc-300"
               )}
             >
               Listos
-              <span className={cn("px-1.5 rounded text-[10px] font-black", filter === 'ready' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700")}>{stats.ready}</span>
+              <span className={cn("px-1.5 rounded text-[10px] font-black", filter === 'ready' ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700 dark:text-zinc-300")}>{stats.ready}</span>
             </button>
           </div>
         </div>
@@ -224,7 +224,7 @@ export default function Kitchen() {
       {/* Orders Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filteredComandas.length === 0 ? (
-          <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 bg-white rounded-3xl border border-dashed border-slate-300">
+          <div className="col-span-full py-20 flex flex-col items-center justify-center text-slate-400 bg-white rounded-3xl border border-dashed border-slate-300 dark:text-zinc-400 dark:bg-[var(--bg-surface)] dark:border-white/15">
             <UtensilsCrossed className="w-16 h-16 mb-4 opacity-20" />
             <p className="text-lg font-bold">No hay pedidos en esta sección</p>
             <p className="text-sm">¡Buen trabajo! La estación está al día.</p>
@@ -260,17 +260,17 @@ export default function Kitchen() {
                     </div>
 
                     {/* Items List */}
-                    <div className="p-4 flex-1 space-y-3 bg-white">
+                    <div className="p-4 flex-1 space-y-3 bg-white dark:bg-[var(--bg-surface)]">
                       {cardItems.map((item: any, idx: number) => (
                         <div key={idx} className="flex justify-between items-start group">
                           <div className="flex gap-3">
-                            <span className="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg font-black text-xs">
+                            <span className="flex items-center justify-center w-6 h-6 bg-slate-100 text-slate-800 rounded-lg font-black text-xs dark:bg-white/5 dark:text-zinc-100">
                               {item.qty}
                             </span>
                             <div className="flex flex-col">
-                              <span className="font-bold text-slate-800 text-sm leading-tight uppercase">{item.name}</span>
+                              <span className="font-bold text-slate-800 text-sm leading-tight uppercase dark:text-zinc-100">{item.name}</span>
                               {item.notes && (
-                                <span className="text-sm font-extrabold bg-amber-400 text-slate-900 border border-amber-500 px-2 py-1 rounded-md mt-1.5 block shadow-sm">
+                                <span className="text-sm font-extrabold bg-amber-400 text-slate-900 border border-amber-500 px-2 py-1 rounded-md mt-1.5 block shadow-sm dark:text-zinc-100">
                                   ⚠️ {item.notes}
                                 </span>
                               )}

@@ -23,7 +23,7 @@ export interface StatusBadgeProps extends HTMLAttributes<HTMLSpanElement> {
 export function StatusBadge({ variant, icon, children, className, ...props }: StatusBadgeProps) {
   const styles: Record<StatusVariant, string> = {
     // Mesas
-    available: 'bg-white text-[#0F6B41] border border-[#0F6B41]/40',
+    available: 'bg-white text-[#0F6B41] border border-[#0F6B41]/40 dark:text-emerald-400',
     occupied: 'bg-emerald-50 text-[#0F6B41] border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800',
     kitchen: 'bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800',
     consuming: 'bg-[#0F6B41] text-white border border-[#0F6B41]',

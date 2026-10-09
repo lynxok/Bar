@@ -154,7 +154,7 @@ export function Dashboard() {
     available: "bg-emerald-50 border-emerald-200 text-emerald-700",
     occupied_no_order: "bg-sky-50 border-sky-200 text-sky-700",
     waiting_food: "bg-amber-50 border-amber-200 text-amber-700",
-    consuming: "bg-emerald-50 border-emerald-200 text-[#0F6B41]",
+    consuming: "bg-emerald-50 border-emerald-200 text-[#0F6B41] dark:text-emerald-400",
     checkout: "bg-rose-50 border-rose-200 text-rose-700",
     dirty: "bg-stone-50 border-stone-200 text-stone-700",
     occupied: "bg-rose-50 border-rose-200 text-rose-700",
@@ -247,7 +247,7 @@ export function Dashboard() {
               Sincronizado
             </div>
           </div>
-          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41]">
+          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41] dark:text-emerald-400">
             <Receipt className="h-6 w-6" />
           </div>
         </div>
@@ -261,7 +261,7 @@ export function Dashboard() {
               Mesas activas
             </div>
           </div>
-          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41]">
+          <div className="bg-emerald-50 dark:bg-white/5 p-3 rounded-lg text-[#0F6B41] dark:text-emerald-400">
             <Users className="h-6 w-6" />
           </div>
         </div>
@@ -358,7 +358,7 @@ export function Dashboard() {
               </Link>
               <Link to="/mapa" className="w-full flex items-center justify-between p-4 border border-slate-200 dark:border-slate-800 text-slate-800 dark:text-zinc-200 rounded-xl hover:bg-slate-50 dark:hover:bg-[#1E342B] transition-all group active:scale-[0.98]">
                 <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-[#0F6B41]" />
+                  <Users className="h-5 w-5 text-[#0F6B41] dark:text-emerald-400" />
                   <span className="font-semibold text-sm">Mapa de Mesas</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-slate-600 transition-colors" />
@@ -394,7 +394,7 @@ export function Dashboard() {
             <h3 className="font-bold text-slate-800 dark:text-zinc-100">Estado de Mesas en Vivo</h3>
             <p className="text-sm font-medium text-slate-500 dark:text-zinc-400">Clic derecho para cerrar mesa · Ocupación, tiempos y consumos actuales</p>
           </div>
-          <Link to="/mapa" className="text-[#0F6B41] text-xs font-black hover:text-[#0C5734] uppercase tracking-wider flex items-center gap-1">
+          <Link to="/mapa" className="text-[#0F6B41] text-xs font-black hover:text-[#0C5734] uppercase tracking-wider flex items-center gap-1 dark:text-emerald-400">
             Ver Mapa Completo <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
@@ -490,7 +490,7 @@ export function Dashboard() {
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div className="px-10 py-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
               <div>
                 <h3 className="font-black text-2xl text-slate-900">Cobrar Mesa {checkoutTableId}</h3>
                 <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-1">Cerrar cuenta y registrar pago</p>
@@ -534,7 +534,7 @@ export function Dashboard() {
                           : "bg-slate-50 border-transparent text-slate-600 hover:border-slate-200"
                       )}
                     >
-                      <method.icon className={cn("h-5 w-5", paymentMethod === method.id ? "text-white" : "text-[#0F6B41]")} />
+                      <method.icon className={cn("h-5 w-5", paymentMethod === method.id ? "text-white" : "text-[#0F6B41] dark:text-emerald-400")} />
                       <span className="text-xs font-black uppercase tracking-wider">{method.label}</span>
                     </button>
                   ))}
@@ -549,7 +549,7 @@ export function Dashboard() {
                     <UserCheck className="w-4 h-4 text-emerald-400" />
                     Dividir Cuenta
                   </label>
-                  <span className="text-[9px] font-black text-[#0F6B41] bg-emerald-50 dark:bg-white/10 px-2 py-1 rounded-full uppercase">
+                  <span className="text-[9px] font-black text-[#0F6B41] bg-emerald-50 dark:bg-white/10 px-2 py-1 rounded-full uppercase dark:text-emerald-400">
                     {comensales} {comensales === 1 ? "comensal" : "comensales"}
                   </span>
                 </div>

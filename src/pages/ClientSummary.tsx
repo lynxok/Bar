@@ -136,7 +136,7 @@ export function ClientSummary() {
             <div className="min-w-0">
               <h1 className="text-base font-bold text-[#1C1C1C] truncate leading-tight">{businessName}</h1>
               <p className="text-xs text-slate-500 font-semibold flex items-center gap-1 mt-0.5">
-                <Clock className="w-3 h-3 text-[#0F6B41]" /> Mesa {tableId?.replace('T-', '')}
+                <Clock className="w-3 h-3 text-[#0F6B41] dark:text-emerald-400" /> Mesa {tableId?.replace('T-', '')}
               </p>
             </div>
           </div>
@@ -153,7 +153,7 @@ export function ClientSummary() {
           onClick={() => setActiveTab('pedir')}
           className={cn(
             "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
-            activeTab === 'pedir' ? "border-[#0F6B41] text-[#0F6B41]" : "border-transparent text-slate-500 hover:text-slate-800"
+            activeTab === 'pedir' ? "border-[#0F6B41] text-[#0F6B41] dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Carta / Pedir
@@ -162,7 +162,7 @@ export function ClientSummary() {
           onClick={() => setActiveTab('consumo')}
           className={cn(
             "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all cursor-pointer",
-            activeTab === 'consumo' ? "border-[#0F6B41] text-[#0F6B41]" : "border-transparent text-slate-500 hover:text-slate-800"
+            activeTab === 'consumo' ? "border-[#0F6B41] text-[#0F6B41] dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Mi Consumo ({registeredOrder.length})
@@ -171,7 +171,7 @@ export function ClientSummary() {
           onClick={() => setActiveTab('pedidos')}
           className={cn(
             "flex-1 min-h-[44px] py-2.5 text-center text-xs font-semibold uppercase tracking-wider border-b-2 transition-all relative cursor-pointer",
-            activeTab === 'pedidos' ? "border-[#0F6B41] text-[#0F6B41]" : "border-transparent text-slate-500 hover:text-slate-800"
+            activeTab === 'pedidos' ? "border-[#0F6B41] text-[#0F6B41] dark:text-emerald-400" : "border-transparent text-slate-500 hover:text-slate-800"
           )}
         >
           Mis Envíos
@@ -229,7 +229,7 @@ export function ClientSummary() {
                   return (
                     <div key={product.id} className="bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-between shadow-sm">
                       <div className="flex-1 min-w-0 pr-4">
-                        <span className="text-[10px] font-semibold text-[#0F6B41] uppercase tracking-wider">{product.category}</span>
+                        <span className="text-[10px] font-semibold text-[#0F6B41] uppercase tracking-wider dark:text-emerald-400">{product.category}</span>
                         <h4 className="font-semibold text-[#1C1C1C] truncate text-sm mt-0.5">{product.name}</h4>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="font-bold text-[#1C1C1C] text-base tabular-nums">{formatMoney(product.price)}</span>
@@ -269,7 +269,7 @@ export function ClientSummary() {
                               "px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer",
                               product.stock <= 0
                                 ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                : "bg-emerald-50 text-[#0F6B41] hover:bg-emerald-100"
+                                : "bg-emerald-50 text-[#0F6B41] hover:bg-emerald-100 dark:text-emerald-400"
                             )}
                           >
                             {product.stock <= 0 ? 'Sin stock' : 'Agregar'}
@@ -293,7 +293,7 @@ export function ClientSummary() {
             )}>
               <div className={cn(
                 "w-12 h-12 rounded-xl flex items-center justify-center",
-                registeredOrder.length > 0 ? "bg-[#0F6B41]/10 text-[#0F6B41]" : "bg-slate-200 text-slate-400"
+                registeredOrder.length > 0 ? "bg-[#0F6B41]/10 text-[#0F6B41] dark:text-emerald-400" : "bg-slate-200 text-slate-400"
               )}>
                 <ShoppingBag className="w-6 h-6" />
               </div>
@@ -350,7 +350,7 @@ export function ClientSummary() {
 
             <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl flex gap-3">
               <div className="p-2 bg-white rounded-lg h-fit shadow-sm">
-                <Utensils className="w-4 h-4 text-[#0F6B41]" />
+                <Utensils className="w-4 h-4 text-[#0F6B41] dark:text-emerald-400" />
               </div>
               <p className="text-xs text-[#1E4437] font-medium leading-relaxed">
                 Este es un resumen de tu consumo actual. Para pedir algo más, utilizá la pestaña de "Carta" o solicitá la cuenta al personal.
@@ -375,7 +375,7 @@ export function ClientSummary() {
                     <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                       <div>
                         <span className="text-xs text-slate-400 font-bold">{new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                        <h4 className="text-xs font-black text-slate-800 mt-0.5">Monto: ${order.total.toLocaleString()}</h4>
+                        <h4 className="text-xs font-black text-slate-800 mt-0.5">Monto: ${order.total.toLocaleString('es-AR')}</h4>
                       </div>
                       <div className={cn(
                         "px-3 py-1 rounded-full text-xs font-black flex items-center gap-1.5",

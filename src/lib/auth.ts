@@ -97,12 +97,20 @@ export async function login(name: string, password: string): Promise<AuthResult>
   if (ipc) {
     result = await ipc.invoke<AuthResult>('auth-login', { name, password });
   } else {
-    const res = await fetch(`${window.location.origin}/api/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, password }),
-    });
-    result = await res.json().catch(() => ({ ok: false, error: `Error ${res.status}` }));
+    const NO_HOST = 'No se pudo conectar con la caja principal. Reintentá en unos segundos.';
+    let res: Response;
+    try {
+      res = await fetch(`${window.location.origin}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, password }),
+      });
+    } catch {
+      return { ok: false, error: NO_HOST } as AuthResult;
+    }
+    // 500/502/503/504: la PC principal no respondió bien (arrancando, ocupada o sin conexión)
+    if (res.status >= 500) return { ok: false, error: NO_HOST } as AuthResult;
+    result = await res.json().catch(() => ({ ok: false, error: `No se pudo iniciar sesión (código ${res.status}).` }));
   }
   if (result.ok && result.token && result.user) {
     saveSession(result.token, result.user, result.allowedTables || []);

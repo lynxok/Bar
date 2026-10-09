@@ -92,7 +92,7 @@ export function Analytics() {
   const handleDownloadReport = () => {
     const reportData = filteredOrders.map(order => ({
       ID: order.id,
-      Fecha: new Date(order.timestamp).toLocaleString(),
+      Fecha: new Date(order.timestamp).toLocaleString('es-AR'),
       Mesa: order.tableId,
       Total: order.total,
       Metodo_Pago: order.paymentMethod || 'Efectivo',
@@ -117,23 +117,23 @@ export function Analytics() {
     <div className="p-container-padding space-y-6 animate-in fade-in duration-700">
       
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 dark:bg-[var(--bg-surface)] dark:border-white/10">
         <div>
-          <h1 className="font-bold text-[28px] text-slate-900 leading-tight mb-1">Analítica y Rendimiento</h1>
-          <p className="text-slate-500 text-sm">Visualización avanzada de ventas y rentabilidad real.</p>
+          <h1 className="font-bold text-[28px] text-slate-900 leading-tight mb-1 dark:text-zinc-100">Analítica y Rendimiento</h1>
+          <p className="text-slate-500 text-sm dark:text-zinc-400">Visualización avanzada de ventas y rentabilidad real.</p>
         </div>
         <div className="flex gap-3">
           <div className="relative">
              <select 
                 value={timeFilter}
                 onChange={(e) => setTimeFilter(e.target.value)}
-                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-4 py-2.5 pr-10 hover:bg-slate-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-[#0F6B41]"
+                className="appearance-none bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-4 py-2.5 pr-10 hover:bg-slate-100 transition-colors cursor-pointer outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/10"
               >
                <option value="Hoy">Hoy</option>
                <option value="Últimos 7 Días">Últimos 7 Días</option>
                <option value="Este Mes">Este Mes</option>
              </select>
-             <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+             <Calendar className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none dark:text-zinc-400" />
           </div>
           <button 
             onClick={handleDownloadReport}
@@ -145,29 +145,29 @@ export function Analytics() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <p className="text-slate-500 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Ingresos Brutos ({timeFilter})</p>
-          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10 font-mono tabular-nums">{formatMoney(totalSales)}</h3>
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group dark:bg-[var(--bg-surface)] dark:border-white/10">
+          <p className="text-slate-500 font-bold text-xs uppercase tracking-wider mb-2 relative z-10 dark:text-zinc-400">Ingresos Brutos ({timeFilter})</p>
+          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10 tabular-nums dark:text-zinc-100">{formatMoney(totalSales)}</h3>
           <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm relative z-10">
             <TrendingUp className="w-4 h-4" />
             <span>Basado en ventas cerradas</span>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group">
-          <p className="text-slate-500 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Gastos Directos ({timeFilter})</p>
-          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10 font-mono tabular-nums">{formatMoney(totalExpenses)}</h3>
-          <div className="flex items-center gap-2 text-slate-500 font-bold text-sm relative z-10">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group dark:bg-[var(--bg-surface)] dark:border-white/10">
+          <p className="text-slate-500 font-bold text-xs uppercase tracking-wider mb-2 relative z-10 dark:text-zinc-400">Gastos Directos ({timeFilter})</p>
+          <h3 className="text-[36px] font-bold text-slate-900 mb-2 relative z-10 tabular-nums dark:text-zinc-100">{formatMoney(totalExpenses)}</h3>
+          <div className="flex items-center gap-2 text-slate-500 font-bold text-sm relative z-10 dark:text-zinc-400">
             <span className="text-emerald-700 font-semibold">Registro de egresos</span>
           </div>
         </div>
 
         <div className="bg-[#0F6B41] p-6 rounded-2xl shadow-xl relative overflow-hidden group text-white">
           <p className="text-emerald-200 font-bold text-xs uppercase tracking-wider mb-2 relative z-10">Utilidad Operativa</p>
-          <h3 className="text-[36px] font-bold mb-2 relative z-10 font-mono tabular-nums">{formatMoney(netProfit)}</h3>
+          <h3 className="text-[36px] font-bold mb-2 relative z-10 tabular-nums">{formatMoney(netProfit)}</h3>
           <div className="flex items-center gap-2 font-bold text-sm relative z-10">
             <span className="bg-white/20 px-2 py-0.5 rounded flex items-center gap-1 font-mono">
-              <ArrowUpRight className="w-3 h-3" /> {margin.toFixed(1)}%
+              <ArrowUpRight className="w-3 h-3" /> {margin.toLocaleString('es-AR', { maximumFractionDigits: 1 })}%
             </span>
             <span className="opacity-80">Rendimiento Actual</span>
           </div>
@@ -177,10 +177,10 @@ export function Analytics() {
       {/* Main Charts Area */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col dark:bg-[var(--bg-surface)] dark:border-white/10">
           <div className="mb-6">
-            <h3 className="font-bold text-lg text-slate-800">Tendencia de Ventas (Horaria)</h3>
-            <p className="text-slate-500 text-sm">Distribución de facturación en el rango de 12:00 a 23:00.</p>
+            <h3 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Tendencia de Ventas (Horaria)</h3>
+            <p className="text-slate-500 text-sm dark:text-zinc-400">Distribución de facturación en el rango de 12:00 a 23:00.</p>
           </div>
           <div className="flex-1 w-full h-[300px]">
              <ResponsiveContainer width="100%" height="100%">
@@ -199,10 +199,10 @@ export function Analytics() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col dark:bg-[var(--bg-surface)] dark:border-white/10">
           <div className="mb-6">
-            <h3 className="font-bold text-lg text-slate-800">Mix de Ventas</h3>
-            <p className="text-slate-500 text-sm">Desglose proporcional por categoría de productos (Top 5).</p>
+            <h3 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Mix de Ventas</h3>
+            <p className="text-slate-500 text-sm dark:text-zinc-400">Desglose proporcional por categoría de productos (Top 5).</p>
           </div>
           <div className="flex-1 w-full h-[300px]">
              {categoryData.length > 0 ? (
@@ -220,7 +220,7 @@ export function Analytics() {
                   </BarChart>
                </ResponsiveContainer>
              ) : (
-               <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium">
+               <div className="flex items-center justify-center h-full text-slate-400 text-sm font-medium dark:text-zinc-400">
                  No hay suficientes datos en este periodo.
                </div>
              )}

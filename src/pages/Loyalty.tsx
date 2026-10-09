@@ -43,14 +43,14 @@ const getTierStyle = (tierName: string, index: number = 0) => {
   const name = tierName.toLowerCase();
   if (name.includes('platinum')) return 'bg-[#1E4437] border-emerald-800 text-slate-100 shadow-sm';
   if (name.includes('gold')) return 'bg-amber-100 border-amber-200 text-amber-800';
-  if (name.includes('silver')) return 'bg-slate-100 border-slate-200 text-slate-700';
+  if (name.includes('silver')) return 'bg-slate-100 border-slate-200 text-slate-700 dark:bg-white/5 dark:border-white/10 dark:text-zinc-300';
   if (name.includes('bronze')) return 'bg-orange-50 border-orange-100 text-orange-800';
 
   const styles = [
     'bg-orange-50 border-orange-100 text-orange-800',
-    'bg-slate-100 border-slate-200 text-slate-700',
+    'bg-slate-100 border-slate-200 text-slate-700 dark:bg-white/5 dark:border-white/10 dark:text-zinc-300',
     'bg-amber-100 border-amber-200 text-amber-800',
-    'bg-emerald-50 border-emerald-200 text-[#0F6B41]',
+    'bg-emerald-50 border-emerald-200 text-[#0F6B41] dark:text-emerald-400',
     'bg-emerald-50 border-emerald-200 text-emerald-700',
   ];
   return styles[index % styles.length];
@@ -262,27 +262,27 @@ export function Loyalty() {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto">
       {/* Top Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 dark:bg-[var(--bg-surface)] dark:border-white/10">
         <div>
-          <h1 className="font-bold text-2xl text-slate-900 mb-1">Fidelización y Clientes</h1>
-          <p className="text-slate-500 text-sm font-medium">Gestiona recompensas, puntos acumulados y retención de clientes.</p>
+          <h1 className="font-bold text-2xl text-slate-900 mb-1 dark:text-zinc-100">Fidelización y Clientes</h1>
+          <p className="text-slate-500 text-sm font-medium dark:text-zinc-400">Gestiona recompensas, puntos acumulados y retención de clientes.</p>
         </div>
         <div className="flex gap-3">
           <button 
             onClick={() => setIsTiersModalOpen(true)}
-            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider"
+            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
           >
-            <Award className="w-4 h-4 text-[#0F6B41]" /> Configurar Niveles
+            <Award className="w-4 h-4 text-[#0F6B41] dark:text-emerald-400" /> Configurar Niveles
           </button>
           <button 
             onClick={() => setIsPromotionsModalOpen(true)}
-            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider"
+            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
           >
             <Zap className="w-4 h-4 text-amber-500" /> Promociones
           </button>
           <button 
             onClick={() => setIsCatalogModalOpen(true)}
-            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider"
+            className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl flex items-center gap-2 font-bold text-xs shadow-sm hover:bg-slate-50 transition-colors uppercase tracking-wider dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-300 dark:hover:bg-white/5"
           >
             <Gift className="w-4 h-4 text-emerald-500" /> Catálogo de Premios
           </button>
@@ -297,27 +297,27 @@ export function Loyalty() {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between dark:bg-[var(--bg-surface)] dark:border-white/10">
           <div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Clientes Activos</div>
-            <div className="text-3xl font-bold text-slate-900">{customersData.length.toLocaleString()}</div>
+            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 dark:text-zinc-400">Clientes Activos</div>
+            <div className="text-3xl font-bold text-slate-900 dark:text-zinc-100">{customersData.length.toLocaleString('es-AR')}</div>
             <div className="text-emerald-500 text-xs font-medium mt-2 flex items-center">
               <TrendingUp className="h-3 w-3 mr-1" />
               Sincronizado
             </div>
           </div>
-          <div className="bg-emerald-50 p-4 rounded-xl text-[#0F6B41]">
+          <div className="bg-emerald-50 p-4 rounded-xl text-[#0F6B41] dark:text-emerald-400">
             <Users className="h-6 w-6" />
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between dark:bg-[var(--bg-surface)] dark:border-white/10">
           <div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Puntos Emitidos</div>
-            <div className="text-3xl font-bold text-slate-900">
-              {customersData.reduce((acc, c) => acc + (c.points || 0), 0).toLocaleString()}
+            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 dark:text-zinc-400">Puntos Emitidos</div>
+            <div className="text-3xl font-bold text-slate-900 dark:text-zinc-100">
+              {customersData.reduce((acc, c) => acc + (c.points || 0), 0).toLocaleString('es-AR')}
             </div>
-            <div className="text-slate-400 text-xs mt-2 flex items-center font-medium">
+            <div className="text-slate-400 text-xs mt-2 flex items-center font-medium dark:text-zinc-400">
               <Award className="h-3 w-3 mr-1" />
               Equivalente a {formatMoney(customersData.reduce((acc, c) => acc + (c.points || 0), 0) * pointValue)}
             </div>
@@ -328,29 +328,29 @@ export function Loyalty() {
           </div>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between relative">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-start justify-between relative dark:bg-[var(--bg-surface)] dark:border-white/10">
           <div>
-            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Equivalencia de Puntos</div>
+            <div className="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1 dark:text-zinc-400">Equivalencia de Puntos</div>
             {isEditingPointValue ? (
               <div className="flex flex-col gap-2 mt-1">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-bold text-slate-700">1 pt = $</span>
+                  <span className="text-sm font-bold text-slate-700 dark:text-zinc-300">1 pt = $</span>
                   <input 
                     type="number" 
                     step="0.001"
                     min="0"
                     value={pointValue} 
                     onChange={(e) => updateLoyaltyConfig({ pointValue: Number(e.target.value) })}
-                    className="w-20 px-2 py-1 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-[#0F6B41] font-medium bg-slate-50" 
+                    className="w-20 px-2 py-1 border border-slate-200 rounded text-sm outline-none focus:ring-2 focus:ring-[#0F6B41] font-medium bg-slate-50 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]" 
                   />
                   <button onClick={() => setIsEditingPointValue(false)} className="px-2 py-1 bg-[#0F6B41] text-white rounded text-[10px] font-bold hover:bg-[#0C5734] transition-colors uppercase tracking-wider">Guardar</button>
                 </div>
               </div>
             ) : (
               <>
-                <div className="text-3xl font-bold text-slate-900">${pointValue.toFixed(3)} <span className="text-sm text-slate-500 font-medium">/ pt</span></div>
-                <div className="text-slate-400 text-xs mt-2 flex items-center font-medium">
-                  <Settings className="h-3 w-3 mr-1 bg-slate-100 rounded text-slate-500 p-0.5" />
+                <div className="text-3xl font-bold text-slate-900 dark:text-zinc-100">${pointValue.toLocaleString("es-AR", { minimumFractionDigits: 3, maximumFractionDigits: 3 })} <span className="text-sm text-slate-500 font-medium dark:text-zinc-400">/ pt</span></div>
+                <div className="text-slate-400 text-xs mt-2 flex items-center font-medium dark:text-zinc-400">
+                  <Settings className="h-3 w-3 mr-1 bg-slate-100 rounded text-slate-500 p-0.5 dark:bg-white/5 dark:text-zinc-400" />
                   $100 = {Math.floor(100 / pointValue)} puntos
                 </div>
               </>
@@ -358,7 +358,7 @@ export function Loyalty() {
           </div>
           <button 
             onClick={() => setIsEditingPointValue(!isEditingPointValue)} 
-            className="bg-slate-50 p-3 rounded-xl text-slate-500 hover:text-[#0F6B41] hover:bg-emerald-50 transition-colors shrink-0"
+            className="bg-slate-50 p-3 rounded-xl text-slate-500 hover:text-[#0F6B41] hover:bg-emerald-50 transition-colors shrink-0 dark:bg-[var(--color-paper-subtle)] dark:text-zinc-400"
             title="Configurar equivalencia de puntos"
           >
             {isEditingPointValue ? <X className="h-5 w-5" /> : <Edit2 className="h-5 w-5" />}
@@ -367,7 +367,7 @@ export function Loyalty() {
 
         <div className="bg-[#1E4437] p-5 rounded-2xl border border-emerald-800/30 shadow-xl flex items-start justify-between relative overflow-hidden">
           <div className="relative z-10">
-            <div className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Canjes Realizados</div>
+            <div className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1 dark:text-zinc-400">Canjes Realizados</div>
             <div className="text-3xl font-bold text-white">
               {loyaltyTransactions.filter(t => t.type === 'redemption').length}
             </div>
@@ -387,18 +387,18 @@ export function Loyalty() {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
         {/* Customer Database */}
-        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-             <h3 className="font-bold text-lg text-slate-800">Directorio de Clientes</h3>
+        <div className="xl:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col dark:bg-[var(--bg-surface)] dark:border-white/10">
+          <div className="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 dark:border-white/10">
+             <h3 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Directorio de Clientes</h3>
              <div className="flex items-center gap-3 w-full sm:w-auto">
                 <div className="relative flex-1 sm:w-64">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 h-4 w-4 dark:text-zinc-400" />
                   <input
                     type="text"
                     placeholder="Buscar por DNI, nombre o teléfono..."
                     value={searchQuery}
                     onChange={e => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all placeholder:text-slate-400"
+                    className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all placeholder:text-slate-400 dark:bg-[var(--color-paper-subtle)] dark:border-white/10"
                   />
                 </div>
              </div>
@@ -407,24 +407,24 @@ export function Loyalty() {
           <div className="flex-1 overflow-x-auto">
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200">
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Cliente</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Nivel</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Puntos Acumulados</th>
-                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Acción</th>
+                <tr className="bg-slate-50 border-b border-slate-200 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest dark:text-zinc-400">Cliente</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest dark:text-zinc-400">Nivel</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right dark:text-zinc-400">Puntos Acumulados</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center dark:text-zinc-400">Acción</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-white/10">
                 {filteredCustomers.map((c) => (
-                  <tr key={c.id} className="hover:bg-slate-50 transition-colors group">
+                  <tr key={c.id} className="hover:bg-slate-50 transition-colors group dark:hover:bg-white/5">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-[#0F6B41] flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-emerald-100 text-[#0F6B41] flex items-center justify-center font-bold text-sm shrink-0 dark:text-emerald-400">
                           {c.name.split(' ').map((n: string) => n[0]).join('')}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-slate-800">{c.name}</p>
-                          <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5">
+                          <p className="text-sm font-bold text-slate-800 dark:text-zinc-100">{c.name}</p>
+                          <p className="text-xs text-slate-400 flex items-center gap-1 mt-0.5 dark:text-zinc-400">
                             <Mail className="w-3 h-3" /> {c.email}
                           </p>
                         </div>
@@ -445,7 +445,7 @@ export function Loyalty() {
                       })()}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <span className="text-sm font-bold text-slate-800">{c.points.toLocaleString()} pts</span>
+                      <span className="text-sm font-bold text-slate-800 dark:text-zinc-100">{c.points.toLocaleString('es-AR')} pts</span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center gap-2">
@@ -456,7 +456,7 @@ export function Loyalty() {
                           Canjear
                         </button>
                         <button 
-                          className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200"
+                          className="px-4 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors border border-slate-200 dark:bg-white/5 dark:text-zinc-300 dark:border-white/10"
                           onClick={() => {
                             setSelectedCustomer(c);
                             setProfileTab('info');
@@ -472,8 +472,8 @@ export function Loyalty() {
             </table>
           </div>
           
-          <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm bg-slate-50">
-            <span className="text-slate-500 font-medium">Mostrando {filteredCustomers.length} clientes</span>
+          <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm bg-slate-50 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]">
+            <span className="text-slate-500 font-medium dark:text-zinc-400">Mostrando {filteredCustomers.length} clientes</span>
           </div>
         </div>
 
@@ -496,7 +496,7 @@ export function Loyalty() {
                 />
                 <button 
                   onClick={handleScan}
-                  className="bg-white text-[#0F6B41] px-4 py-3 rounded-xl font-bold shadow-md hover:bg-slate-50 transition-colors"
+                  className="bg-white text-[#0F6B41] px-4 py-3 rounded-xl font-bold shadow-md hover:bg-slate-50 transition-colors dark:bg-[var(--bg-surface)] dark:hover:bg-white/5 dark:text-emerald-400"
                 >
                   <Search className="w-5 h-5" />
                 </button>
@@ -506,8 +506,8 @@ export function Loyalty() {
           </div>
 
           {/* Recent Transactions list */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-1">
-            <h3 className="font-bold text-slate-800 text-lg mb-6">Últimos Movimientos</h3>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex-1 dark:bg-[var(--bg-surface)] dark:border-white/10">
+            <h3 className="font-bold text-slate-800 text-lg mb-6 dark:text-zinc-100">Últimos Movimientos</h3>
             <div className="space-y-4">
               {loyaltyTransactions.slice(0, 5).map((tx) => (
                 <div key={tx.id} className="flex items-center gap-4 group">
@@ -520,8 +520,8 @@ export function Loyalty() {
                      tx.type === 'redemption' ? <Gift className="w-5 h-5" /> : <Settings className="w-5 h-5" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-slate-800 truncate">{tx.customerName}</p>
-                    <p className="text-xs text-slate-500 truncate">{tx.description}</p>
+                    <p className="text-sm font-bold text-slate-800 truncate dark:text-zinc-100">{tx.customerName}</p>
+                    <p className="text-xs text-slate-500 truncate dark:text-zinc-400">{tx.description}</p>
                   </div>
                   <div className="text-right shrink-0 flex flex-col items-end">
                     <span className={cn(
@@ -530,14 +530,14 @@ export function Loyalty() {
                     )}>
                       {tx.points > 0 ? `+${tx.points}` : tx.points} pts
                     </span>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase mt-0.5">
+                    <span className="text-[9px] text-slate-400 font-bold uppercase mt-0.5 dark:text-zinc-400">
                       {new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                 </div>
               ))}
               {loyaltyTransactions.length === 0 && (
-                <p className="text-xs text-slate-400 italic text-center py-6">Sin movimientos recientes.</p>
+                <p className="text-xs text-slate-400 italic text-center py-6 dark:text-zinc-400">Sin movimientos recientes.</p>
               )}
             </div>
           </div>
@@ -547,18 +547,18 @@ export function Loyalty() {
       {/* Redemption Modal */}
       {redeemingCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] dark:bg-[var(--bg-surface)]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between dark:border-white/10">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Canjear Premios</h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  Cliente: <span className="font-bold text-slate-700">{redeemingCustomer.name}</span> • 
-                  Puntos Disponibles: <span className="font-bold text-[#0F6B41]">{redeemingCustomer.points}</span>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Canjear Premios</h2>
+                <p className="text-sm text-slate-500 mt-1 dark:text-zinc-400">
+                  Cliente: <span className="font-bold text-slate-700 dark:text-zinc-300">{redeemingCustomer.name}</span> • 
+                  Puntos Disponibles: <span className="font-bold text-[#0F6B41] dark:text-emerald-400">{redeemingCustomer.points}</span>
                 </p>
               </div>
               <button 
                 onClick={() => setRedeemingCustomer(null)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 dark:hover:bg-white/10 dark:text-zinc-400"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -572,18 +572,18 @@ export function Loyalty() {
                     className={cn(
                       "p-4 rounded-xl border flex flex-col justify-between h-32 transition-colors",
                       canAfford 
-                        ? "border-slate-200 bg-white hover:border-emerald-300 hover:shadow-sm" 
-                        : "border-slate-100 bg-slate-50 opacity-60"
+                        ? "border-slate-200 bg-white hover:border-emerald-300 hover:shadow-sm dark:border-white/10 dark:bg-[var(--bg-surface)]" 
+                        : "border-slate-100 bg-slate-50 opacity-60 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]"
                     )}
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{prize.icon || '🎁'}</span>
-                        <h3 className="font-bold text-slate-800 leading-tight">{prize.name}</h3>
+                        <h3 className="font-bold text-slate-800 leading-tight dark:text-zinc-100">{prize.name}</h3>
                       </div>
                     </div>
                     <div className="flex items-end justify-between mt-4">
-                      <span className={cn("text-lg font-bold", canAfford ? "text-[#0F6B41]" : "text-slate-500")}>
+                      <span className={cn("text-lg font-bold", canAfford ? "text-[#0F6B41] dark:text-emerald-400" : "text-slate-500 dark:text-zinc-400")}>
                         {prize.pointsCost} <span className="text-xs font-medium">pts</span>
                       </span>
                       <button
@@ -593,7 +593,7 @@ export function Loyalty() {
                           "px-4 py-1.5 rounded-lg text-sm font-bold transition-colors",
                           canAfford 
                             ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
-                            : "bg-slate-200 text-slate-400 cursor-not-allowed"
+                            : "bg-slate-200 text-slate-400 cursor-not-allowed dark:text-zinc-400"
                         )}
                       >
                         {canAfford ? 'Canjear' : 'Insuficiente'}
@@ -610,35 +610,35 @@ export function Loyalty() {
       {/* Catalog Management Modal */}
       {isCatalogModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] dark:bg-[var(--bg-surface)]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between dark:border-white/10">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Catálogo de Premios</h2>
-                <p className="text-sm text-slate-500 mt-1">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Catálogo de Premios</h2>
+                <p className="text-sm text-slate-500 mt-1 dark:text-zinc-400">
                   Administra los premios que tus clientes pueden canjear con sus puntos.
                 </p>
               </div>
               <button 
                 onClick={() => setIsCatalogModalOpen(false)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 dark:hover:bg-white/10 dark:text-zinc-400"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto bg-slate-50 flex-1 space-y-6">
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="p-6 overflow-y-auto bg-slate-50 flex-1 space-y-6 dark:bg-[var(--color-paper-subtle)]">
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 dark:bg-[var(--bg-surface)] dark:border-white/10">
                 <div className="flex gap-6 items-start">
                   <div 
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden shrink-0 group"
+                    className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-200 hover:border-emerald-400 hover:bg-emerald-50 transition-all cursor-pointer flex flex-col items-center justify-center overflow-hidden shrink-0 group dark:border-white/10"
                   >
                     {newPrizeImage ? (
                       <img src={newPrizeImage} alt="Preview" className="w-full h-full object-cover" />
                     ) : (
                       <div className="text-center p-4">
                         <Upload className="w-6 h-6 text-slate-300 group-hover:text-emerald-400 mx-auto mb-2" />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-[#0F6B41]">Subir Imagen</span>
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest group-hover:text-[#0F6B41] dark:text-zinc-400">Subir Imagen</span>
                       </div>
                     )}
                     <input 
@@ -652,33 +652,33 @@ export function Loyalty() {
 
                   <div className="flex-1 grid grid-cols-12 gap-4">
                     <div className="col-span-8">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nombre del Premio</label>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 dark:text-zinc-400">Nombre del Premio</label>
                       <input 
                         type="text" 
                         value={newPrizeName} 
                         onChange={(e) => setNewPrizeName(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all dark:bg-[var(--color-paper-subtle)] dark:border-white/10"
                         placeholder="Ej. Postre Helado, Cena para 2..."
                       />
                     </div>
                     <div className="col-span-4">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Puntos</label>
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 dark:text-zinc-400">Puntos</label>
                       <input 
                         type="number" 
                         value={newPrizePoints} 
                         onChange={(e) => setNewPrizePoints(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
+                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-300"
                         placeholder="200"
                       />
                     </div>
                     <div className="col-span-12 flex items-center justify-between pt-2">
                       <div className="flex items-center gap-3">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Emoji Alternativo:</label>
+                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest dark:text-zinc-400">Emoji Alternativo:</label>
                         <input 
                           type="text" 
                           value={newPrizeIcon} 
                           onChange={(e) => setNewPrizeIcon(e.target.value)}
-                          className="w-12 text-center py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none"
+                          className="w-12 text-center py-1 bg-slate-50 border border-slate-200 rounded-lg outline-none dark:bg-[var(--color-paper-subtle)] dark:border-white/10"
                         />
                       </div>
                       <button 
@@ -697,27 +697,27 @@ export function Loyalty() {
                 {catalogData.map(prize => (
                   <div 
                     key={prize.id} 
-                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-emerald-300 transition-all"
+                    className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col group hover:border-emerald-300 transition-all dark:bg-[var(--bg-surface)] dark:border-white/10"
                   >
-                    <div className="h-32 bg-slate-100 relative overflow-hidden">
+                    <div className="h-32 bg-slate-100 relative overflow-hidden dark:bg-white/5">
                       {prize.image ? (
                         <img src={prize.image} alt={prize.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-4xl bg-slate-50">
+                        <div className="w-full h-full flex items-center justify-center text-4xl bg-slate-50 dark:bg-[var(--color-paper-subtle)]">
                           {prize.icon || '🎁'}
                         </div>
                       )}
                       <button
                         onClick={() => handleDeletePrize(prize.id)}
-                        className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-slate-400 hover:text-red-500 rounded-lg transition-colors shadow-sm opacity-0 group-hover:opacity-100"
+                        className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm text-slate-400 hover:text-red-500 rounded-lg transition-colors shadow-sm opacity-0 group-hover:opacity-100 dark:text-zinc-400"
                       >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-bold text-slate-800 leading-tight mb-2">{prize.name}</h3>
+                      <h3 className="font-bold text-slate-800 leading-tight mb-2 dark:text-zinc-100">{prize.name}</h3>
                       <div className="flex items-center justify-between">
-                        <div className="text-[#0F6B41] font-bold bg-emerald-50 inline-block px-2.5 py-1 rounded-lg text-sm">
+                        <div className="text-[#0F6B41] font-bold bg-emerald-50 inline-block px-2.5 py-1 rounded-lg text-sm dark:text-emerald-400">
                           {prize.pointsCost} <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">pts</span>
                         </div>
                       </div>
@@ -733,23 +733,23 @@ export function Loyalty() {
       {/* Tiers Configuration Modal */}
       {isTiersModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh] dark:bg-[var(--bg-surface)]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between dark:border-white/10">
               <div>
-                <h2 className="text-xl font-bold text-slate-800">Niveles de Fidelización</h2>
-                <p className="text-sm text-slate-500 mt-1">Personaliza los nombres y umbrales de puntos.</p>
+                <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Niveles de Fidelización</h2>
+                <p className="text-sm text-slate-500 mt-1 dark:text-zinc-400">Personaliza los nombres y umbrales de puntos.</p>
               </div>
               <button 
                 onClick={() => setIsTiersModalOpen(false)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 dark:hover:bg-white/10 dark:text-zinc-400"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="p-6 space-y-4 overflow-y-auto bg-slate-50">
+            <div className="p-6 space-y-4 overflow-y-auto bg-slate-50 dark:bg-[var(--color-paper-subtle)]">
               {tierConfig.map((tier, idx) => (
-                <div key={idx} className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3">
+                <div key={idx} className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm space-y-3 dark:bg-[var(--bg-surface)] dark:border-white/10">
                   <div className="flex items-center gap-3">
                     <div className={cn(
                       "w-10 h-10 rounded-lg flex items-center justify-center border shrink-0",
@@ -762,7 +762,7 @@ export function Loyalty() {
                         type="text"
                         value={tier.name}
                         onChange={(e) => handleUpdateTierName(idx, e.target.value)}
-                        className="w-full bg-transparent font-bold text-slate-800 outline-none focus:bg-slate-50 rounded px-1 -ml-1 border border-transparent focus:border-slate-200"
+                        className="w-full bg-transparent font-bold text-slate-800 outline-none focus:bg-slate-50 rounded px-1 -ml-1 border border-transparent focus:border-slate-200 dark:text-zinc-100"
                         placeholder="Nombre del nivel"
                       />
                     </div>
@@ -776,7 +776,7 @@ export function Loyalty() {
                   
                   <div className="flex items-center gap-4 pt-1">
                     <div className="flex-1">
-                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">
+                      <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">
                         Puntos Requeridos
                       </label>
                       <div className="flex items-center gap-2">
@@ -785,9 +785,9 @@ export function Loyalty() {
                           min="0"
                           value={tier.minPoints}
                           onChange={(e) => handleUpdateTierThreshold(idx, Number(e.target.value))}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41]"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-100 rounded-lg text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41] dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-300"
                         />
-                        <span className="text-xs font-bold text-slate-400 uppercase">pts</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase dark:text-zinc-400">pts</span>
                       </div>
                     </div>
                   </div>
@@ -796,13 +796,13 @@ export function Loyalty() {
               
               <button 
                 onClick={handleAddTier}
-                className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-wider hover:border-emerald-400 hover:text-[#0F6B41] hover:bg-emerald-50 transition-all flex items-center justify-center gap-2"
+                className="w-full py-3 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 font-bold text-xs uppercase tracking-wider hover:border-emerald-400 hover:text-[#0F6B41] hover:bg-emerald-50 transition-all flex items-center justify-center gap-2 dark:border-white/10 dark:text-zinc-400"
               >
                 <Plus className="w-4 h-4" /> Agregar Nuevo Nivel
               </button>
             </div>
             
-            <div className="p-6 bg-white border-t border-slate-100">
+            <div className="p-6 bg-white border-t border-slate-100 dark:bg-[var(--bg-surface)] dark:border-white/10">
               <button 
                 onClick={() => setIsTiersModalOpen(false)}
                 className="w-full py-3 bg-[#0F6B41] text-white rounded-xl font-bold hover:bg-[#0C5734] transition-colors shadow-lg shadow-sm text-sm uppercase tracking-wide"
@@ -817,50 +817,50 @@ export function Loyalty() {
       {/* Promotions Modal */}
       {isPromotionsModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/70 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] border border-white/20">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] border border-white/20 dark:bg-[var(--bg-surface)]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 dark:bg-white/5 dark:border-white/10">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-lg shadow-amber-200">
                   <Zap className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800">Centro de Promociones</h2>
-                  <p className="text-sm text-slate-500 font-medium">Configura multiplicadores de puntos y eventos especiales.</p>
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">Centro de Promociones</h2>
+                  <p className="text-sm text-slate-500 font-medium dark:text-zinc-400">Configura multiplicadores de puntos y eventos especiales.</p>
                 </div>
               </div>
               <button 
                 onClick={() => setIsPromotionsModalOpen(false)}
-                className="p-2 hover:bg-white rounded-full transition-colors text-slate-400 shadow-sm border border-slate-100"
+                className="p-2 hover:bg-white rounded-full transition-colors text-slate-400 shadow-sm border border-slate-100 dark:hover:bg-white/10 dark:text-zinc-400 dark:border-white/10"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 bg-white">
+            <div className="flex-1 overflow-y-auto p-8 bg-white dark:bg-[var(--bg-surface)]">
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 <div className="lg:col-span-5 space-y-6">
-                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <Plus className="w-4 h-4 text-[#0F6B41]" /> Nueva Promoción
+                  <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
+                    <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 dark:text-zinc-100">
+                      <Plus className="w-4 h-4 text-[#0F6B41] dark:text-emerald-400" /> Nueva Promoción
                     </h3>
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Nombre de la Campaña</label>
+                        <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 dark:text-zinc-400">Nombre de la Campaña</label>
                         <input 
                           type="text" 
                           value={newPromoName}
                           onChange={(e) => setNewPromoName(e.target.value)}
                           placeholder="Ej: Happy Hour 2x1"
-                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#0F6B41] transition-all"
+                          className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-[#0F6B41] transition-all dark:bg-[var(--bg-surface)] dark:border-white/10"
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Multiplicador</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 dark:text-zinc-400">Multiplicador</label>
                           <select 
                             value={newPromoMultiplier}
                             onChange={(e) => setNewPromoMultiplier(e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41] cursor-pointer"
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41] cursor-pointer dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-300"
                           >
                             <option value="1.5">1.5x</option>
                             <option value="2">2.0x</option>
@@ -869,10 +869,10 @@ export function Loyalty() {
                           </select>
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Categoría</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 dark:text-zinc-400">Categoría</label>
                           <select 
                             onChange={(e) => setSelectedTargets([e.target.value])}
-                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41] cursor-pointer"
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-[#0F6B41] cursor-pointer dark:bg-[var(--bg-surface)] dark:border-white/10 dark:text-zinc-300"
                           >
                             <option value="Todas">Todas</option>
                             <option value="Cafetería">Cafetería</option>
@@ -883,21 +883,21 @@ export function Loyalty() {
                       </div>
                       <div className="grid grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Inicio</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 dark:text-zinc-400">Inicio</label>
                           <input 
                             type="date" 
                             value={newPromoStart}
                             onChange={(e) => setNewPromoStart(e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none" 
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none dark:bg-[var(--bg-surface)] dark:border-white/10" 
                           />
                         </div>
                         <div>
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Fin</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 dark:text-zinc-400">Fin</label>
                           <input 
                             type="date" 
                             value={newPromoEnd}
                             onChange={(e) => setNewPromoEnd(e.target.value)}
-                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none" 
+                            className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-medium outline-none dark:bg-[var(--bg-surface)] dark:border-white/10" 
                           />
                         </div>
                       </div>
@@ -938,20 +938,20 @@ export function Loyalty() {
                 </div>
 
                 <div className="lg:col-span-7 flex flex-col">
-                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-widest mb-4 flex items-center gap-2 dark:text-zinc-100">
                     <Check className="w-4 h-4 text-emerald-500" /> Promociones Activas
                   </h3>
                   <div className="space-y-4 flex-1">
                     {promotionsData.map((promo) => (
-                      <div key={promo.id} className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-emerald-200 transition-all group relative overflow-hidden">
+                      <div key={promo.id} className="p-5 bg-white border border-slate-200 rounded-2xl hover:border-emerald-200 transition-all group relative overflow-hidden dark:bg-[var(--bg-surface)] dark:border-white/10">
                         <div className="flex items-center justify-between mb-3 relative z-10">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold">
                               {promo.multiplier}x
                             </div>
                             <div>
-                              <h4 className="font-bold text-slate-800">{promo.name}</h4>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{promo.targets.join(', ')}</p>
+                              <h4 className="font-bold text-slate-800 dark:text-zinc-100">{promo.name}</h4>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider dark:text-zinc-400">{promo.targets.join(', ')}</p>
                             </div>
                           </div>
                           <button 
@@ -963,8 +963,8 @@ export function Loyalty() {
                         </div>
                         <div className="flex items-center justify-between text-[11px] font-bold relative z-10">
                           <div className="flex items-center gap-4">
-                            <span className="text-slate-400 uppercase tracking-widest">Validez:</span>
-                            <span className="text-slate-600">{promo.startDate} al {promo.endDate}</span>
+                            <span className="text-slate-400 uppercase tracking-widest dark:text-zinc-400">Validez:</span>
+                            <span className="text-slate-600 dark:text-zinc-300">{promo.startDate} al {promo.endDate}</span>
                           </div>
                           <span className="flex items-center gap-1.5 text-emerald-500">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -987,31 +987,31 @@ export function Loyalty() {
       {/* Customer Profile Modal */}
       {selectedCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] dark:bg-[var(--bg-surface)]">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-[#0F6B41] text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-sm">
                   {selectedCustomer.name.split(' ').map((n: string) => n[0]).join('')}
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-800">{selectedCustomer.name}</h2>
-                  <p className="text-sm text-slate-500 font-medium">Cliente DNI: {selectedCustomer.dni}</p>
+                  <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-100">{selectedCustomer.name}</h2>
+                  <p className="text-sm text-slate-500 font-medium dark:text-zinc-400">Cliente DNI: {selectedCustomer.dni}</p>
                 </div>
               </div>
               <button 
                 onClick={() => setSelectedCustomer(null)}
-                className="p-2 hover:bg-white rounded-full transition-colors text-slate-400 shadow-sm"
+                className="p-2 hover:bg-white rounded-full transition-colors text-slate-400 shadow-sm dark:hover:bg-white/10 dark:text-zinc-400"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex border-b border-slate-100 p-1 bg-slate-50/50">
+            <div className="flex border-b border-slate-100 p-1 bg-slate-50/50 dark:bg-white/5 dark:border-white/10">
               <button 
                 onClick={() => setProfileTab('info')}
                 className={cn(
                   "flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all",
-                  profileTab === 'info' ? "bg-white text-[#0F6B41] shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  profileTab === 'info' ? "bg-white text-[#0F6B41] shadow-sm dark:bg-[var(--bg-surface)] dark:text-emerald-400" : "text-slate-500 hover:text-slate-700 dark:text-zinc-400"
                 )}
               >
                 Información
@@ -1020,7 +1020,7 @@ export function Loyalty() {
                 onClick={() => setProfileTab('history')}
                 className={cn(
                   "flex-1 py-2.5 text-xs font-bold uppercase tracking-wider rounded-lg transition-all flex items-center justify-center gap-2",
-                  profileTab === 'history' ? "bg-white text-[#0F6B41] shadow-sm" : "text-slate-500 hover:text-slate-700"
+                  profileTab === 'history' ? "bg-white text-[#0F6B41] shadow-sm dark:bg-[var(--bg-surface)] dark:text-emerald-400" : "text-slate-500 hover:text-slate-700 dark:text-zinc-400"
                 )}
               >
                 <History className="w-3.5 h-3.5" /> Historial de Puntos
@@ -1031,8 +1031,8 @@ export function Loyalty() {
               {profileTab === 'info' ? (
                 <div className="space-y-6">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Nivel Actual</p>
+                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Nivel Actual</p>
                       {(() => {
                         const tierName = calculateTier(selectedCustomer.points);
                         const tierIdx = tierConfig.findIndex((t: any) => t.name === tierName);
@@ -1048,20 +1048,20 @@ export function Loyalty() {
                     </div>
                     <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                       <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1">Balance Total</p>
-                      <p className="text-xl font-bold text-[#0F6B41]">{selectedCustomer.points.toLocaleString()} pts</p>
+                      <p className="text-xl font-bold text-[#0F6B41] dark:text-emerald-400">{selectedCustomer.points.toLocaleString('es-AR')} pts</p>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    <h4 className="text-sm font-bold text-slate-800">Detalles de Contacto</h4>
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-100">Detalles de Contacto</h4>
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
-                        <span className="text-xs font-medium text-slate-500">Email</span>
-                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.email}</span>
+                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl dark:bg-[var(--bg-surface)] dark:border-white/10">
+                        <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">Email</span>
+                        <span className="text-sm font-bold text-slate-700 dark:text-zinc-300">{selectedCustomer.email}</span>
                       </div>
-                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl">
-                        <span className="text-xs font-medium text-slate-500">Teléfono</span>
-                        <span className="text-sm font-bold text-slate-700">{selectedCustomer.phone}</span>
+                      <div className="flex items-center justify-between p-3 bg-white border border-slate-100 rounded-xl dark:bg-[var(--bg-surface)] dark:border-white/10">
+                        <span className="text-xs font-medium text-slate-500 dark:text-zinc-400">Teléfono</span>
+                        <span className="text-sm font-bold text-slate-700 dark:text-zinc-300">{selectedCustomer.phone}</span>
                       </div>
                     </div>
                   </div>
@@ -1069,15 +1069,15 @@ export function Loyalty() {
               ) : (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between mb-4">
-                    <h4 className="text-sm font-bold text-slate-800">Transacciones Recientes</h4>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded-full">
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-zinc-100">Transacciones Recientes</h4>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-100 px-2.5 py-1 rounded-full dark:text-zinc-400 dark:bg-white/5">
                       Total: {customerTransactions.length}
                     </span>
                   </div>
                   
                   <div className="space-y-3">
                     {customerTransactions.map((tx) => (
-                      <div key={tx.id} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center justify-between hover:border-slate-200 transition-colors">
+                      <div key={tx.id} className="p-3 bg-white border border-slate-100 rounded-xl flex items-center justify-between hover:border-slate-200 transition-colors dark:bg-[var(--bg-surface)] dark:border-white/10">
                         <div className="flex items-center gap-3">
                           <div className={cn(
                             "w-8 h-8 rounded-lg flex items-center justify-center text-sm",
@@ -1088,9 +1088,9 @@ export function Loyalty() {
                              tx.type === 'redemption' ? <Gift className="w-4 h-4" /> : <Settings className="w-4 h-4" />}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-slate-800">{tx.description}</p>
-                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider">
-                              {new Date(tx.timestamp).toLocaleString()}
+                            <p className="text-sm font-bold text-slate-800 dark:text-zinc-100">{tx.description}</p>
+                            <p className="text-[10px] text-slate-400 font-medium uppercase tracking-wider dark:text-zinc-400">
+                              {new Date(tx.timestamp).toLocaleString('es-AR')}
                             </p>
                           </div>
                         </div>
@@ -1105,14 +1105,14 @@ export function Loyalty() {
                       </div>
                     ))}
                     {customerTransactions.length === 0 && (
-                      <p className="text-xs text-slate-400 italic text-center py-6">Sin movimientos registrados.</p>
+                      <p className="text-xs text-slate-400 italic text-center py-6 dark:text-zinc-400">Sin movimientos registrados.</p>
                     )}
                   </div>
                 </div>
               )}
             </div>
             
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
               <button 
                 onClick={() => {
                   setRedeemingCustomer(selectedCustomer);
@@ -1130,13 +1130,13 @@ export function Loyalty() {
       {/* New Customer Modal */}
       {isNewCustomerModalOpen && (
         <div className="fixed inset-0 bg-[#1C1C1C]/75 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
-            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200 dark:bg-[var(--bg-surface)] dark:border-white/10">
+            <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 dark:bg-white/5 dark:border-white/10">
               <div>
-                <h3 className="font-black text-xl text-slate-900">Registrar Nuevo Socio</h3>
-                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5">Módulo de Fidelización LYNX</p>
+                <h3 className="font-black text-xl text-slate-900 dark:text-zinc-100">Registrar Nuevo Socio</h3>
+                <p className="text-xs text-slate-500 font-bold uppercase tracking-wider mt-0.5 dark:text-zinc-400">Módulo de Fidelización LYNX</p>
               </div>
-              <button onClick={() => setIsNewCustomerModalOpen(false)} className="p-2 text-slate-400 hover:bg-white hover:text-rose-500 rounded-full transition-all shadow-sm border border-transparent hover:border-slate-100">
+              <button onClick={() => setIsNewCustomerModalOpen(false)} className="p-2 text-slate-400 hover:bg-white hover:text-rose-500 rounded-full transition-all shadow-sm border border-transparent hover:border-slate-100 dark:text-zinc-400 dark:hover:bg-white/10">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -1152,50 +1152,50 @@ export function Loyalty() {
               }
             }} className="p-8 space-y-5">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nombre Completo</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 dark:text-zinc-400">Nombre Completo</label>
                 <input 
                   required
                   type="text" 
                   value={newCustomer.name}
                   onChange={e => setNewCustomer({...newCustomer, name: e.target.value})}
-                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
+                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                   placeholder="Ej: Juan Pérez"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">DNI / N° Socio</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 dark:text-zinc-400">DNI / N° Socio</label>
                   <input 
                     required
                     type="text" 
                     value={newCustomer.id}
                     onChange={e => setNewCustomer({...newCustomer, id: e.target.value})}
-                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                     placeholder="20456789"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Teléfono</label>
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 dark:text-zinc-400">Teléfono</label>
                   <input 
                     required
                     type="tel" 
                     value={newCustomer.phone}
                     onChange={e => setNewCustomer({...newCustomer, phone: e.target.value})}
-                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
+                    className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                     placeholder="3511234567"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Correo Electrónico</label>
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 dark:text-zinc-400">Correo Electrónico</label>
                 <input 
                   required
                   type="email" 
                   value={newCustomer.email}
                   onChange={e => setNewCustomer({...newCustomer, email: e.target.value})}
-                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all"
+                  className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-bold text-slate-900 focus:ring-2 focus:ring-[#0F6B41] outline-none transition-all dark:bg-[var(--color-paper-subtle)] dark:border-white/10 dark:text-zinc-100"
                   placeholder="juan@ejemplo.com"
                 />
               </div>
@@ -1204,7 +1204,7 @@ export function Loyalty() {
                 <button 
                   type="button"
                   onClick={() => setIsNewCustomerModalOpen(false)}
-                  className="flex-1 h-14 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all"
+                  className="flex-1 h-14 bg-slate-100 text-slate-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-200 transition-all dark:bg-white/5 dark:text-zinc-300"
                 >
                   Cancelar
                 </button>

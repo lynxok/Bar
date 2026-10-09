@@ -288,7 +288,7 @@ export function Settings() {
       </div>
 
       {/* Tabs Nav */}
-      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto">
+      <div className="flex border-b border-slate-200 dark:border-slate-800 overflow-x-auto [scrollbar-width:thin] [scrollbar-color:#CBD5E1_transparent] dark:[scrollbar-color:#2A483D_transparent]">
         <button
           onClick={() => setActiveTab('general')}
           className={cn(
@@ -362,7 +362,7 @@ export function Settings() {
       {activeTab === 'general' && (
         <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
-            <Store className="w-5 h-5 text-[#0F6B41]" />
+            <Store className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
             <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Información General</h2>
           </div>
 
@@ -372,7 +372,7 @@ export function Settings() {
             <div>
               <label className="block text-sm font-bold text-slate-700 dark:text-zinc-200 mb-4">Logotipo del Negocio</label>
               <div className="flex items-start gap-6">
-                <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden relative group">
+                <div className="w-32 h-32 rounded-2xl border-2 border-dashed border-slate-300 flex items-center justify-center bg-slate-50 overflow-hidden relative group dark:border-white/15 dark:bg-[var(--color-paper-subtle)]">
                   {logo ? (
                     <>
                       <img src={logo} alt="Logo" className="w-full h-full object-cover" />
@@ -387,12 +387,12 @@ export function Settings() {
                       </div>
                     </>
                   ) : (
-                    <ImageIcon className="w-8 h-8 text-slate-400" />
+                    <ImageIcon className="w-8 h-8 text-slate-400 dark:text-zinc-400" />
                   )}
                 </div>
                 
                 <div className="flex-1 space-y-3">
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 dark:text-zinc-400">
                     Sube el logotipo de tu restaurante o establecimiento. Este logo aparecerá en la barra lateral y en los recibos generados.
                   </p>
                   <div className="flex items-center gap-3">
@@ -410,7 +410,7 @@ export function Settings() {
                       <Upload className="w-4 h-4" />
                       Seleccionar Archivo
                     </button>
-                    <span className="text-xs text-slate-400 font-medium">PNG, JPG o SVG (máx. 2MB)</span>
+                    <span className="text-xs text-slate-400 font-medium dark:text-zinc-400">PNG, JPG o SVG (máx. 2MB)</span>
                   </div>
                 </div>
               </div>
@@ -443,7 +443,7 @@ export function Settings() {
                     placeholder="21" 
                     className="w-full bg-white dark:bg-[#1E342B] border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-zinc-100 pl-4 pr-12 py-3 rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] focus:border-[#0F6B41] outline-none font-medium shadow-sm transition-all"
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg">%</span>
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 font-black text-slate-400 text-lg dark:text-zinc-400">%</span>
                 </div>
                 <label className="flex items-start gap-3 mt-3 cursor-pointer select-none">
                   <input
@@ -481,7 +481,7 @@ export function Settings() {
         <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
           <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-[#14261F]">
             <div className="flex items-center gap-3">
-              <Users className="w-5 h-5 text-[#0F6B41]" />
+              <Users className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
               <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Gestión de Usuarios</h2>
             </div>
             <button 
@@ -505,7 +505,7 @@ export function Settings() {
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {users.map(user => (
-                  <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                  <tr key={user.id} className="hover:bg-slate-50/50 dark:bg-white/5 dark:hover:bg-white/[0.02] transition-colors">
                     <td className="px-8 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center text-[#0F6B41] dark:text-emerald-400 font-bold text-xs">
@@ -516,7 +516,7 @@ export function Settings() {
                     </td>
                     <td className="px-8 py-4">
                       <div className="flex items-center gap-2">
-                        {user.role === 'Admin' ? <Shield className="w-3.5 h-3.5 text-amber-500" /> : <Key className="w-3.5 h-3.5 text-slate-400" />}
+                        {user.role === 'Admin' ? <Shield className="w-3.5 h-3.5 text-amber-500" /> : <Key className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-400" />}
                         <span className="text-xs font-bold text-slate-600 dark:text-zinc-300 uppercase tracking-wider">{user.role}</span>
                       </div>
                     </td>
@@ -527,13 +527,13 @@ export function Settings() {
                       <div className="flex items-center justify-end gap-2">
                         <button 
                           onClick={() => handleEditUser(user)}
-                          className="p-2 text-slate-400 hover:text-[#0F6B41] hover:bg-emerald-50 dark:hover:bg-white/5 rounded-lg transition-all"
+                          className="p-2 text-slate-400 hover:text-[#0F6B41] hover:bg-emerald-50 dark:hover:bg-white/5 rounded-lg transition-all dark:text-zinc-400"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button 
                           onClick={() => handleDeleteUser(user.id)}
-                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all"
+                          className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg transition-all dark:text-zinc-400"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -563,7 +563,7 @@ export function Settings() {
                 <div>
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Versión Actual</p>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 dark:text-zinc-400">Versión Actual</p>
                       <p className="text-2xl font-black text-slate-800 dark:text-zinc-100">{CURRENT_VERSION}</p>
                     </div>
                     <div className={cn(
@@ -599,7 +599,7 @@ export function Settings() {
                   </button>
                 ) : updateStatus === 'downloading' ? (
                   <div className="w-full space-y-2">
-                    <div className="flex items-center justify-between text-xs font-semibold uppercase text-slate-400 tracking-wider">
+                    <div className="flex items-center justify-between text-xs font-semibold uppercase text-slate-400 tracking-wider dark:text-zinc-400">
                       <span>Descargando...</span>
                       <span>{downloadProgress}%</span>
                     </div>
@@ -670,7 +670,7 @@ export function Settings() {
             {/* ngrok Control Card */}
             <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
-                <Network className="w-5 h-5 text-[#0F6B41]" />
+                <Network className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
                 <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Túnel de Acceso Remoto (ngrok)</h2>
               </div>
               
@@ -696,12 +696,12 @@ export function Settings() {
                         type="button"
                         onClick={() => setShowToken(!showToken)}
                         disabled={tunnelStatus === 'active' || tunnelStatus === 'starting'}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 disabled:opacity-50"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-zinc-200 disabled:opacity-50 dark:text-zinc-400"
                       >
                         {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 dark:text-zinc-400">
                       Consigue tu token gratuito registrándote en <a href="https://dashboard.ngrok.com/get-started/your-authtoken" target="_blank" rel="noopener noreferrer" className="text-[#0F6B41] dark:text-emerald-400 hover:underline">ngrok.com</a>.
                     </p>
                   </div>
@@ -772,7 +772,7 @@ export function Settings() {
             {/* QR and URL display card */}
             <div className="bg-white dark:bg-[#182C24] rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col justify-between">
               <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex items-center gap-3 bg-slate-50 dark:bg-[#14261F]">
-                <QrCode className="w-5 h-5 text-[#0F6B41]" />
+                <QrCode className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" />
                 <h2 className="font-bold text-lg text-slate-800 dark:text-zinc-100">Conexión QR de Mesa y Mozo</h2>
               </div>
 
@@ -808,11 +808,11 @@ export function Settings() {
                   </>
                 ) : (
                   <div className="py-12 space-y-3">
-                    <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center text-slate-400 mx-auto">
+                    <div className="w-16 h-16 bg-slate-100 dark:bg-white/5 rounded-full flex items-center justify-center text-slate-400 mx-auto dark:text-zinc-400">
                       <QrCode className="w-8 h-8" />
                     </div>
                     <h3 className="font-bold text-slate-700 dark:text-zinc-200 text-sm">Túnel inactivo</h3>
-                    <p className="text-xs text-slate-400 max-w-[260px] mx-auto leading-relaxed">
+                    <p className="text-xs text-slate-400 max-w-[260px] mx-auto leading-relaxed dark:text-zinc-400">
                       El código QR y la URL de acceso público se generarán automáticamente una vez que inicies el túnel de ngrok.
                     </p>
                   </div>
@@ -833,7 +833,7 @@ export function Settings() {
                 <h3 className="font-black text-xl text-slate-900 dark:text-zinc-100">{editingUserId ? 'Editar Usuario' : 'Nuevo Usuario'}</h3>
                 <p className="text-xs text-slate-500 dark:text-zinc-400 font-bold uppercase tracking-wider mt-1">Configurar acceso al sistema</p>
               </div>
-              <button onClick={() => setIsUserModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-rose-500 rounded-full transition-all">
+              <button onClick={() => setIsUserModalOpen(false)} className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-rose-500 rounded-full transition-all dark:text-zinc-400">
                 <X className="w-6 h-6" />
               </button>
             </div>
@@ -925,7 +925,7 @@ export function Settings() {
             <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-4">
               <div>
                 <h3 className="text-lg font-black text-slate-950 dark:text-white">Facturación Electrónica (ARCA / AFIP)</h3>
-                <p className="text-xs text-slate-500 mt-1">Configura las credenciales fiscales para autorizar comprobantes en tiempo real.</p>
+                <p className="text-xs text-slate-500 mt-1 dark:text-zinc-400">Configura las credenciales fiscales para autorizar comprobantes en tiempo real.</p>
               </div>
               <button
                 onClick={() => setShowHelpModal(true)}
@@ -937,7 +937,7 @@ export function Settings() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">CUIT del Emisor</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">CUIT del Emisor</label>
                 <input
                   type="text"
                   placeholder="Ej: 20-38472938-9"
@@ -948,7 +948,7 @@ export function Settings() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Razón Social / Nombre Emisor</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Razón Social / Nombre Emisor</label>
                 <input
                   type="text"
                   placeholder="Ej: Ignacio Valente"
@@ -959,7 +959,7 @@ export function Settings() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Domicilio Comercial</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Domicilio Comercial</label>
                 <input
                   type="text"
                   placeholder="Ej: Av. Siempre Viva 123, CABA"
@@ -970,7 +970,7 @@ export function Settings() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Fecha Inicio Monotributo</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Fecha Inicio Monotributo</label>
                 <input
                   type="date"
                   value={arcaSettings.monotributoStartDate}
@@ -980,7 +980,7 @@ export function Settings() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Punto de Venta Electrónico (Web Services)</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Punto de Venta Electrónico (Web Services)</label>
                 <input
                   type="number"
                   placeholder="Ej: 2"
@@ -991,23 +991,23 @@ export function Settings() {
               </div>
 
               <div>
-                <label className="text-xs font-bold text-slate-500 block mb-1">Modo del Entorno AFIP</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Modo del Entorno AFIP</label>
                 <div className="flex gap-4 items-center h-10">
                   <label className="flex items-center gap-2 text-xs font-bold cursor-pointer">
                     <input
                       type="checkbox"
                       checked={arcaSettings.productionMode}
                       onChange={e => setArcaSettings({...arcaSettings, productionMode: e.target.checked})}
-                      className="w-4 h-4 rounded text-[#0F6B41] border-slate-300 focus:ring-[#0F6B41]"
+                      className="w-4 h-4 rounded text-[#0F6B41] border-slate-300 focus:ring-[#0F6B41] dark:border-white/15 dark:text-emerald-400"
                     />
                     Modo Producción (Real)
                   </label>
-                  <span className="text-[10px] text-slate-400 block">Si está desactivado, usará el servidor de Homologación (Pruebas)</span>
+                  <span className="text-[10px] text-slate-400 block dark:text-zinc-400">Si está desactivado, usará el servidor de Homologación (Pruebas)</span>
                 </div>
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-slate-500 block mb-1">Ruta del Certificado (.crt)</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Ruta del Certificado (.crt)</label>
                 <input
                   type="text"
                   placeholder="Haga clic en 'Generar' o coloque la ruta absoluta al archivo .crt"
@@ -1018,7 +1018,7 @@ export function Settings() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-slate-500 block mb-1">Ruta de la Llave Privada (.key)</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Ruta de la Llave Privada (.key)</label>
                 <input
                   type="text"
                   placeholder="Haga clic en 'Generar' o coloque la ruta absoluta al archivo .key"
@@ -1029,7 +1029,7 @@ export function Settings() {
               </div>
 
               <div className="md:col-span-2">
-                <label className="text-xs font-bold text-slate-500 block mb-1">Carpeta de Destino de PDFs Factura</label>
+                <label className="text-xs font-bold text-slate-500 block mb-1 dark:text-zinc-400">Carpeta de Destino de PDFs Factura</label>
                 <input
                   type="text"
                   placeholder="Ruta absoluta para guardar PDFs (Dejar vacío para usar predeterminada)"
@@ -1134,7 +1134,7 @@ export function Settings() {
                   <div className="space-y-1">
                     <p className="font-sans text-rose-700 dark:text-rose-400 font-bold">{arcaDiagnosticResult.error}</p>
                     {arcaDiagnosticResult.detailed && (
-                      <pre className="p-3 bg-slate-950 text-slate-400 rounded-lg overflow-x-auto text-[10px] leading-relaxed max-h-40">{arcaDiagnosticResult.detailed}</pre>
+                      <pre className="p-3 bg-slate-950 text-slate-400 rounded-lg overflow-x-auto text-[10px] leading-relaxed max-h-40 dark:text-zinc-400">{arcaDiagnosticResult.detailed}</pre>
                     )}
                   </div>
                 )}
@@ -1159,7 +1159,7 @@ export function Settings() {
               </h3>
               <button 
                 onClick={() => setShowHelpModal(false)} 
-                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-all cursor-pointer"
+                className="p-1 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10 rounded-lg transition-all cursor-pointer dark:text-zinc-400"
               >
                 <X className="w-5 h-5" />
               </button>

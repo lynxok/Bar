@@ -77,11 +77,11 @@ export function Security() {
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3">
-            <ShieldAlert className="w-8 h-8 text-[#0F6B41]" />
+          <h1 className="text-3xl font-bold text-slate-800 tracking-tight flex items-center gap-3 dark:text-zinc-100">
+            <ShieldAlert className="w-8 h-8 text-[#0F6B41] dark:text-emerald-400" />
             Seguridad y Auditoría
           </h1>
-          <p className="text-slate-500 mt-1 font-medium">Monitoreo de actividad y registros críticos del sistema.</p>
+          <p className="text-slate-500 mt-1 font-medium dark:text-zinc-400">Monitoreo de actividad y registros críticos del sistema.</p>
         </div>
         
         <button 
@@ -94,14 +94,14 @@ export function Security() {
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex gap-1 p-1 bg-slate-100 rounded-2xl w-fit border border-slate-200">
+      <div className="flex gap-1 p-1 bg-slate-100 rounded-2xl w-fit border border-slate-200 dark:bg-white/5 dark:border-white/10">
         <button
           onClick={() => { setActiveTab('audit'); setSearchTerm(''); }}
           className={cn(
             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
             activeTab === 'audit' 
               ? "bg-[#0F6B41] text-white shadow-sm" 
-              : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+              : "text-slate-500 hover:text-slate-700 hover:bg-white/50 dark:text-zinc-400"
           )}
         >
           <History className="w-4 h-4" />
@@ -113,7 +113,7 @@ export function Security() {
             "flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
             activeTab === 'logs' 
               ? "bg-[#0F6B41] text-white shadow-sm" 
-              : "text-slate-500 hover:text-slate-700 hover:bg-white/50"
+              : "text-slate-500 hover:text-slate-700 hover:bg-white/50 dark:text-zinc-400"
           )}
         >
           <Terminal className="w-4 h-4" />
@@ -122,25 +122,25 @@ export function Security() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4">
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 dark:bg-[var(--bg-surface)] dark:border-white/10">
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-zinc-400" />
           <input 
             type="text"
             placeholder={activeTab === 'audit' ? "Buscar por usuario, acción o módulo..." : "Buscar en mensajes o contexto..."}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium"
+            className="w-full pl-11 pr-4 py-3 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium dark:bg-[var(--color-paper-subtle)]"
           />
         </div>
         
         {activeTab === 'logs' && (
           <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-400 ml-2" />
+            <Filter className="w-4 h-4 text-slate-400 ml-2 dark:text-zinc-400" />
             <select 
               value={levelFilter}
               onChange={(e) => setLevelFilter(e.target.value as any)}
-              className="bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-[#0F6B41] outline-none"
+              className="bg-slate-50 border-none rounded-xl px-4 py-3 text-sm font-bold text-slate-600 focus:ring-2 focus:ring-[#0F6B41] outline-none dark:bg-[var(--color-paper-subtle)] dark:text-zinc-300"
             >
               <option value="all">Todos los Niveles</option>
               <option value="error">Solo Errores</option>
@@ -152,31 +152,31 @@ export function Security() {
       </div>
 
       {/* Content Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden dark:bg-[var(--bg-surface)] dark:border-white/10">
         <div className="overflow-x-auto">
           {activeTab === 'audit' ? (
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Fecha y Hora</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Usuario</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Acción</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Módulo</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Detalles</th>
+                <tr className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Fecha y Hora</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Usuario</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Acción</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Módulo</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Detalles</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {auditLogs?.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="px-6 py-4 text-xs font-bold text-slate-500 whitespace-nowrap">
+                  <tr key={log.id} className="hover:bg-slate-50/50 dark:bg-white/5 transition-colors">
+                    <td className="px-6 py-4 text-xs font-bold text-slate-500 whitespace-nowrap dark:text-zinc-400">
                       {formatDate(log.timestamp)}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center">
-                          <User className="w-3 h-3 text-slate-500" />
+                        <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center dark:bg-white/5">
+                          <User className="w-3 h-3 text-slate-500 dark:text-zinc-400" />
                         </div>
-                        <span className="text-sm font-bold text-slate-700">{log.userName}</span>
+                        <span className="text-sm font-bold text-slate-700 dark:text-zinc-300">{log.userName}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -185,22 +185,22 @@ export function Security() {
                         log.action === 'CREATE' ? "bg-emerald-100 text-emerald-700" :
                         log.action === 'UPDATE' ? "bg-amber-100 text-amber-700" :
                         log.action === 'DELETE' ? "bg-rose-100 text-rose-700" :
-                        "bg-slate-100 text-slate-700"
+                        "bg-slate-100 text-slate-700 dark:bg-white/5 dark:text-zinc-300"
                       )}>
                         {log.action}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{log.module}</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">{log.module}</span>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-slate-600 font-medium">{log.details}</p>
+                      <p className="text-sm text-slate-600 font-medium dark:text-zinc-300">{log.details}</p>
                     </td>
                   </tr>
                 ))}
                 {(!auditLogs || auditLogs.length === 0) && (
                   <tr>
-                    <td colSpan={5} className="px-6 py-20 text-center text-slate-400 font-medium">
+                    <td colSpan={5} className="px-6 py-20 text-center text-slate-400 font-medium dark:text-zinc-400">
                       No se encontraron registros de auditoría.
                     </td>
                   </tr>
@@ -210,18 +210,18 @@ export function Security() {
           ) : (
             <table className="w-full text-left">
               <thead>
-                <tr className="bg-slate-50/50 border-b border-slate-100">
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48">Fecha / Nivel</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Mensaje</th>
-                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Contexto</th>
+                <tr className="bg-slate-50/50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest w-48 dark:text-zinc-400">Fecha / Nivel</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-zinc-400">Mensaje</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right dark:text-zinc-400">Contexto</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {systemLogs?.map((log) => (
-                  <tr key={log.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr key={log.id} className="hover:bg-slate-50/50 dark:bg-white/5 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
-                        <span className="text-[10px] font-bold text-slate-400">{formatDate(log.timestamp)}</span>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-zinc-400">{formatDate(log.timestamp)}</span>
                         <div className="flex items-center gap-1.5">
                           {log.level === 'error' && <AlertCircle className="w-3 h-3 text-rose-500" />}
                           {log.level === 'warning' && <AlertCircle className="w-3 h-3 text-amber-500" />}
@@ -240,15 +240,15 @@ export function Security() {
                     <td className="px-6 py-4">
                       <p className={cn(
                         "text-sm font-bold",
-                        log.level === 'error' ? "text-rose-700" : "text-slate-700"
+                        log.level === 'error' ? "text-rose-700" : "text-slate-700 dark:text-zinc-300"
                       )}>
                         {log.message}
                       </p>
                     </td>
                     <td className="px-6 py-4 text-right">
                       {log.context && (
-                        <div className="flex items-center justify-end gap-2 text-slate-400">
-                          <code className="text-[10px] font-mono bg-slate-100 px-2 py-1 rounded">
+                        <div className="flex items-center justify-end gap-2 text-slate-400 dark:text-zinc-400">
+                          <code className="text-[10px] font-mono bg-slate-100 px-2 py-1 rounded dark:bg-white/5">
                             {log.context}
                           </code>
                         </div>
@@ -258,7 +258,7 @@ export function Security() {
                 ))}
                 {(!systemLogs || systemLogs.length === 0) && (
                   <tr>
-                    <td colSpan={3} className="px-6 py-20 text-center text-slate-400 font-medium">
+                    <td colSpan={3} className="px-6 py-20 text-center text-slate-400 font-medium dark:text-zinc-400">
                       El registro de errores está vacío.
                     </td>
                   </tr>

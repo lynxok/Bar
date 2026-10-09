@@ -394,9 +394,9 @@ export function Layout() {
               />
             ) : (
               <img
-                src="./brand/logo-full-dark.png"
+                src="./brand/logo-full-dark-tight.png"
                 alt="LYNX BarOS"
-                className="h-11 w-auto object-contain min-w-[140px] max-w-[180px]"
+                className="h-12 w-auto object-contain max-w-[190px]"
               />
             )}
           </Link>
@@ -517,7 +517,7 @@ export function Layout() {
               {logo ? (
                 <img src={logo} alt="Logo" className="w-7 h-7 object-cover rounded-lg" />
               ) : (
-                <Utensils className="h-5 w-5 text-[#0F6B41]" />
+                <Utensils className="h-5 w-5 text-[#0F6B41] dark:text-emerald-400" />
               )}
               <span className="font-bold text-[#1C1C1C] dark:text-white text-base tracking-tight leading-none truncate max-w-[160px]">{businessName}</span>
             </div>

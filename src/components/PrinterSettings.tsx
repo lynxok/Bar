@@ -57,7 +57,7 @@ export function PrinterSettings() {
     <div className="space-y-6">
       <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><Printer className="w-5 h-5 text-[#0F6B41]" /> Impresoras</h3>
+          <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><Printer className="w-5 h-5 text-[#0F6B41] dark:text-emerald-400" /> Impresoras</h3>
           <button onClick={() => update({ printers: [...cfg.printers, newPrinter()] })} className="px-3 h-9 rounded-xl bg-[#0F6B41] hover:bg-[#0C5734] text-white text-xs font-bold flex items-center gap-1 transition-colors"><Plus className="w-4 h-4" /> Agregar</button>
         </div>
         <p className="text-xs text-slate-500">

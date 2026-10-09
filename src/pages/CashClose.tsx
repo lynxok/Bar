@@ -140,7 +140,7 @@ export function CashClose() {
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5 ml-1">Fondo de caja inicial (efectivo)</label>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-lg dark:text-zinc-400">$</span>
                 <input
                   required
                   type="number"
@@ -172,19 +172,19 @@ export function CashClose() {
       {/* Configuration & Steps */}
       <div className="flex-1 w-full space-y-6">
         <div>
-          <h1 className="font-bold text-[32px] text-slate-900 mb-2">Cierre de Caja</h1>
-          <p className="text-body-md text-slate-500">
-            Turno actual (Desde {shiftStart?.toLocaleTimeString()} - {shiftStart?.toLocaleDateString()}) • Operador: <span className="font-bold text-slate-800">{activeShift.cashierName}</span>
+          <h1 className="font-bold text-[32px] text-slate-900 mb-2 dark:text-zinc-100">Cierre de Caja</h1>
+          <p className="text-body-md text-slate-500 dark:text-zinc-400">
+            Turno actual (Desde {shiftStart?.toLocaleTimeString()} - {shiftStart?.toLocaleDateString()}) • Operador: <span className="font-bold text-slate-800 dark:text-zinc-100">{activeShift.cashierName}</span>
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-          <div className="p-6 border-b border-slate-100 bg-slate-50">
-            <h3 className="font-bold text-lg text-slate-800 mb-1">Verificación de Totales</h3>
-            <p className="text-sm text-slate-500">Revise las cifras calculadas por el sistema frente al efectivo real ingresado.</p>
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm dark:bg-[var(--bg-surface)] dark:border-white/10">
+          <div className="p-6 border-b border-slate-100 bg-slate-50 dark:border-white/10 dark:bg-[var(--color-paper-subtle)]">
+            <h3 className="font-bold text-lg text-slate-800 mb-1 dark:text-zinc-100">Verificación de Totales</h3>
+            <p className="text-sm text-slate-500 dark:text-zinc-400">Revise las cifras calculadas por el sistema frente al efectivo real ingresado.</p>
           </div>
           
-          <div className="p-6 space-y-6 bg-white">
+          <div className="p-6 space-y-6 bg-white dark:bg-[var(--bg-surface)]">
             <div className="flex justify-between items-center p-4 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-white/[0.02]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-emerald-50 dark:bg-[#0F6B41]/20 rounded-lg flex items-center justify-center text-[#0F6B41] dark:text-emerald-400">
@@ -196,7 +196,7 @@ export function CashClose() {
                 </div>
               </div>
               <div className="text-right flex items-center gap-2">
-                <span className="text-slate-400 font-bold text-xl">$</span>
+                <span className="text-slate-400 font-bold text-xl dark:text-zinc-400">$</span>
                 <input 
                   type="number"
                   placeholder="0,00"
@@ -208,44 +208,44 @@ export function CashClose() {
             </div>
 
             <div className="space-y-3 px-2">
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2 font-medium">
-                  <Banknote className="w-4 h-4 text-slate-400" /> Fondo de Caja Inicial
+              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200 dark:border-white/10">
+                <span className="text-slate-600 flex items-center gap-2 font-medium dark:text-zinc-300">
+                  <Banknote className="w-4 h-4 text-slate-400 dark:text-zinc-400" /> Fondo de Caja Inicial
                 </span>
-                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(initialCash)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums dark:text-zinc-100">{formatMoney(initialCash)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2 font-medium">
-                  <Banknote className="w-4 h-4 text-slate-400" /> Ventas Efectivo Turno
+              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200 dark:border-white/10">
+                <span className="text-slate-600 flex items-center gap-2 font-medium dark:text-zinc-300">
+                  <Banknote className="w-4 h-4 text-slate-400 dark:text-zinc-400" /> Ventas Efectivo Turno
                 </span>
-                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(totals.sales.cash)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums dark:text-zinc-100">{formatMoney(totals.sales.cash)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2 font-medium">
-                  <CreditCard className="w-4 h-4 text-slate-400" /> Tarjetas (Visa, Master)
+              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200 dark:border-white/10">
+                <span className="text-slate-600 flex items-center gap-2 font-medium dark:text-zinc-300">
+                  <CreditCard className="w-4 h-4 text-slate-400 dark:text-zinc-400" /> Tarjetas (Visa, Master)
                 </span>
-                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(totals.sales.card)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums dark:text-zinc-100">{formatMoney(totals.sales.card)}</span>
               </div>
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2 font-medium">
-                  <Landmark className="w-4 h-4 text-slate-400" /> Transferencias / Pago Móvil
+              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200 dark:border-white/10">
+                <span className="text-slate-600 flex items-center gap-2 font-medium dark:text-zinc-300">
+                  <Landmark className="w-4 h-4 text-slate-400 dark:text-zinc-400" /> Transferencias / Pago Móvil
                 </span>
-                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(totals.sales.transfer)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums dark:text-zinc-100">{formatMoney(totals.sales.transfer)}</span>
               </div>
               {tips.total > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                  <span className="text-slate-600 flex items-center gap-2 font-medium">
-                    <Landmark className="w-4 h-4 text-slate-400" /> Propinas (no son venta)
+                <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200 dark:border-white/10">
+                  <span className="text-slate-600 flex items-center gap-2 font-medium dark:text-zinc-300">
+                    <Landmark className="w-4 h-4 text-slate-400 dark:text-zinc-400" /> Propinas (no son venta)
                   </span>
                   <span className="text-right">
-                    <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(tips.total)}</span>
-                    <span className="block text-[11px] text-slate-500">en efectivo: {formatMoney(tips.cash)} (incluidas en la caja)</span>
+                    <span className="font-bold text-slate-800 text-lg tabular-nums dark:text-zinc-100">{formatMoney(tips.total)}</span>
+                    <span className="block text-[11px] text-slate-500 dark:text-zinc-400">en efectivo: {formatMoney(tips.cash)} (incluidas en la caja)</span>
                   </span>
                 </div>
               )}
-              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
-                <span className="text-slate-600 flex items-center gap-2 font-medium">
-                  <Clock className="w-4 h-4 text-slate-400" /> Mesas Activas / Abiertas
+              <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200 dark:border-white/10">
+                <span className="text-slate-600 flex items-center gap-2 font-medium dark:text-zinc-300">
+                  <Clock className="w-4 h-4 text-slate-400 dark:text-zinc-400" /> Mesas Activas / Abiertas
                 </span>
                 <span className={`font-bold text-lg ${mesasPendientes > 0 ? 'text-[#C62828] animate-pulse' : 'text-[#0F6B41]'}`}>
                   {mesasPendientes}
@@ -273,11 +273,11 @@ export function CashClose() {
 
         {/* Info or Warning card for Difference */}
         {!hasDeclaredCash ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex gap-4 animate-in fade-in duration-200">
-            <Banknote className="w-6 h-6 text-slate-500 shrink-0 mt-0.5" />
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 flex gap-4 animate-in fade-in duration-200 dark:bg-[var(--color-paper-subtle)] dark:border-white/10">
+            <Banknote className="w-6 h-6 text-slate-500 shrink-0 mt-0.5 dark:text-zinc-400" />
             <div>
-              <h4 className="font-semibold text-slate-800 text-sm">Ingresá el efectivo contado</h4>
-              <p className="text-sm text-slate-600 mt-1">
+              <h4 className="font-semibold text-slate-800 text-sm dark:text-zinc-100">Ingresá el efectivo contado</h4>
+              <p className="text-sm text-slate-600 mt-1 dark:text-zinc-300">
                 Contá los billetes en caja y cargá el monto arriba para calcular el arqueo y balancear el turno.
               </p>
             </div>
@@ -295,9 +295,9 @@ export function CashClose() {
           </div>
         ) : (
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 flex gap-4 animate-in fade-in duration-200">
-            <FileCheck2 className="w-6 h-6 text-[#0F6B41] shrink-0 mt-0.5" />
+            <FileCheck2 className="w-6 h-6 text-[#0F6B41] shrink-0 mt-0.5 dark:text-emerald-400" />
             <div>
-              <h4 className="font-bold text-[#0F6B41] text-sm">Caja cuadrada</h4>
+              <h4 className="font-bold text-[#0F6B41] text-sm dark:text-emerald-400">Caja cuadrada</h4>
               <p className="text-sm text-emerald-800 mt-0.5">
                 El efectivo declarado coincide exactamente con el efectivo esperado ({formatMoney(expectedCash)}).
               </p>
@@ -308,7 +308,7 @@ export function CashClose() {
       </div>
 
       {/* Summary Card */}
-      <div className="w-full md:w-[400px] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden sticky top-8">
+      <div className="w-full md:w-[400px] bg-white border border-slate-200 rounded-2xl shadow-xl overflow-hidden sticky top-8 dark:bg-[var(--bg-surface)] dark:border-white/10">
         <div className="bg-[#1E4437] text-white p-6 text-center relative">
           <div className="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-white/20 relative z-10 mt-6">
              <LockIcon className="w-8 h-8 text-white mt-1" />
@@ -317,24 +317,24 @@ export function CashClose() {
           <p className="text-emerald-200 text-sm mt-1 text-center mb-6 relative z-10 font-medium">Turno #{shifts.length + 1}</p>
         </div>
         
-        <div className="p-6 bg-white space-y-6">
+        <div className="p-6 bg-white space-y-6 dark:bg-[var(--bg-surface)]">
           <div className="text-center">
-            <p className="text-slate-500 font-bold uppercase tracking-wider text-xs mb-1">TOTAL DECLARADO (TODOS LOS MÉTODOS)</p>
-            <h2 className="font-bold text-[38px] leading-tight text-slate-800 tabular-nums">{formatMoney(totalDeclaredAllMethods)}</h2>
+            <p className="text-slate-500 font-bold uppercase tracking-wider text-xs mb-1 dark:text-zinc-400">TOTAL DECLARADO (TODOS LOS MÉTODOS)</p>
+            <h2 className="font-bold text-[38px] leading-tight text-slate-800 tabular-nums dark:text-zinc-100">{formatMoney(totalDeclaredAllMethods)}</h2>
             {hasDeclaredCash ? (
               <p className={`text-sm font-bold mt-1 ${difference === 0 ? 'text-[#0F6B41]' : 'text-[#C62828]'}`}>
                 Diferencia: {difference > 0 ? '+' : ''}{formatMoney(difference)}
               </p>
             ) : (
-              <p className="text-sm font-medium mt-1 text-slate-500">
+              <p className="text-sm font-medium mt-1 text-slate-500 dark:text-zinc-400">
                 Ingresá el efectivo contado
               </p>
             )}
           </div>
 
           
-          <div className="pt-6 border-t border-slate-100">
-            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Comentarios de cierre (obligatorio si hay diferencia)</label>
+          <div className="pt-6 border-t border-slate-100 dark:border-white/10">
+            <label className="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2 dark:text-zinc-400">Comentarios de cierre (obligatorio si hay diferencia)</label>
             <textarea 
               value={comments}
               onChange={(e) => setComments(e.target.value)}

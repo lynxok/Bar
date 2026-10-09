@@ -440,7 +440,7 @@ export function WaiterMobile() {
                         <div className="flex items-center gap-2">
                           <div className="text-right">
                             {table.status !== 'available' && table.status !== 'dirty' && (
-                              <div className="font-bold text-amber-500 text-xs font-mono tabular-nums">{formatMoney(totalItemsPrice)}</div>
+                              <div className="font-bold text-amber-500 text-xs tabular-nums">{formatMoney(totalItemsPrice)}</div>
 
                             )}
                             {table.waiterName && (
@@ -611,7 +611,7 @@ export function WaiterMobile() {
                         <div className="text-[9px] text-slate-500 font-bold uppercase mt-0.5">{product.category}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-amber-500 text-xs font-mono tabular-nums">{formatMoney(product.price)}</span>
+                        <span className="font-bold text-amber-500 text-xs tabular-nums">{formatMoney(product.price)}</span>
                         <span className="p-1 bg-emerald-600/10 border border-emerald-500/20 text-emerald-400 rounded-lg text-xs"><Plus className="w-3.5 h-3.5" /></span>
                       </div>
                     </div>
@@ -645,7 +645,7 @@ export function WaiterMobile() {
                           {product.category}
                         </span>
                       </div>
-                      <span className="font-bold text-sm text-amber-500 font-mono tabular-nums">{formatMoney(product.price)}</span>
+                      <span className="font-bold text-sm text-amber-500 tabular-nums">{formatMoney(product.price)}</span>
                     </div>
 
                     {product.description && (
@@ -778,7 +778,7 @@ export function WaiterMobile() {
                     )}
                     <div className="flex justify-between">
                       <span>Total Consumido:</span>
-                      <span className="font-bold text-amber-500 text-sm font-mono tabular-nums">{formatMoney(totalItemsPrice)}</span>
+                      <span className="font-bold text-amber-500 text-sm tabular-nums">{formatMoney(totalItemsPrice)}</span>
                     </div>
                   </div>
 
@@ -826,7 +826,7 @@ export function WaiterMobile() {
               <div className="space-y-3.5">
                 <div className="flex justify-between items-center text-xs font-semibold">
                   <span className="text-slate-400">Total Consumido:</span>
-                  <span className="text-base font-bold text-amber-500 font-mono tabular-nums">{formatMoney(totalItemsPrice)}</span>
+                  <span className="text-base font-bold text-amber-500 tabular-nums">{formatMoney(totalItemsPrice)}</span>
                 </div>
 
 

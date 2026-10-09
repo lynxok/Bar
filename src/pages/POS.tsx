@@ -252,9 +252,9 @@ export function POS() {
                   <div className="p-3 flex-1 flex flex-col justify-between">
                     <h4 className="font-bold text-sm leading-tight text-on-surface">{product.name}</h4>
                     <div className="mt-1 flex items-baseline gap-2">
-                      <p className="text-emerald-600 font-bold text-sm font-mono tabular-nums">{formatMoney(currentPrice)}</p>
+                      <p className="text-emerald-600 font-bold text-sm tabular-nums">{formatMoney(currentPrice)}</p>
                       {orderType === 'takeaway' && (
-                        <p className="text-on-surface-variant font-medium text-xs line-through font-mono tabular-nums">{formatMoney(product.price)}</p>
+                        <p className="text-on-surface-variant font-medium text-xs line-through tabular-nums">{formatMoney(product.price)}</p>
                       )}
                     </div>
                   </div>
@@ -285,12 +285,12 @@ export function POS() {
           ) : (
             cart.map(item => (
               <div key={item.id} className="flex items-center gap-3 bg-surface-container-lowest p-3 rounded-xl border border-outline-variant shadow-sm">
-                <div className="w-10 h-10 rounded-lg bg-surface-container border border-outline-variant shrink-0 flex items-center justify-center font-bold text-primary text-sm font-mono tabular-nums">
+                <div className="w-10 h-10 rounded-lg bg-surface-container border border-outline-variant shrink-0 flex items-center justify-center font-bold text-primary text-sm tabular-nums">
                   {item.qty}×
                 </div>
                 <div className="flex-1 min-w-0">
                   <h5 className="font-bold text-sm text-on-surface truncate">{item.name}</h5>
-                  <p className="text-xs text-on-surface-variant font-mono tabular-nums">{formatMoney(item.price * item.qty)}</p>
+                  <p className="text-xs text-on-surface-variant tabular-nums">{formatMoney(item.price * item.qty)}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button onClick={() => removeFromCart(item.id)} className="h-11 w-11 rounded-xl border border-outline-variant bg-surface-container flex items-center justify-center hover:bg-surface-container-high active:scale-95 text-on-surface-variant shadow-sm transition-all">
@@ -313,13 +313,13 @@ export function POS() {
 
         <div className="p-6 bg-surface-container-low border-t border-outline shrink-0">
           <div className="space-y-2 mb-5">
-            <div className="flex justify-between text-sm text-on-surface-variant font-mono tabular-nums">
+            <div className="flex justify-between text-sm text-on-surface-variant tabular-nums">
               <span>Subtotal</span><span>{formatMoney(subtotal)}</span>
             </div>
-            <div className="flex justify-between text-sm text-on-surface-variant font-mono tabular-nums">
+            <div className="flex justify-between text-sm text-on-surface-variant tabular-nums">
               <span>{taxLabel({ taxRate, pricesIncludeTax })}</span><span>{formatMoney(taxes)}</span>
             </div>
-            <div className="flex justify-between text-xl font-bold text-on-surface pt-2 border-t border-outline-variant font-mono tabular-nums">
+            <div className="flex justify-between text-xl font-bold text-on-surface pt-2 border-t border-outline-variant tabular-nums">
               <span>Total</span><span>{formatMoney(total)}</span>
             </div>
 
@@ -339,7 +339,7 @@ export function POS() {
               disabled={cart.length === 0}
               className="w-full min-h-[48px] h-14 bg-surface-container border border-outline text-on-surface text-sm font-semibold rounded-xl shadow-xs hover:bg-surface-container-high active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-40 cursor-pointer"
             >
-              <ChefHat className="h-5 w-5 text-[#0F6B41]" /> Cocina
+              <ChefHat className="h-5 w-5 text-[#0F6B41] dark:text-emerald-400" /> Cocina
             </button>
             <button
               onClick={() => setIsCheckoutModalOpen(true)}
@@ -429,16 +429,16 @@ export function POS() {
 
               <div className="bg-surface-container rounded-2xl p-6 space-y-4 text-on-surface border border-outline-variant shadow-sm">
                 <div className="flex justify-between items-center text-on-surface-variant font-bold text-xs uppercase tracking-widest px-2">
-                  <span>Subtotal</span><span className="font-mono tabular-nums">{formatMoney(subtotal)}</span>
+                  <span>Subtotal</span><span className="tabular-nums">{formatMoney(subtotal)}</span>
                 </div>
                 <div className="flex justify-between items-center text-on-surface-variant font-bold text-xs uppercase tracking-widest px-2">
-                  <span>{taxLabel({ taxRate, pricesIncludeTax })}</span><span className="font-mono tabular-nums">{formatMoney(taxes)}</span>
+                  <span>{taxLabel({ taxRate, pricesIncludeTax })}</span><span className="tabular-nums">{formatMoney(taxes)}</span>
                 </div>
                 <div className="h-px bg-outline-variant mx-2" />
                 <div className="flex justify-between items-center px-2">
                   <div>
                     <div className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Total Final</div>
-                    <div className="text-4xl font-black font-mono tabular-nums">{formatMoney(total)}</div>
+                    <div className="text-4xl font-black tabular-nums">{formatMoney(total)}</div>
                   </div>
                   <div className="text-right">
                     <div className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1">Puntos</div>
