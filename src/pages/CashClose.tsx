@@ -149,7 +149,7 @@ export function CashClose() {
                   value={initialCashInput}
                   onChange={(e) => setInitialCashInput(e.target.value)}
                   className="w-full h-12 pl-8 pr-4 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-bold text-slate-900 dark:text-white focus:border-[#0F6B41] focus:ring-2 focus:ring-[#0F6B41]/20 outline-none transition-all"
-                  placeholder="0.00"
+                  placeholder="0,00"
                 />
               </div>
             </div>
@@ -199,10 +199,10 @@ export function CashClose() {
                 <span className="text-slate-400 font-bold text-xl">$</span>
                 <input 
                   type="number"
-                  placeholder="0.00"
+                  placeholder="0,00"
                   value={declaredCashInput}
                   onChange={(e) => setDeclaredCashInput(e.target.value)}
-                  className="font-bold text-[24px] text-slate-800 dark:text-white bg-white dark:bg-[#182C24] border-2 border-slate-300 dark:border-white/20 rounded-lg px-4 py-2 w-48 text-right outline-none focus:border-[#0F6B41] transition-all"
+                  className="font-bold text-[24px] text-slate-800 dark:text-white bg-white dark:bg-[#182C24] border-2 border-slate-300 dark:border-white/20 rounded-lg px-4 py-2 w-48 text-right outline-none focus:border-[#0F6B41] transition-all tabular-nums"
                 />
               </div>
             </div>
@@ -212,25 +212,25 @@ export function CashClose() {
                 <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <Banknote className="w-4 h-4 text-slate-400" /> Fondo de Caja Inicial
                 </span>
-                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(initialCash)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(initialCash)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
                 <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <Banknote className="w-4 h-4 text-slate-400" /> Ventas Efectivo Turno
                 </span>
-                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(totals.sales.cash)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(totals.sales.cash)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
                 <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <CreditCard className="w-4 h-4 text-slate-400" /> Tarjetas (Visa, Master)
                 </span>
-                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(totals.sales.card)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(totals.sales.card)}</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
                 <span className="text-slate-600 flex items-center gap-2 font-medium">
                   <Landmark className="w-4 h-4 text-slate-400" /> Transferencias / Pago Móvil
                 </span>
-                <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(totals.sales.transfer)}</span>
+                <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(totals.sales.transfer)}</span>
               </div>
               {tips.total > 0 && (
                 <div className="flex justify-between items-center py-2 border-b border-dashed border-slate-200">
@@ -238,7 +238,7 @@ export function CashClose() {
                     <Landmark className="w-4 h-4 text-slate-400" /> Propinas (no son venta)
                   </span>
                   <span className="text-right">
-                    <span className="font-bold text-slate-800 text-lg font-mono tabular-nums">{formatMoney(tips.total)}</span>
+                    <span className="font-bold text-slate-800 text-lg tabular-nums">{formatMoney(tips.total)}</span>
                     <span className="block text-[11px] text-slate-500">en efectivo: {formatMoney(tips.cash)} (incluidas en la caja)</span>
                   </span>
                 </div>
@@ -262,7 +262,7 @@ export function CashClose() {
                     Fondo inicial + ventas en efectivo + propinas en efectivo
                   </span>
                 </div>
-                <span className="font-bold text-[#0F6B41] dark:text-emerald-300 text-2xl font-mono tabular-nums">
+                <span className="font-bold text-[#0F6B41] dark:text-emerald-300 text-2xl tabular-nums">
                   {formatMoney(expectedCash)}
                 </span>
               </div>
@@ -320,7 +320,7 @@ export function CashClose() {
         <div className="p-6 bg-white space-y-6">
           <div className="text-center">
             <p className="text-slate-500 font-bold uppercase tracking-wider text-xs mb-1">TOTAL DECLARADO (TODOS LOS MÉTODOS)</p>
-            <h2 className="font-bold text-[38px] leading-tight text-slate-800 font-mono tabular-nums">{formatMoney(totalDeclaredAllMethods)}</h2>
+            <h2 className="font-bold text-[38px] leading-tight text-slate-800 tabular-nums">{formatMoney(totalDeclaredAllMethods)}</h2>
             {hasDeclaredCash ? (
               <p className={`text-sm font-bold mt-1 ${difference === 0 ? 'text-[#0F6B41]' : 'text-[#C62828]'}`}>
                 Diferencia: {difference > 0 ? '+' : ''}{formatMoney(difference)}

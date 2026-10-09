@@ -142,7 +142,7 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
 
         <div className="p-8 space-y-6 overflow-y-auto">
           {/* Resumen común */}
-          <div className="bg-slate-900 rounded-3xl p-6 text-white space-y-2">
+          <div className="bg-[#1E4437] rounded-3xl p-6 text-white space-y-2">
             <div className="flex justify-between text-slate-400 font-bold text-xs uppercase tracking-widest"><span>Consumo</span><span>{money(subtotal)}</span></div>
             <div className="flex justify-between text-slate-400 font-bold text-xs uppercase tracking-widest"><span>{taxLabel(tax)}</span><span>{money(totals.tax)}</span></div>
             {discountPct > 0 && <div className="flex justify-between text-amber-300 font-bold text-xs uppercase tracking-widest"><span>Descuento {discountPct}%</span><span>-{money(discountAmount)}</span></div>}
@@ -207,8 +207,8 @@ export function PaymentModal({ tableId, items, onClose, onPaid }: Props) {
           {mode === 'split' && (
             <div className="space-y-4">
               <div className="flex gap-2 items-center flex-wrap">
-                <button onClick={() => setSplitKind('equal')} className={cn('px-3 py-1.5 rounded-xl text-xs font-black', splitKind === 'equal' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600')}>Partes iguales</button>
-                <button onClick={() => setSplitKind('items')} className={cn('px-3 py-1.5 rounded-xl text-xs font-black', splitKind === 'items' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600')}>Por ítems</button>
+                <button onClick={() => setSplitKind('equal')} className={cn('px-3 py-1.5 rounded-xl text-xs font-black', splitKind === 'equal' ? 'bg-[#1E4437] text-white' : 'bg-slate-100 text-slate-600')}>Partes iguales</button>
+                <button onClick={() => setSplitKind('items')} className={cn('px-3 py-1.5 rounded-xl text-xs font-black', splitKind === 'items' ? 'bg-[#1E4437] text-white' : 'bg-slate-100 text-slate-600')}>Por ítems</button>
                 <div className="ml-auto flex items-center gap-2 text-xs font-bold text-slate-600">
                   Partes:
                   <button onClick={() => setParts(ps => ps.length > 2 ? ps.slice(0, -1) : ps)} className="w-8 h-8 rounded-lg bg-slate-100"><Minus className="w-4 h-4 mx-auto" /></button>

@@ -23,6 +23,8 @@ import {
   History
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { formatMoney } from "../lib/format";
+import { Card } from "../components/ui/Card";
 import { useAlerts } from "../contexts/AlertContext";
 import { useStore } from "../contexts/StoreContext";
 import { LoggerService } from "../lib/LoggerService";
@@ -283,49 +285,49 @@ export function Inventory() {
 
       {/* Analytics Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-card-gap">
-        <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-primary-fixed rounded-lg text-on-primary-fixed-variant">
+            <div className="p-2 bg-[#0F6B41]/10 dark:bg-white/10 rounded-lg text-[#0F6B41] dark:text-emerald-400">
               <Package className="h-5 w-5" />
             </div>
-            <span className="text-slate-400 font-bold text-xs">Total</span>
+            <span className="text-slate-500 dark:text-zinc-400 font-bold text-xs">Total</span>
           </div>
           <p className="font-label-caps text-label-caps text-slate-500 dark:text-zinc-400 mb-1">TOTAL SKU</p>
           <h3 className="font-h2 text-h2 text-slate-900 dark:text-zinc-100">{products.length}</h3>
-        </div>
+        </Card>
 
-        <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-error-container rounded-lg text-error">
+            <div className="p-2 bg-rose-50 dark:bg-rose-950/40 rounded-lg text-[#C62828] dark:text-rose-400">
               <AlertTriangle className="h-5 w-5" />
             </div>
-            <span className="text-error font-bold text-xs">{products.filter(p => isLowStock(p, lowStockThreshold)).length} Artículos</span>
+            <span className="text-[#C62828] dark:text-rose-400 font-bold text-xs">{products.filter(p => isLowStock(p, lowStockThreshold)).length} Artículos</span>
           </div>
           <p className="font-label-caps text-label-caps text-slate-500 dark:text-zinc-400 mb-1">STOCK BAJO</p>
           <h3 className="font-h2 text-h2 text-slate-900 dark:text-zinc-100">{products.filter(p => isLowStock(p, lowStockThreshold)).length}</h3>
-        </div>
+        </Card>
 
-        <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-secondary-fixed rounded-lg text-on-secondary-fixed-variant">
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="p-2 bg-emerald-50 dark:bg-white/10 rounded-lg text-[#0F6B41] dark:text-emerald-400">
               <Receipt className="h-5 w-5" />
             </div>
-            <span className="text-slate-500 font-bold text-xs">A la Venta</span>
+            <span className="text-slate-500 dark:text-zinc-400 font-bold text-xs">A la Venta</span>
           </div>
           <p className="font-label-caps text-label-caps text-slate-500 dark:text-zinc-400 mb-1">VALOR DE STOCK</p>
-          <h3 className="font-h2 text-h2 text-slate-900 dark:text-zinc-100">${products.reduce((acc, p) => acc + (p.price * p.stock), 0).toLocaleString()}</h3>
-        </div>
+          <h3 className="font-h2 text-h2 text-slate-900 dark:text-zinc-100">{formatMoney(products.reduce((acc, p) => acc + (p.price * p.stock), 0))}</h3>
+        </Card>
 
-        <div className="bg-white dark:bg-[#182C24] p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+        <Card className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <div className="p-2 bg-tertiary-fixed rounded-lg text-on-tertiary-fixed-variant">
+            <div className="p-2 bg-amber-50 dark:bg-white/10 rounded-lg text-amber-700 dark:text-amber-400">
               <Truck className="h-5 w-5" />
             </div>
-            <span className="text-slate-500 font-bold text-xs">Proveedores</span>
+            <span className="text-slate-500 dark:text-zinc-400 font-bold text-xs">Proveedores</span>
           </div>
           <p className="font-label-caps text-label-caps text-slate-500 dark:text-zinc-400 mb-1">PEDIDOS ACTIVOS</p>
           <h3 className="font-h2 text-h2 text-slate-900 dark:text-zinc-100">0</h3>
-        </div>
+        </Card>
       </div>
 
       {/* Table Section */}
@@ -555,8 +557,8 @@ export function Inventory() {
                             />
                           </div>
                         ) : (
-                          <span className="font-body-md text-slate-600 dark:text-zinc-300 font-medium">
-                            ${product.cost?.toFixed(2) || '0.00'}
+                          <span className="font-body-md text-slate-600 dark:text-zinc-300 font-medium tabular-nums">
+                            {formatMoney(product.cost || 0)}
                           </span>
                         )}
                       </td>
@@ -577,7 +579,7 @@ export function Inventory() {
                               <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-xs">$</span>
                               <input 
                                 type="number" 
-                                value={editForm.takeawayPrice}
+                                value={editForm.takeawayPrice} 
                                 onChange={(e) => setEditForm(prev => ({ ...prev, takeawayPrice: Number(e.target.value) }))}
                                 className="w-full bg-white border border-[#0F6B41]/40 text-[#0F6B41] pl-5 pr-2 py-1 rounded text-sm focus:ring-2 focus:ring-[#0F6B41] outline-none font-medium" 
                               />
@@ -587,9 +589,9 @@ export function Inventory() {
                           <span className="text-slate-500 italic text-sm">{product.variants?.length} Variantes</span>
                         ) : (
                           <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                            <span className="text-on-surface">${product.price?.toFixed(2)}</span>
+                            <span className="text-on-surface tabular-nums">{formatMoney(product.price || 0)}</span>
                             <span className="text-slate-400 mx-1">/</span>
-                            <span className="text-[#0F6B41] font-medium">${product.takeawayPrice?.toFixed(2)}</span>
+                            <span className="text-[#0F6B41] font-medium tabular-nums">{formatMoney(product.takeawayPrice || 0)}</span>
                             <button onClick={() => setHistoryModalItem(product)} className="text-slate-400 hover:text-[#0F6B41] transition-colors ml-1 p-0.5 rounded-md hover:bg-emerald-50" title="Ver Historial de Precios">
                               <History className="w-4 h-4" />
                             </button>
@@ -737,8 +739,8 @@ export function Inventory() {
                                 />
                               </div>
                             ) : (
-                              <span className="font-body-md text-slate-500 text-sm">
-                                ${variant.cost?.toFixed(2) || '0.00'}
+                              <span className="font-body-md text-slate-500 text-sm tabular-nums">
+                                {formatMoney(variant.cost || 0)}
                               </span>
                             )}
                           </td>
@@ -767,9 +769,9 @@ export function Inventory() {
                               </div>
                             ) : (
                               <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                                <span className="text-on-surface">${variant.price?.toFixed(2)}</span>
+                                <span className="text-on-surface tabular-nums">{formatMoney(variant.price || 0)}</span>
                                 <span className="text-slate-400 mx-1">/</span>
-                                <span className="text-[#0F6B41] font-medium">${variant.takeawayPrice?.toFixed(2)}</span>
+                                <span className="text-[#0F6B41] font-medium tabular-nums">{formatMoney(variant.takeawayPrice || 0)}</span>
                                 <button onClick={() => setHistoryModalItem(variant)} className="text-slate-400 hover:text-[#0F6B41] transition-colors ml-1 p-0.5 rounded-md hover:bg-emerald-50" title="Ver Historial de Precios">
                                   <History className="w-3.5 h-3.5" />
                                 </button>
@@ -1259,7 +1261,7 @@ export function Inventory() {
                 <div className="mt-4 pt-4 border-t border-slate-200">
                   <div className="flex justify-between items-center text-sm">
                     <span className="font-bold text-slate-500 uppercase tracking-wider">Costo Receta Calculado:</span>
-                    <span className="font-bold text-[#0F6B41] text-lg">${recipeCost.toFixed(2)}</span>
+                    <span className="font-bold text-[#0F6B41] text-lg">{formatMoney(recipeCost)}</span>
                   </div>
                 </div>
 
@@ -1325,17 +1327,17 @@ export function Inventory() {
                             <div className="flex justify-between items-center bg-slate-50 p-1.5 rounded mb-1 border border-slate-100">
                               <span className="text-slate-500 text-xs font-bold uppercase">Mesa</span>
                               <div className="flex items-center gap-1.5 font-medium text-slate-700">
-                                <span className="line-through text-slate-400 opacity-70">${entry.oldPrice?.toFixed(2)}</span>
+                                <span className="line-through text-slate-400 opacity-70">{formatMoney(entry.oldPrice || 0)}</span>
                                 <span>→</span>
-                                <span className="text-green-600">${entry.newPrice?.toFixed(2)}</span>
+                                <span className="text-green-600">{formatMoney(entry.newPrice || 0)}</span>
                               </div>
                             </div>
                             <div className="flex justify-between items-center bg-slate-50 p-1.5 rounded border border-slate-100">
                               <span className="text-slate-500 text-xs font-bold uppercase">Llevar</span>
                               <div className="flex items-center gap-1.5 font-medium text-slate-700">
-                                <span className="line-through text-slate-400 opacity-70">${entry.oldTakeaway?.toFixed(2)}</span>
+                                <span className="line-through text-slate-400 opacity-70">{formatMoney(entry.oldTakeaway || 0)}</span>
                                 <span>→</span>
-                                <span className="text-green-600">${entry.newTakeaway?.toFixed(2)}</span>
+                                <span className="text-green-600">{formatMoney(entry.newTakeaway || 0)}</span>
                               </div>
                             </div>
                           </div>

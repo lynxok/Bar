@@ -145,9 +145,17 @@ export function TableTile({
           )}
         >
           {/* Top row: Status / Timer & Table Number */}
-          <div className="w-full flex items-center justify-between text-[10px] font-semibold tracking-tight px-0.5">
+          <div className={cn(
+            "w-full flex items-center text-[10px] font-semibold tracking-tight px-0.5",
+            (table.type === 'round' || table.type === 'stool')
+              ? "justify-center relative"
+              : "justify-between"
+          )}>
             <span
-              className="font-bold tracking-tight leading-none"
+              className={cn(
+                "font-bold tracking-tight leading-none",
+                (table.type === 'round' || table.type === 'stool') && "text-center"
+              )}
               style={{ fontSize: `${fontSizeId}px` }}
               title={table.id}
               data-table-id={table.id}
@@ -157,6 +165,7 @@ export function TableTile({
             {elapsedMinutes !== null && table.status !== 'available' && table.status !== 'dirty' && (
               <span className={cn(
                 "px-1.5 py-0.5 rounded-full text-[10px] font-semibold tabular-nums",
+                (table.type === 'round' || table.type === 'stool') ? "absolute right-0 top-0" : "",
                 isLate ? "bg-[#C62828] text-white animate-bounce" : "bg-black/15 text-current"
               )}>
                 ⏱ {elapsedMinutes}m

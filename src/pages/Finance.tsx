@@ -237,7 +237,7 @@ export function Finance() {
                     <tr key={po.id} className="text-sm">
                       <td className="px-6 py-4 text-slate-500">{po.date}</td>
                       <td className="px-6 py-4 font-bold">{po.provider}</td>
-                      <td className="px-6 py-4 text-right font-bold">${po.amount.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-right font-bold">{formatMoney(po.amount)}</td>
                       <td className="px-6 py-4">
                         <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold uppercase", po.status === 'Pagado' ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
                           {po.status}
@@ -250,7 +250,7 @@ export function Finance() {
                     <tr key={inv.id} className="text-sm">
                       <td className="px-6 py-4 text-slate-500">{inv.date}</td>
                       <td className="px-6 py-4 font-bold">{inv.client}</td>
-                      <td className="px-6 py-4 text-right font-bold">${inv.amount.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-right font-bold">{formatMoney(inv.amount)}</td>
                       <td className="px-6 py-4">
                         <span className={cn("px-2 py-1 rounded-full text-[10px] font-bold uppercase", inv.status === 'Pagado' ? "bg-emerald-100 text-emerald-600" : "bg-amber-100 text-amber-600")}>
                           {inv.status}

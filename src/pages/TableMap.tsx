@@ -894,7 +894,7 @@ export function TableMap() {
                   "flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-black transition-all active:scale-95 shadow-sm border",
                   isMergeMode
                     ? "bg-rose-500 border-rose-500 text-white animate-pulse"
-                    : "bg-[#0F6B41]/10 border-[#0F6B41]/20 text-[#0F6B41] hover:bg-[#0F6B41]/20"
+                    : "bg-[#0F6B41]/10 dark:bg-[#0F6B41]/30 border-[#0F6B41]/20 dark:border-emerald-500/30 text-[#0F6B41] dark:text-emerald-400 hover:bg-[#0F6B41]/20 dark:hover:bg-[#0F6B41]/40"
                 )}
               >
                 {isMergeMode ? 'Cancelar unión' : 'Unir mesas'}
@@ -967,7 +967,7 @@ export function TableMap() {
               )}
               <button
                 onClick={() => setIsEditingLayout(true)}
-                className="flex items-center gap-3 px-8 py-4 bg-slate-900 rounded-2xl text-sm font-black text-white hover:bg-[#0F6B41] transition-all shadow-xl active:scale-95"
+                className="flex items-center gap-3 px-8 py-4 bg-[#1E4437] rounded-2xl text-sm font-black text-white hover:bg-[#0C5734] transition-all shadow-xl active:scale-95"
               >
                 <Layout className="w-5 h-5 text-[#0F6B41]" /> EDITAR PLANO
               </button>

@@ -41,7 +41,7 @@ import { INITIAL_CATEGORIES } from "./Inventory";
 
 const getTierStyle = (tierName: string, index: number = 0) => {
   const name = tierName.toLowerCase();
-  if (name.includes('platinum')) return 'bg-slate-900 border-slate-700 text-slate-100 shadow-sm';
+  if (name.includes('platinum')) return 'bg-[#1E4437] border-emerald-800 text-slate-100 shadow-sm';
   if (name.includes('gold')) return 'bg-amber-100 border-amber-200 text-amber-800';
   if (name.includes('silver')) return 'bg-slate-100 border-slate-200 text-slate-700';
   if (name.includes('bronze')) return 'bg-orange-50 border-orange-100 text-orange-800';
@@ -365,7 +365,7 @@ export function Loyalty() {
           </button>
         </div>
 
-        <div className="bg-slate-900 p-5 rounded-2xl border border-slate-800 shadow-xl flex items-start justify-between relative overflow-hidden">
+        <div className="bg-[#1E4437] p-5 rounded-2xl border border-emerald-800/30 shadow-xl flex items-start justify-between relative overflow-hidden">
           <div className="relative z-10">
             <div className="text-slate-400 text-[11px] font-bold uppercase tracking-wider mb-1">Canjes Realizados</div>
             <div className="text-3xl font-bold text-white">
@@ -546,7 +546,7 @@ export function Loyalty() {
 
       {/* Redemption Modal */}
       {redeemingCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -609,7 +609,7 @@ export function Loyalty() {
 
       {/* Catalog Management Modal */}
       {isCatalogModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -732,7 +732,7 @@ export function Loyalty() {
 
       {/* Tiers Configuration Modal */}
       {isTiersModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[80vh]">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -816,7 +816,7 @@ export function Loyalty() {
 
       {/* Promotions Modal */}
       {isPromotionsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/70 backdrop-blur-sm animate-in fade-in duration-300">
           <div className="bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh] border border-white/20">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-4">
@@ -903,7 +903,7 @@ export function Loyalty() {
                       </div>
                       <button 
                         onClick={handleAddPromotion}
-                        className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2"
+                        className="w-full py-3 bg-[#1E4437] text-white rounded-xl font-bold text-sm hover:bg-[#153228] transition-all shadow-lg shadow-slate-200 flex items-center justify-center gap-2"
                       >
                         Activar Promoción
                       </button>
@@ -986,7 +986,7 @@ export function Loyalty() {
 
       {/* Customer Profile Modal */}
       {selectedCustomer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1C1C1C]/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-4">
@@ -1129,7 +1129,7 @@ export function Loyalty() {
 
       {/* New Customer Modal */}
       {isNewCustomerModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-[#1C1C1C]/75 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
           <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 animate-in zoom-in-95 duration-200">
             <div className="px-8 py-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div>

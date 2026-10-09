@@ -6,6 +6,7 @@ import {
   EyeOff, DollarSign, Package, Layers, Info, Edit3
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { formatMoney } from '../lib/format';
 
 export function MenuConfig() {
   const { products } = useStore();
@@ -89,7 +90,7 @@ export function MenuConfig() {
                   className={cn(
                     "px-4 py-2.5 rounded-xl text-xs font-black tracking-wide uppercase transition-colors shrink-0",
                     selectedCategory === cat
-                      ? "bg-slate-900 text-white shadow-md"
+                      ? "bg-[#1E4437] text-white shadow-md"
                       : "bg-white border border-slate-250 text-slate-600 hover:bg-slate-50"
                   )}
                 >
@@ -205,12 +206,12 @@ export function MenuConfig() {
                       <div className="flex gap-3 text-xs text-slate-500 font-semibold">
                         <span className="flex items-center gap-1">
                           <DollarSign className="w-3.5 h-3.5 text-slate-400" /> Local: 
-                          <strong className="text-slate-800">${prod.price?.toLocaleString() || '0'}</strong>
+                          <strong className="text-slate-800">{formatMoney(prod.price || 0)}</strong>
                         </span>
                         {prod.takeawayPrice != null && prod.takeawayPrice > 0 && (
                           <span className="flex items-center gap-1 border-l border-slate-200 pl-3">
                             Llevar: 
-                            <strong className="text-[#0F6B41]">${prod.takeawayPrice.toLocaleString()}</strong>
+                            <strong className="text-[#0F6B41]">{formatMoney(prod.takeawayPrice)}</strong>
                           </span>
                         )}
                       </div>
@@ -227,7 +228,7 @@ export function MenuConfig() {
       </div>
 
       {/* Right panel: Live smartphone mockup preview */}
-      <div className="w-[380px] bg-slate-900 p-6 flex flex-col justify-center items-center shrink-0 border-l border-slate-950">
+      <div className="w-[380px] bg-[#1E4437] p-6 flex flex-col justify-center items-center shrink-0 border-l border-emerald-950">
         <div className="text-center mb-4 text-slate-400">
           <h4 className="text-sm font-black text-white flex items-center gap-2 justify-center">
             <Smartphone className="w-4 h-4 text-emerald-400" /> Vista Previa del Cliente
@@ -236,9 +237,9 @@ export function MenuConfig() {
         </div>
 
         {/* Smartphone Frame */}
-        <div className="w-[280px] h-[560px] bg-slate-950 rounded-[2.5rem] p-3 shadow-2xl border-4 border-slate-850 relative flex flex-col overflow-hidden">
+        <div className="w-[280px] h-[560px] bg-[#121E19] rounded-[2.5rem] p-3 shadow-2xl border-4 border-white/10 relative flex flex-col overflow-hidden">
           {/* Speaker & camera slot */}
-          <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-24 h-4 bg-slate-950 rounded-full z-50 flex items-center justify-center">
+          <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-24 h-4 bg-[#121E19] rounded-full z-50 flex items-center justify-center">
             <div className="w-8 h-1 bg-slate-800 rounded-full" />
           </div>
 
@@ -254,7 +255,7 @@ export function MenuConfig() {
             </div>
 
             {/* Client summary fake header */}
-            <div className="px-4 py-3 bg-slate-900 text-white shrink-0">
+            <div className="px-4 py-3 bg-[#1E4437] text-white shrink-0">
               <h5 className="font-black text-xs">MESA #05</h5>
               <p className="text-[9px] text-emerald-300">Escanea la carta & haz tu pedido</p>
             </div>
@@ -268,7 +269,7 @@ export function MenuConfig() {
                   className={cn(
                     "px-2.5 py-1 rounded-full text-[9px] font-black uppercase whitespace-nowrap transition-colors",
                     previewActiveCategory === cat 
-                      ? "bg-slate-900 text-white"
+                      ? "bg-[#1E4437] text-white"
                       : "bg-slate-200 text-slate-500"
                   )}
                 >
@@ -284,7 +285,7 @@ export function MenuConfig() {
                   <div className="min-w-0">
                     <h6 className="font-bold text-[10px] text-slate-800 truncate">{prod.name}</h6>
                     <p className="text-[8px] text-slate-450 line-clamp-1 leading-normal">{prod.description || 'Sin descripción'}</p>
-                    <span className="text-[10px] font-black text-slate-700 block mt-1">${prod.price?.toLocaleString()}</span>
+                    <span className="text-[10px] font-black text-slate-700 block mt-1">{formatMoney(prod.price || 0)}</span>
                   </div>
                   <button className="p-1 bg-[#0F6B41] hover:bg-[#0C5734] text-white rounded-lg text-[9px] font-black shrink-0">
                     +

@@ -249,7 +249,7 @@ export default function InvoiceDesignSettings() {
                   <label className="text-xs font-bold text-on-surface-variant block mb-1">Nombre Comercial / Fantasía (Cabecera Izq.)</label>
                   <input 
                     type="text" 
-                    className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface" 
+                    className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-[#121E19] text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface" 
                     placeholder="Ej: Loaiza Martha"
                     value={settings.nombreFantasia}
                     onChange={(e) => handleInputChange('nombreFantasia', e.target.value)}
@@ -260,7 +260,7 @@ export default function InvoiceDesignSettings() {
                   <label className="text-xs font-bold text-on-surface-variant block mb-1">Dirección Comercial (Cabecera Izq.)</label>
                   <textarea 
                     rows={2}
-                    className="w-full p-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface resize-none" 
+                    className="w-full p-3 rounded-lg border border-outline-variant bg-white dark:bg-[#121E19] text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface resize-none" 
                     placeholder="Ej: Av. General Paz 120, Paraná"
                     value={settings.domicilioComercial}
                     onChange={(e) => handleInputChange('domicilioComercial', e.target.value)}
@@ -272,7 +272,7 @@ export default function InvoiceDesignSettings() {
                     <label className="text-xs font-bold text-on-surface-variant block mb-1">Inicio de Actividad</label>
                     <input 
                       type="text" 
-                      className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface" 
+                      className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-[#121E19] text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface" 
                       placeholder="Ej: 01/05/2026"
                       value={settings.monotributoStartDate}
                       onChange={(e) => handleInputChange('monotributoStartDate', e.target.value)}
@@ -282,7 +282,7 @@ export default function InvoiceDesignSettings() {
                     <label className="text-xs font-bold text-on-surface-variant block mb-1">Ingresos Brutos</label>
                     <input 
                       type="text" 
-                      className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface" 
+                      className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-white dark:bg-[#121E19] text-sm outline-none focus:ring-2 focus:ring-primary/20 text-on-surface" 
                       placeholder="Ej: 20-36910653-9"
                       value={settings.ingresosBrutos}
                       onChange={(e) => handleInputChange('ingresosBrutos', e.target.value)}
@@ -304,7 +304,7 @@ export default function InvoiceDesignSettings() {
                   <div>
                     <label className="text-xs font-bold text-on-surface-variant block mb-1">Posición del Logo</label>
                     <select 
-                      className="w-full h-10 px-2 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm outline-none text-on-surface" 
+                      className="w-full h-10 px-2 rounded-lg border border-outline-variant bg-white dark:bg-[#121E19] text-sm outline-none text-on-surface" 
                       value={settings.pdfLogoPosition}
                       onChange={(e) => handleInputChange('pdfLogoPosition', e.target.value)}
                     >
@@ -374,7 +374,7 @@ export default function InvoiceDesignSettings() {
                   <div>
                     <label className="text-xs font-bold text-on-surface-variant block mb-1">Ubicación en Hoja</label>
                     <select 
-                      className="w-full h-10 px-2 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm outline-none text-on-surface" 
+                      className="w-full h-10 px-2 rounded-lg border border-outline-variant bg-white dark:bg-[#121E19] text-sm outline-none text-on-surface" 
                       value={settings.pdfLynxPosition}
                       onChange={(e) => handleInputChange('pdfLynxPosition', e.target.value)}
                     >
@@ -480,7 +480,7 @@ export default function InvoiceDesignSettings() {
                   <div>
                     <label className="text-xs font-bold text-on-surface-variant block mb-1">Alineación de Texto</label>
                     <select
-                      className="w-full h-10 px-2 rounded-lg border border-outline-variant bg-white dark:bg-slate-950 text-sm outline-none text-on-surface"
+                      className="w-full h-10 px-2 rounded-lg border border-outline-variant bg-white dark:bg-[#121E19] text-sm outline-none text-on-surface"
                       value={settings.pdfLeftColAlign}
                       onChange={(e) => handleInputChange('pdfLeftColAlign', e.target.value)}
                     >

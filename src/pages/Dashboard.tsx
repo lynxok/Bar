@@ -275,7 +275,7 @@ export function Dashboard() {
               En preparación
             </div>
           </div>
-          <div className="bg-amber-50 p-3 rounded-lg text-amber-500">
+          <div className="bg-amber-50 dark:bg-amber-950/40 p-3 rounded-lg text-amber-500 dark:text-amber-400">
             <Receipt className="h-6 w-6" />
           </div>
         </div>
@@ -289,7 +289,7 @@ export function Dashboard() {
               Revisar inventario
             </div>
           </div>
-          <div className="bg-red-50 p-3 rounded-lg text-red-500">
+          <div className="bg-red-50 dark:bg-rose-950/40 p-3 rounded-lg text-red-500 dark:text-rose-400">
             <Package className="h-6 w-6" />
           </div>
         </div>
@@ -373,16 +373,16 @@ export function Dashboard() {
             </div>
           </div>
 
-          <div className="bg-slate-900 p-6 rounded-xl shadow-lg relative overflow-hidden">
+          <div className="bg-[#1E4437] p-6 rounded-xl shadow-lg relative overflow-hidden">
             <div className="relative z-10">
-              <h4 className="text-white font-bold text-xs tracking-widest uppercase mb-1 opacity-60">SISTEMA</h4>
+              <h4 className="text-white/70 font-bold text-xs tracking-widest uppercase mb-1">SISTEMA</h4>
               <p className="text-white text-xl font-bold mb-4">Estado Operativo</p>
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
-                <p className="text-slate-400 text-xs">Vínculo con base de datos activo.</p>
+                <p className="text-emerald-100/80 text-xs font-medium">Vínculo con base de datos activo.</p>
               </div>
             </div>
-            <Zap className="absolute -right-4 -bottom-4 h-32 w-32 text-[#0F6B41]/10" />
+            <Zap className="absolute -right-4 -bottom-4 h-32 w-32 text-white/5" />
           </div>
         </div>
       </div>
@@ -443,7 +443,7 @@ export function Dashboard() {
                       {!isOccupied(table.status) ? `Cap: ${table.capacity}` : "Consumo:"}
                     </span>
                     <span className="text-xs font-black">
-                      {isOccupied(table.status) ? `$${tableTotal.toLocaleString()}` : ""}
+                      {isOccupied(table.status) ? formatMoney(tableTotal) : ""}
                     </span>
                   </div>
                 </div>
@@ -508,7 +508,7 @@ export function Dashboard() {
                   {orderItems.map((item: any) => (
                     <div key={item.id} className="flex items-center justify-between text-sm">
                       <span className="font-semibold text-slate-700">{item.name} × {item.qty}</span>
-                      <span className="font-bold text-slate-900">${(item.price * item.qty).toLocaleString()}</span>
+                      <span className="font-bold text-slate-900">{formatMoney(item.price * item.qty)}</span>
                     </div>
                   ))}
                 </div>
@@ -573,7 +573,7 @@ export function Dashboard() {
                   <div className="bg-[#0F6B41] rounded-2xl p-4 text-white flex items-center justify-between">
                     <div>
                       <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Paga cada uno</p>
-                      <p className="text-3xl font-black">${Math.ceil(perPerson).toLocaleString()}</p>
+                      <p className="text-3xl font-black">{formatMoney(Math.ceil(perPerson))}</p>
                     </div>
                     <div className="text-right opacity-70">
                       <p className="text-[9px] font-black uppercase tracking-widest">× {comensales}</p>
@@ -611,25 +611,25 @@ export function Dashboard() {
               </div>
 
               {/* Total Summary */}
-              <div className="bg-slate-900 rounded-[2rem] p-7 space-y-3 text-white shadow-2xl">
-                <div className="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest px-1">
+              <div className="bg-[#1E4437] rounded-[2rem] p-7 space-y-3 text-white shadow-2xl">
+                <div className="flex justify-between items-center text-emerald-100/70 font-bold text-xs uppercase tracking-widest px-1">
                   <span>Subtotal</span>
-                  <span>${subtotal.toLocaleString()}</span>
+                  <span>{formatMoney(subtotal)}</span>
                 </div>
-                <div className="flex justify-between items-center text-slate-400 font-bold text-xs uppercase tracking-widest px-1">
+                <div className="flex justify-between items-center text-emerald-100/70 font-bold text-xs uppercase tracking-widest px-1">
                   <span>{taxLabel({ taxRate, pricesIncludeTax })}</span>
-                  <span>${taxes.toLocaleString()}</span>
+                  <span>{formatMoney(taxes)}</span>
                 </div>
-                <div className="h-px bg-slate-800 mx-1" />
+                <div className="h-px bg-white/10 mx-1" />
                 <div className="flex justify-between items-center px-1">
                   <div>
-                    <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Total a Cobrar</div>
-                    <div className="text-3xl font-black">${total.toLocaleString()}</div>
+                    <div className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Total a Cobrar</div>
+                    <div className="text-3xl font-black">{formatMoney(total)}</div>
                   </div>
                   {registeredDiners.length > 0 && (
                     <div className="text-right">
-                      <div className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1">Puntos a Sumar</div>
-                      <div className="text-lg font-black text-emerald-400">+{Math.floor(total / 10)} pts</div>
+                      <div className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Puntos a Sumar</div>
+                      <div className="text-lg font-black text-emerald-300">+{Math.floor(total / 10)} pts</div>
                     </div>
                   )}
                 </div>

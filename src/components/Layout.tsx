@@ -27,6 +27,7 @@ import {
   FileText,
   Terminal,
   CalendarDays,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { ChatWidget } from "./ChatWidget";
@@ -59,7 +60,9 @@ interface NavGroup {
 export function Layout() {
   const location = useLocation();
   const { businessName, logo } = useBusiness();
-  const { clientOrders, approveClientOrder, rejectClientOrder, products } = useStore();
+  const { clientOrders, approveClientOrder, rejectClientOrder, products, messages } = useStore();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const unreadChatCount = messages.filter(m => m.status === 'sent').length;
   // Alerta global de stock bajo (antes solo se actualizaba al abrir Inventario)
   const lowStockCount = products.filter(p => isLowStock(p, readLowStockThreshold())).length;
   const [prevPendingCount, setPrevPendingCount] = useState(0);
@@ -393,7 +396,7 @@ export function Layout() {
               <img
                 src="./brand/logo-full-dark.png"
                 alt="LYNX BarOS"
-                className="h-10 w-auto object-contain min-w-[130px] max-w-[170px]"
+                className="h-11 w-auto object-contain min-w-[140px] max-w-[180px]"
               />
             )}
           </Link>
@@ -535,6 +538,25 @@ export function Layout() {
                 {lowStockCount} {lowStockCount === 1 ? 'Alerta' : 'Alertas'} de Stock
               </div>
             )}
+            {/* Chat Trigger Icon in Header */}
+            <div className="relative">
+              <button
+                onClick={() => setIsChatOpen(!isChatOpen)}
+                className={cn(
+                  "relative p-2 rounded-full transition-all duration-300 cursor-pointer",
+                  isChatOpen ? "bg-[#E7F3EC] text-[#0F6B41] dark:bg-white/10 dark:text-emerald-400" : "text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-white/10"
+                )}
+                title="Chat Interno"
+              >
+                <MessageSquare className="w-5 h-5" />
+                {unreadChatCount > 0 && (
+                  <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-[#FA4515] rounded-full border-2 border-white flex items-center justify-center">
+                    <span className="text-[8px] font-bold text-white">{unreadChatCount}</span>
+                  </span>
+                )}
+              </button>
+            </div>
+
             <div className="relative notification-container">
               <button 
                 onClick={() => setShowNotifications(!showNotifications)}
@@ -571,7 +593,7 @@ export function Layout() {
         <div className="p-4 md:p-8 pb-32 md:pb-8">
           <Outlet />
         </div>
-        <ChatWidget />
+        <ChatWidget isOpenExternal={isChatOpen} onCloseExternal={() => setIsChatOpen(false)} />
         <MagneticDock />
       </main>
     </div>

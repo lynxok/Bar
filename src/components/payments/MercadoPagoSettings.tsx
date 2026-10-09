@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { CheckCircle, QrCode, RefreshCw } from 'lucide-react';
 import { getIpc } from '../../lib/ipc';
+import { useToast } from '../ui/Toast';
 
 /** Configuración del cobro con QR de Mercado Pago (solo en la PC principal). */
 export function MercadoPagoSettings() {
+  const { confirm } = useToast();
   const ipc = getIpc();
   const [status, setStatus] = useState<{ configured: boolean; nickname?: string | null; encrypted?: boolean } | null>(null);
   const [token, setToken] = useState('');
@@ -25,15 +27,22 @@ export function MercadoPagoSettings() {
   };
 
   const clear = async () => {
-    if (!window.confirm('¿Desconectar Mercado Pago de este sistema?')) return;
+    const ok = await confirm({
+      title: 'Desconectar Mercado Pago',
+      message: '¿Desconectar Mercado Pago de este sistema?',
+      confirmText: 'Desconectar',
+      cancelText: 'Cancelar',
+      isDestructive: true,
+    });
+    if (!ok) return;
     setStatus(await ipc.invoke('mp-clear'));
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 mt-6">
+    <div className="bg-white dark:bg-[#182C24] rounded-2xl border border-slate-200 dark:border-slate-800 p-6 space-y-4 mt-6">
       <div>
-        <h3 className="font-black text-slate-900 flex items-center gap-2"><QrCode className="w-5 h-5 text-sky-600" /> Cobro con Mercado Pago (QR)</h3>
-        <p className="text-xs text-slate-500 mt-1 max-w-xl">
+        <h3 className="font-black text-slate-900 dark:text-white flex items-center gap-2"><QrCode className="w-5 h-5 text-sky-600" /> Cobro con Mercado Pago (QR)</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
           Al cobrar una mesa se genera un QR por el monto exacto y el sistema confirma el pago solo.
           Pegá el <b>Access Token de producción</b> de tu aplicación de Mercado Pago (Tus integraciones → Credenciales).
           Se guarda cifrado en esta PC y nunca se envía a los celulares.

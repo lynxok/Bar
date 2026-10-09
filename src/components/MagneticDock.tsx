@@ -24,7 +24,7 @@ export function MagneticDock() {
     { label: "Inventario", icon: Package, path: "/inventario", color: "from-amber-500 to-orange-600" },
     { label: "Carta QR", icon: Utensils, path: "/carta", color: "from-[#0F6B41] to-[#094328]" },
     { label: "Finanzas", icon: Wallet, path: "/finanzas", color: "from-pink-500 to-rose-600" },
-    { label: "Técnico", icon: Terminal, path: "/logs", color: "from-slate-700 to-slate-900" },
+    { label: "Técnico", icon: Terminal, path: "/logs", color: "from-[#1E4437] to-[#121E19]" },
     { label: "Ayuda", icon: HelpCircle, path: "/ayuda", color: "from-cyan-500 to-sky-600" },
   ];
 
@@ -45,7 +45,7 @@ export function MagneticDock() {
       {/* Toggle button */}
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="px-3 py-1 bg-slate-950/80 hover:bg-slate-900 border border-white/10 rounded-full text-[9px] font-black text-slate-400 hover:text-white uppercase tracking-widest transition-all shadow-lg flex items-center gap-1.5"
+        className="px-3 py-1 bg-[#1C1C1C]/90 hover:bg-[#1C1C1C] border border-white/10 rounded-full text-[9px] font-black text-slate-400 hover:text-white uppercase tracking-widest transition-all shadow-lg flex items-center gap-1.5"
       >
         {isOpen ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
         {isOpen ? "Ocultar Dock" : "Accesos"}
@@ -56,7 +56,7 @@ export function MagneticDock() {
           ref={containerRef}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="flex items-end gap-2 px-3 py-2.5 bg-slate-950/75 border border-white/10 rounded-3xl backdrop-blur-2xl shadow-2xl transition-all duration-300 relative overflow-x-auto max-w-[95vw] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
+          className="flex items-end gap-2 px-3 py-2.5 bg-[#1C1C1C]/85 border border-white/10 rounded-3xl backdrop-blur-2xl shadow-2xl transition-all duration-300 relative overflow-x-auto max-w-[95vw] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] scroll-smooth"
           style={{ height: "68px" }}
         >
           {items.map((item, idx) => {
@@ -92,7 +92,7 @@ export function MagneticDock() {
                 {/* Tooltip */}
                 <div 
                   className={cn(
-                    "absolute -top-12 px-3 py-1.5 bg-slate-900 border border-white/10 rounded-lg text-[9px] font-black text-white uppercase tracking-wider shadow-lg opacity-0 translate-y-2 pointer-events-none transition-all group-hover:opacity-100 group-hover:translate-y-0 duration-200 z-50 whitespace-nowrap",
+                    "absolute -top-12 px-3 py-1.5 bg-[#1C1C1C] border border-white/10 rounded-lg text-[9px] font-black text-white uppercase tracking-wider shadow-lg opacity-0 translate-y-2 pointer-events-none transition-all group-hover:opacity-100 group-hover:translate-y-0 duration-200 z-50 whitespace-nowrap",
                     hoveredIndex === idx && "opacity-100 translate-y-0"
                   )}
                 >
@@ -104,7 +104,7 @@ export function MagneticDock() {
                   className={cn(
                     "w-full h-full rounded-2xl flex items-center justify-center bg-gradient-to-b text-white shadow-lg border border-white/10 hover:border-white/20 transition-all",
                     item.color,
-                    isSelected && "ring-2 ring-[#0F6B41] ring-offset-2 ring-offset-slate-950"
+                    isSelected && "ring-2 ring-[#0F6B41] ring-offset-2 ring-offset-[#1C1C1C]"
                   )}
                 >
                   <item.icon className="w-1/2 h-1/2" />

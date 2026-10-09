@@ -1,12 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { MessageSquare, X, Send, User, Check, CheckCheck } from 'lucide-react';
+import { MessageSquare, X, Send, Check, CheckCheck } from 'lucide-react';
 import { useStore } from '../contexts/StoreContext';
 import { cn } from '../lib/utils';
 
-export function ChatWidget() {
+export function ChatWidget({
+  isOpenExternal,
+  onCloseExternal,
+}: {
+  isOpenExternal?: boolean;
+  onCloseExternal?: () => void;
+} = {}) {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isOpen = isOpenExternal !== undefined ? isOpenExternal : internalOpen;
+  const setIsOpen = (open: boolean) => {
+    if (onCloseExternal && !open) onCloseExternal();
+    setInternalOpen(open);
+  };
   const [text, setText] = useState('');
   const [myRole, setMyRole] = useState<'Caja' | 'Cocina'>('Caja'); // Default to Caja
   const [popupMessage, setPopupMessage] = useState<any | null>(null);
@@ -58,13 +69,10 @@ export function ChatWidget() {
   };
 
   // Count unread messages (messages sent to me that are not 'read')
-  const unreadCount = messages.filter(m => m.senderRole !== myRole && m.status === 'sent').length;
+  if (!isOpen && !popupMessage) return null;
 
   return (
-    <div className={cn(
-      "fixed z-50 transition-all duration-300",
-      isMapRoute ? "bottom-6 left-6 md:left-28" : location.pathname.startsWith('/cierre') ? "bottom-24 right-6" : "bottom-6 right-6"
-    )}>
+    <div className="fixed z-50 bottom-6 right-6 transition-all duration-300">
       
       {/* Toast Notification Popup */}
       {popupMessage && !isOpen && (
@@ -98,30 +106,6 @@ export function ChatWidget() {
           </div>
         </div>
       )}
-
-      {/* Floating Button */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="w-14 h-14 bg-[#0F6B41] hover:bg-[#0C5734] rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition-all relative group border-4 border-white dark:border-[#1E4437] cursor-pointer"
-        >
-          <MessageSquare className="w-6 h-6 text-white" />
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-[#FA4515] text-white text-[10px] font-black w-5 h-5 flex items-center justify-center rounded-full border-2 border-white animate-bounce">
-              {unreadCount}
-            </span>
-          )}
-          
-          {/* Tooltip */}
-          <div className={cn(
-            "absolute bg-[#1C1C1C] text-white text-xs font-semibold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap shadow-lg",
-            isMapRoute ? "left-16" : "right-16"
-          )}>
-            Chat Interno
-          </div>
-        </button>
-      )}
-
 
       {/* Chat Window */}
       {isOpen && (
