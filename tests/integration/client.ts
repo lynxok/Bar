@@ -78,7 +78,7 @@ const reader = resp.body!.getReader();
 await ctl('updateProduct?id=2&price=2600');
 let got = '';
 const deadline = Date.now() + 3000;
-while (Date.now() < deadline && !got.includes('event: change')) {
+while (Date.now() < deadline && !got.includes('"table":"products"')) {
   const { value } = await Promise.race([reader.read(), sleep(3000).then(() => ({ value: undefined }))]) as any;
   if (value) got += new TextDecoder().decode(value);
 }

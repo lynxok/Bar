@@ -361,12 +361,18 @@ ipcMain.handle('auth-needs-setup', async (event) => {
 
 ipcMain.handle('auth-setup-superadmin', async (event, { name, password } = {}) => {
   assertMainWindow(event);
-  const users = await getAllUsers();
+  let users = await getAllUsers();
   if (users.some(u => String(u.role || '').toLowerCase() === 'superadmin' && u.passwordHash)) {
     return { ok: false, error: 'Ya existe un Superadmin configurado.' };
   }
   if (typeof name !== 'string' || name.trim().length < 3) return { ok: false, error: 'El usuario debe tener al menos 3 caracteres.' };
   if (typeof password !== 'string' || password.length < 8) return { ok: false, error: 'La contraseña debe tener al menos 8 caracteres.' };
+  for (const u of users) {
+    if (sameName(u.name, 'Carlos') && u.pin === '1234' && !u.passwordHash && u.id != null) {
+      await rendererQuery({ table: 'users', id: u.id, method: 'DELETE' });
+    }
+  }
+  users = users.filter(u => !(sameName(u.name, 'Carlos') && u.pin === '1234' && !u.passwordHash));
   if (users.some(u => sameName(u.name, name))) return { ok: false, error: 'Ya existe un usuario con ese nombre.' };
   await rendererQuery({
     table: 'users', method: 'POST',
@@ -393,10 +399,45 @@ function startExpressServer() {
   });
 }
 
+const updaterState = { status: 'idle', version: null, percent: 0, error: null };
+
+autoUpdater.autoDownload = true;
+autoUpdater.autoInstallOnAppQuit = true;
+
+autoUpdater.on('update-available', (info) => {
+  updaterState.status = 'available';
+  updaterState.version = (info && info.version) || null;
+  updaterState.error = null;
+  if (win && !win.isDestroyed()) win.webContents.send('update-available', info);
+});
+
+autoUpdater.on('update-not-available', () => {
+  if (updaterState.status !== 'downloaded' && updaterState.status !== 'downloading') {
+    updaterState.status = 'idle';
+  }
+  if (win && !win.isDestroyed()) win.webContents.send('update-not-available');
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  updaterState.status = 'downloading';
+  updaterState.percent = Math.round((progressObj && progressObj.percent) || 0);
+  if (win && !win.isDestroyed()) win.webContents.send('download-progress', progressObj);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  updaterState.status = 'downloaded';
+  if (info && info.version) updaterState.version = info.version;
+  updaterState.percent = 100;
+  if (win && !win.isDestroyed()) win.webContents.send('update-downloaded', info);
+});
+
+autoUpdater.on('error', (err) => {
+  updaterState.status = 'idle';
+  updaterState.error = (err && err.message) || String(err);
+  if (win && !win.isDestroyed()) win.webContents.send('update-error', updaterState.error);
+});
+
 function createWindow() {
-  autoUpdater.autoDownload = false;
-  autoUpdater.checkForUpdatesAndNotify();
-  
   win = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -416,26 +457,14 @@ function createWindow() {
     win.loadURL('http://localhost:3000');
   }
 
-  // Eventos del actualizador
-  autoUpdater.on('update-available', (info) => {
-    win.webContents.send('update-available', info);
-  });
-
-  autoUpdater.on('update-not-available', () => {
-    win.webContents.send('update-not-available');
-  });
-
-  autoUpdater.on('download-progress', (progressObj) => {
-    win.webContents.send('download-progress', progressObj);
-  });
-
-  autoUpdater.on('update-downloaded', () => {
-    win.webContents.send('update-downloaded');
-  });
-
-  autoUpdater.on('error', (err) => {
-    win.webContents.send('update-error', err.message);
-  });
+  const runAutoUpdateCheck = () => {
+    try { autoUpdater.checkForUpdatesAndNotify(); } catch (err) { console.error('Auto-update check error:', err); }
+  };
+  if (win.webContents && typeof win.webContents.once === 'function') {
+    win.webContents.once('did-finish-load', runAutoUpdateCheck);
+  } else {
+    runAutoUpdateCheck();
+  }
 }
 
 // IPC Handlers para control de ngrok
@@ -492,7 +521,10 @@ ipcMain.on('set-supabase-config', (event, config) => {
 });
 
 // IPC auto-updater
+ipcMain.handle('get-update-state', () => updaterState);
+
 ipcMain.on('check-update', () => {
+  updaterState.error = null;
   autoUpdater.checkForUpdates();
 });
 
@@ -503,6 +535,12 @@ ipcMain.on('start-download', () => {
 ipcMain.on('apply-update', () => {
   autoUpdater.quitAndInstall();
 });
+
+setInterval(() => {
+  if (app.isPackaged && updaterState.status !== 'downloading' && updaterState.status !== 'downloaded') {
+    try { autoUpdater.checkForUpdatesAndNotify(); } catch {}
+  }
+}, 4 * 60 * 60 * 1000).unref();
 
 ipcMain.on('get-app-version', (event) => {
   event.returnValue = app.getVersion();

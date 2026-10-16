@@ -1,10 +1,11 @@
-import type { ReactNode, HTMLAttributes } from 'react';
+import type { ReactNode, HTMLAttributes, MouseEventHandler } from 'react';
 import { cn } from '../../lib/utils';
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   className?: string;
   variant?: 'default' | 'flat' | 'elevated' | 'brand';
   children?: ReactNode;
+  onClick?: MouseEventHandler<HTMLDivElement>;
 }
 
 export function Card({ className, variant = 'default', children, ...props }: CardProps) {

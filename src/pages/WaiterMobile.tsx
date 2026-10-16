@@ -24,10 +24,12 @@ import {
   Wallet, 
   ShoppingBag,
   Clock,
-  Trash2
+  Trash2,
+  Beer
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { Html5Qrcode } from 'html5-qrcode';
+import { MugFillModal } from '../components/mugs/MugFillModal';
 
 export function WaiterMobile() {
   const { 
@@ -55,7 +57,8 @@ export function WaiterMobile() {
 
   // Active ordering table (when adding products to a table)
   const [orderingTableId, setOrderingTableId] = useState<string | null>(null);
-  const [comandaItems, setComandaItems] = useState<{ id: string; name: string; price: number; qty: number; note: string }[]>([]);
+  const [comandaItems, setComandaItems] = useState<{ id: string; name: string; price: number; qty: number; note: string; mugFill?: OrderItem['mugFill'] }[]>([]);
+  const [mugFillOpen, setMugFillOpen] = useState(false);
   const [productSearch, setProductSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -250,7 +253,7 @@ export function WaiterMobile() {
       const currentOrderItems: OrderItem[] = table && Array.isArray(table.order) ? [...table.order] : [];
 
       for (const item of comandaItems) {
-        const existingItem = currentOrderItems.find(i => i.name === item.name);
+        const existingItem = !item.mugFill && currentOrderItems.find(i => i.name === item.name && !i.mugFill);
         if (existingItem) {
           existingItem.qty += item.qty;
         } else {
@@ -258,7 +261,8 @@ export function WaiterMobile() {
             id: item.id,
             name: item.name,
             price: item.price,
-            qty: item.qty
+            qty: item.qty,
+            ...(item.mugFill ? { mugFill: item.mugFill } : {})
           });
         }
       }
@@ -542,14 +546,22 @@ export function WaiterMobile() {
         {/* Ordering mode (under tab tables) */}
         {orderingTableId && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <button 
-                onClick={() => setOrderingTableId(null)}
-                className="p-2 bg-dark-card border border-white/10 text-slate-300 rounded-xl"
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => setOrderingTableId(null)}
+                  className="p-2 bg-dark-card border border-white/10 text-slate-300 rounded-xl"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                </button>
+                <h3 className="font-black text-sm">Nueva Comanda: Mesa {orderingTableId.replace('T-', '')}</h3>
+              </div>
+              <button
+                onClick={() => setMugFillOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-300 rounded-xl text-xs font-bold transition-all cursor-pointer"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <Beer className="w-4 h-4" /> Recarga de vaso
               </button>
-              <h3 className="font-black text-sm">Nueva Comanda: Mesa {orderingTableId.replace('T-', '')}</h3>
             </div>
 
             {/* Cart summary */}
@@ -959,6 +971,21 @@ export function WaiterMobile() {
         </button>
       </footer>
 
+      <MugFillModal
+        isOpen={mugFillOpen}
+        onClose={() => setMugFillOpen(false)}
+        onAdd={(item) => {
+          setComandaItems(prev => [...prev, {
+            id: item.id || `mugfill-${Date.now()}`,
+            name: item.name,
+            price: item.price,
+            qty: item.qty || 1,
+            note: '',
+            mugFill: item.mugFill,
+          }]);
+          triggerToast('Recarga de vaso agregada a la comanda.');
+        }}
+      />
     </div>
   );
 }

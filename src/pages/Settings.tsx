@@ -135,8 +135,15 @@ export function Settings() {
   useEffect(() => {
     if (!ipc) return;
 
+    ipc.invoke('get-update-state').then((st: any) => {
+      if (!st) return;
+      if (st.version) setLatestVersion(st.version);
+      if (typeof st.percent === 'number') setDownloadProgress(st.percent);
+      if (st.status && st.status !== 'idle') setUpdateStatus(st.status);
+    }).catch(() => {});
+
     const onAvailable = (_: any, info: any) => {
-      setLatestVersion(info.version);
+      if (info?.version) setLatestVersion(info.version);
       setUpdateStatus('available');
       setIsUpdating(false);
     };
@@ -149,11 +156,14 @@ export function Settings() {
 
     const onProgress = (_: any, progressObj: any) => {
       setUpdateStatus('downloading');
-      setDownloadProgress(Math.round(progressObj.percent));
+      setIsUpdating(false);
+      setDownloadProgress(Math.round(progressObj?.percent || 0));
     };
 
-    const onDownloaded = () => {
+    const onDownloaded = (_: any, info?: any) => {
+      if (info?.version) setLatestVersion(info.version);
       setUpdateStatus('downloaded');
+      setIsUpdating(false);
     };
 
     const onError = (_: any, message: string) => {
@@ -169,11 +179,11 @@ export function Settings() {
     ipc.on('update-error', onError);
 
     return () => {
-      ipc.removeAllListeners('update-available');
-      ipc.removeAllListeners('update-not-available');
-      ipc.removeAllListeners('download-progress');
-      ipc.removeAllListeners('update-downloaded');
-      ipc.removeAllListeners('update-error');
+      ipc.removeListener('update-available', onAvailable);
+      ipc.removeListener('update-not-available', onNotAvailable);
+      ipc.removeListener('download-progress', onProgress);
+      ipc.removeListener('update-downloaded', onDownloaded);
+      ipc.removeListener('update-error', onError);
     };
   }, [ipc]);
 

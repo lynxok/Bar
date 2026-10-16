@@ -3,7 +3,7 @@ import { db, type Product } from '../db/database';
 import { getStoredUser } from '../lib/auth';
 import { LoggerService } from '../lib/LoggerService';
 import { computeTotals } from '../lib/pricing';
-import { activeMultiplier, crossedMilestones, fillPoints, getMugProgram, isFillItem } from '../lib/mugs';
+import { activeMultiplier, crossedMilestones, fillPoints, getMugProgram, isFillItem, type MugFillLine } from '../lib/mugs';
 
 export interface OrderItem {
   id: string;
@@ -12,6 +12,7 @@ export interface OrderItem {
   name: string;
   price: number;
   qty: number;
+  mugFill?: MugFillLine;
 }
 
 export interface CloseOrderOptions {

@@ -28,8 +28,10 @@ import {
   Terminal,
   CalendarDays,
   MessageSquare,
+  DownloadCloud,
 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { getIpc } from "../lib/ipc";
 import { ChatWidget } from "./ChatWidget";
 import { NotificationsPanel } from "./NotificationsPanel";
 import { useStore } from "../contexts/StoreContext";
@@ -138,6 +140,21 @@ export function Layout() {
       }
     }
   }, [lowStockCount]);
+
+  const [readyUpdateVersion, setReadyUpdateVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    const ipc = getIpc();
+    if (!ipc) return;
+    ipc.invoke('get-update-state').then((st: any) => {
+      if (st?.status === 'downloaded') setReadyUpdateVersion(st.version || 'nueva');
+    }).catch(() => {});
+    const onDownloaded = (_: any, info?: any) => {
+      setReadyUpdateVersion(info?.version || 'nueva');
+    };
+    ipc.on('update-downloaded', onDownloaded);
+    return () => ipc.removeListener('update-downloaded', onDownloaded);
+  }, []);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
@@ -524,6 +541,16 @@ export function Layout() {
           </div>
 
           <div className="flex items-center gap-4 ml-auto">
+            {readyUpdateVersion && (
+              <button
+                onClick={() => getIpc()?.send('apply-update')}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full text-xs font-bold shadow-sm animate-pulse cursor-pointer"
+                title="Reiniciar e instalar actualización descargada"
+              >
+                <DownloadCloud className="w-3.5 h-3.5" />
+                Actualizar a v{readyUpdateVersion}
+              </button>
+            )}
             <SyncStatusBadge />
             <button
               onClick={toggleDarkMode}
